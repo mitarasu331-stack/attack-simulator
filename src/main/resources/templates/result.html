@@ -1,10 +1,289 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja"
+      xmlns:th="http://www.thymeleaf.org">
+
 <head>
-<meta charset="UTF-8">
-<title>Insert title here</title>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Attack Simulator - Result</title>
+
+    <style>
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+        }
+
+        .container {
+            width: 420px;
+            margin: 80px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            font-size: 18px;
+            margin-top: 25px;
+            margin-bottom: 10px;
+        }
+
+        .result-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f7f7f7;
+            border-radius: 5px;
+        }
+
+        .result-row {
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+
+        .label {
+            font-weight: bold;
+        }
+
+        .success {
+            margin-top: 20px;
+            padding: 12px;
+            background: #e8f5e9;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .failure {
+            margin-top: 20px;
+            padding: 12px;
+            background: #ffebee;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .password-box {
+            margin-top: 15px;
+            padding: 12px;
+            background: #eeeeee;
+            border-radius: 5px;
+        }
+
+        .back-button {
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: 25px;
+            padding: 12px;
+            border-radius: 5px;
+            background: #333;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .back-button:hover {
+            background: #555;
+        }
+
+    </style>
 </head>
+
 <body>
 
+<div class="container">
+
+    <h1>攻撃シミュレーション結果</h1>
+
+    <div class="result-box">
+
+        <!-- 攻撃方式 -->
+        <div class="result-row">
+
+            <span class="label">
+                攻撃方式：
+            </span>
+
+            <span th:switch="${authMethod}">
+
+                <span th:case="'one-stage'">
+                    一段階認証
+                </span>
+
+                <span th:case="'two-stage'">
+                    二段階認証
+                </span>
+
+                <span th:case="'three-stage'">
+                    三段階認証
+                </span>
+
+                <span th:case="'email-otp'">
+                    メールOTP総当たり
+                </span>
+
+                <span th:case="*">
+                    不明
+                </span>
+
+            </span>
+
+        </div>
+
+
+        <!-- 認証段階数 -->
+        <div class="result-row"
+             th:if="${stageCount != null}">
+
+            <span class="label">
+                認証段階数：
+            </span>
+
+            <span th:text="${stageCount}">
+                1
+            </span>
+
+            <span>
+                段階
+            </span>
+
+        </div>
+
+
+        <!-- 総試行回数 -->
+        <div class="result-row">
+
+            <span class="label">
+                総試行回数：
+            </span>
+
+            <span th:text="${attemptCount}">
+                10000
+            </span>
+
+            <span>
+                回
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- 攻撃成功 -->
+    <div class="success"
+         th:if="${success}">
+
+        攻撃結果：成功
+
+    </div>
+
+
+    <!-- 攻撃失敗 -->
+    <div class="failure"
+         th:if="${!success}">
+
+        攻撃結果：失敗
+
+    </div>
+
+
+    <!-- パスワード総当たり結果 -->
+    <div class="password-box"
+         th:if="${success and authMethod != 'email-otp'}">
+
+        <h2>突破した認証情報</h2>
+
+
+        <!-- Password -->
+        <div class="result-row"
+             th:if="${password != null}">
+
+            <span class="label">
+                Password：
+            </span>
+
+            <span th:text="${password}">
+                9999
+            </span>
+
+        </div>
+
+
+        <!-- Password2 -->
+        <div class="result-row"
+             th:if="${password2 != null}">
+
+            <span class="label">
+                Password2：
+            </span>
+
+            <span th:text="${password2}">
+                9999
+            </span>
+
+        </div>
+
+
+        <!-- Password3 -->
+        <div class="result-row"
+             th:if="${password3 != null}">
+
+            <span class="label">
+                Password3：
+            </span>
+
+            <span th:text="${password3}">
+                9999
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- メールOTP総当たり結果 -->
+    <div class="password-box"
+         th:if="${success and authMethod == 'email-otp'}">
+
+        <h2>突破した認証情報</h2>
+
+        <div class="result-row"
+             th:if="${otp != null}">
+
+            <span class="label">
+                OTP：
+            </span>
+
+            <span th:text="${otp}">
+                999999
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- 戻る -->
+    <a href="/"
+       class="back-button">
+
+        攻撃シミュレーション画面に戻る
+
+    </a>
+
+</div>
+
 </body>
+
 </html>

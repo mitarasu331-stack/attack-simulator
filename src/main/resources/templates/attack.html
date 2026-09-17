@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Attack Simulator</title>
+
+    <style>
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+        }
+
+        .container {
+            width: 420px;
+            margin: 80px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            font-size: 18px;
+            margin-top: 25px;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        input,
+        select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .button {
+            width: 100%;
+            margin-top: 25px;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            background: #333;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .button:hover {
+            background: #555;
+        }
+
+        .description {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f7f7f7;
+            border-radius: 5px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .section {
+            margin-top: 35px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Attack Simulator</h1>
+
+
+    <!-- パスワード総当たり -->
+    <h2>パスワード総当たり</h2>
+
+    <form action="/attack/password"
+          method="post">
+
+        <label for="username">
+            実験対象ユーザー名
+        </label>
+
+        <input
+            type="text"
+            id="username"
+            name="username"
+            placeholder="experiment01"
+            required>
+
+
+        <label for="authMethod">
+            認証方式
+        </label>
+
+        <select
+            id="authMethod"
+            name="authMethod">
+
+            <option value="one-stage">
+                一段階認証
+            </option>
+
+            <option value="two-stage">
+                二段階認証
+            </option>
+
+            <option value="three-stage">
+                三段階認証
+            </option>
+
+        </select>
+
+
+        <div class="description">
+
+            パスワードは4桁の数字
+            （0000～9999）を使用します。
+
+            <br>
+
+            二段階認証では
+            Password → Password2、
+
+            <br>
+
+            三段階認証では
+            Password → Password2 → Password3
+            の順番で攻撃します。
+
+        </div>
+
+
+        <button type="submit"
+                class="button">
+
+            パスワード総当たり開始
+
+        </button>
+
+    </form>
+
+
+    <!-- メールOTP総当たり -->
+    <div class="section">
+
+        <h2>メールOTP総当たり</h2>
+
+        <form action="/attack/email-otp"
+              method="post">
+
+            <label for="otpUsername">
+                実験対象ユーザー名
+            </label>
+
+            <input
+                type="text"
+                id="otpUsername"
+                name="username"
+                placeholder="experiment01"
+                required>
+
+
+            <label for="maxAttempts">
+                最大試行回数
+            </label>
+
+            <input
+                type="number"
+                id="maxAttempts"
+                name="maxAttempts"
+                value="10000"
+                min="1"
+                max="1000000"
+                required>
+
+
+            <div class="description">
+
+                OTPは6桁の数字
+                （000000～999999）
+                として扱います。
+
+                <br>
+
+                最大試行回数まで順番に
+                OTPを試行します。
+
+            </div>
+
+
+            <button type="submit"
+                    class="button">
+
+                メールOTP総当たり開始
+
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>
