@@ -13,30 +13,18 @@ public class ExperimentResultService {
     private final List<ExperimentResult> results =
             new ArrayList<>();
 
-    /**
-     * 実験結果を保存
-     */
     public void addResult(ExperimentResult result) {
         results.add(result);
     }
 
-    /**
-     * 全実験結果を取得
-     */
     public List<ExperimentResult> getResults() {
         return new ArrayList<>(results);
     }
 
-    /**
-     * 実験結果をすべて削除
-     */
     public void clearResults() {
         results.clear();
     }
 
-    /**
-     * 認証方式ごとの実験結果を取得
-     */
     public List<ExperimentResult> getResultsByAuthMethod(
             String authMethod) {
 
@@ -55,18 +43,12 @@ public class ExperimentResultService {
         return filteredResults;
     }
 
-    /**
-     * 認証方式ごとの総実験回数
-     */
     public int getExperimentCountByAuthMethod(
             String authMethod) {
 
         return getResultsByAuthMethod(authMethod).size();
     }
 
-    /**
-     * 認証方式ごとの成功回数
-     */
     public int getSuccessCountByAuthMethod(
             String authMethod) {
 
@@ -83,9 +65,6 @@ public class ExperimentResultService {
         return successCount;
     }
 
-    /**
-     * 認証方式ごとの認証突破率
-     */
     public double getSuccessRateByAuthMethod(
             String authMethod) {
 
@@ -107,8 +86,31 @@ public class ExperimentResultService {
     }
 
     /**
-     * 認証方式ごとの成功時の攻撃時間合計
+     * 認証方式ごとの平均攻撃試行回数
      */
+    public double getAverageAttemptCountByAuthMethod(
+            String authMethod) {
+
+        List<ExperimentResult> filteredResults =
+                getResultsByAuthMethod(authMethod);
+
+        if (filteredResults.isEmpty()) {
+            return 0.0;
+        }
+
+        long totalAttemptCount = 0;
+
+        for (ExperimentResult result :
+                filteredResults) {
+
+            totalAttemptCount +=
+                    result.getAttemptCount();
+        }
+
+        return (double) totalAttemptCount
+                / filteredResults.size();
+    }
+
     public long getSuccessAttackTimeTotalByAuthMethod(
             String authMethod) {
 
@@ -127,9 +129,6 @@ public class ExperimentResultService {
         return totalTime;
     }
 
-    /**
-     * 認証方式ごとの平均攻撃成功時間
-     */
     public double getAverageSuccessAttackTimeByAuthMethod(
             String authMethod) {
 
@@ -147,22 +146,14 @@ public class ExperimentResultService {
                 / successCount;
     }
 
-    /*
-     * ----------------------------------------
-     * 以下は全体集計
-     * ----------------------------------------
-     */
+    // ----------------------------------------
+    // 全体集計
+    // ----------------------------------------
 
-    /**
-     * 全体の総実験回数
-     */
     public int getTotalExperimentCount() {
         return results.size();
     }
 
-    /**
-     * 全体の成功回数
-     */
     public int getSuccessCount() {
 
         int successCount = 0;
@@ -177,9 +168,6 @@ public class ExperimentResultService {
         return successCount;
     }
 
-    /**
-     * 全体の認証突破率
-     */
     public double getSuccessRate() {
 
         int totalExperimentCount =
@@ -198,8 +186,26 @@ public class ExperimentResultService {
     }
 
     /**
-     * 全体の成功時の攻撃時間合計
+     * 全認証方式の平均攻撃試行回数
      */
+    public double getAverageAttemptCount() {
+
+        if (results.isEmpty()) {
+            return 0.0;
+        }
+
+        long totalAttemptCount = 0;
+
+        for (ExperimentResult result : results) {
+
+            totalAttemptCount +=
+                    result.getAttemptCount();
+        }
+
+        return (double) totalAttemptCount
+                / results.size();
+    }
+
     public long getSuccessAttackTimeTotal() {
 
         long totalTime = 0;
@@ -216,9 +222,6 @@ public class ExperimentResultService {
         return totalTime;
     }
 
-    /**
-     * 全体の平均攻撃成功時間
-     */
     public double getAverageSuccessAttackTime() {
 
         int successCount =
@@ -233,9 +236,6 @@ public class ExperimentResultService {
                 / successCount;
     }
 
-    /**
-     * 結果件数
-     */
     public int getResultCount() {
         return results.size();
     }

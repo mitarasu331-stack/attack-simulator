@@ -30,32 +30,20 @@ public class AttackController {
                 experimentResultService;
     }
 
-    /**
-     * 攻撃シミュレーション画面
-     */
     @GetMapping("/")
     public String index() {
         return "attack";
     }
 
-    /**
-     * パスワード方式の攻撃
-     */
     @PostMapping("/attack/password")
     public String passwordBruteForce(
             @RequestParam(defaultValue = "one-stage")
             String authMethod,
             Model model) {
 
-        /*
-         * 実験開始日時を記録
-         */
         LocalDateTime experimentDateTime =
                 LocalDateTime.now();
 
-        /*
-         * 攻撃開始
-         */
         long startTime = System.nanoTime();
 
         AttackResult result;
@@ -80,25 +68,12 @@ public class AttackController {
                         + authMethod);
         }
 
-        /*
-         * 攻撃終了
-         */
         long endTime = System.nanoTime();
 
-        /*
-         * 攻撃時間をミリ秒に変換
-         */
         long attackTimeMs =
                 (endTime - startTime)
                 / 1_000_000;
 
-        /*
-         * 認証操作回数
-         *
-         * 一段階認証 = 3
-         * 二段階認証 = 5
-         * 三段階認証 = 7
-         */
         int operationCount;
 
         switch (authMethod) {
@@ -120,18 +95,74 @@ public class AttackController {
         }
 
         /*
-         * 突破した認証情報
+         * 認証方式ごとの最大攻撃試行回数
          */
+        int maxAttemptCount;
+
+        switch (authMethod) {
+
+            case "one-stage":
+                maxAttemptCount = 10000;
+                break;
+
+            case "two-stage":
+                maxAttemptCount = 20000;
+                break;
+
+            case "three-stage":
+                maxAttemptCount = 30000;
+                break;
+
+            default:
+                maxAttemptCount = 0;
+        }
+
+        /*
+         * 認証方式ごとの認証構成
+         */
+        String authenticationConfiguration;
+
+        switch (authMethod) {
+
+            case "one-stage":
+                authenticationConfiguration =
+                        "ID + Password";
+                break;
+
+            case "two-stage":
+                authenticationConfiguration =
+                        "ID + Password → Password2";
+                break;
+
+            case "three-stage":
+                authenticationConfiguration =
+                        "ID + Password → Password2 → Password3";
+                break;
+
+            default:
+                authenticationConfiguration =
+                        "不明";
+        }
+
+        /*
+         * 実験番号
+         *
+         * 現在の実験結果数 + 1
+         */
+        int experimentNumber =
+                experimentResultService
+                        .getResultCount() + 1;
+
         String credential =
                 createPasswordCredential(result);
 
-        /*
-         * 実験結果を保存
-         */
         ExperimentResult experimentResult =
                 new ExperimentResult(
+                        experimentNumber,
                         authMethod,
                         operationCount,
+                        authenticationConfiguration,
+                        maxAttemptCount,
                         result.getTotalAttempts(),
                         result.isSuccess(),
                         credential,
@@ -141,9 +172,10 @@ public class AttackController {
         experimentResultService.addResult(
                 experimentResult);
 
-        /*
-         * 結果画面へ渡すデータ
-         */
+        model.addAttribute(
+                "experimentNumber",
+                experimentNumber);
+
         model.addAttribute(
                 "authMethod",
                 result.getAuthMethod());
@@ -180,52 +212,58 @@ public class AttackController {
                 "experimentDateTime",
                 experimentDateTime);
 
+        model.addAttribute(
+                "maxAttemptCount",
+                maxAttemptCount);
+
+        model.addAttribute(
+                "authenticationConfiguration",
+                authenticationConfiguration);
+
         return "result";
     }
 
-    /**
-     * メールOTP方式の攻撃
-     */
     @PostMapping("/attack/email-otp")
     public String emailOtpBruteForce(
             @RequestParam(defaultValue = "10000")
             int maxAttempts,
             Model model) {
 
-        /*
-         * 実験開始日時を記録
-         */
         LocalDateTime experimentDateTime =
                 LocalDateTime.now();
 
-        /*
-         * 攻撃開始
-         */
         long startTime = System.nanoTime();
 
         EmailOtpBruteForceAttack.AttackResult result =
                 attackService.executeEmailOtpBruteForce(
                         maxAttempts);
 
-        /*
-         * 攻撃終了
-         */
         long endTime = System.nanoTime();
 
-        /*
-         * 攻撃時間
-         */
         long attackTimeMs =
                 (endTime - startTime)
                 / 1_000_000;
 
         /*
-         * メールOTPの実験結果を保存
+         * メールOTPの認証構成
          */
+        String authenticationConfiguration =
+                "ID + Password → Email OTP";
+
+        /*
+         * 実験番号
+         */
+        int experimentNumber =
+                experimentResultService
+                        .getResultCount() + 1;
+
         ExperimentResult experimentResult =
                 new ExperimentResult(
+                        experimentNumber,
                         "email-otp",
                         0,
+                        authenticationConfiguration,
+                        maxAttempts,
                         result.getAttemptCount(),
                         result.isSuccess(),
                         result.getOtp(),
@@ -235,9 +273,10 @@ public class AttackController {
         experimentResultService.addResult(
                 experimentResult);
 
-        /*
-         * 結果画面へ渡すデータ
-         */
+        model.addAttribute(
+                "experimentNumber",
+                experimentNumber);
+
         model.addAttribute(
                 "authMethod",
                 "email-otp");
@@ -266,26 +305,26 @@ public class AttackController {
                 "experimentDateTime",
                 experimentDateTime);
 
+        model.addAttribute(
+                "maxAttemptCount",
+                maxAttempts);
+
+        model.addAttribute(
+                "authenticationConfiguration",
+                authenticationConfiguration);
+
         return "result";
     }
 
-    /**
-     * 実験結果一覧
-     */
     @GetMapping("/results")
     public String results(Model model) {
 
-        /*
-         * 全実験結果
-         */
         model.addAttribute(
                 "results",
                 experimentResultService.getResults());
 
         /*
-         * --------------------------------
          * 一段階認証
-         * --------------------------------
          */
         model.addAttribute(
                 "oneStageExperimentCount",
@@ -306,6 +345,12 @@ public class AttackController {
                                 "one-stage"));
 
         model.addAttribute(
+                "oneStageAverageAttemptCount",
+                experimentResultService
+                        .getAverageAttemptCountByAuthMethod(
+                                "one-stage"));
+
+        model.addAttribute(
                 "oneStageSuccessAttackTimeTotal",
                 experimentResultService
                         .getSuccessAttackTimeTotalByAuthMethod(
@@ -318,9 +363,7 @@ public class AttackController {
                                 "one-stage"));
 
         /*
-         * --------------------------------
          * 二段階認証
-         * --------------------------------
          */
         model.addAttribute(
                 "twoStageExperimentCount",
@@ -341,6 +384,12 @@ public class AttackController {
                                 "two-stage"));
 
         model.addAttribute(
+                "twoStageAverageAttemptCount",
+                experimentResultService
+                        .getAverageAttemptCountByAuthMethod(
+                                "two-stage"));
+
+        model.addAttribute(
                 "twoStageSuccessAttackTimeTotal",
                 experimentResultService
                         .getSuccessAttackTimeTotalByAuthMethod(
@@ -353,9 +402,7 @@ public class AttackController {
                                 "two-stage"));
 
         /*
-         * --------------------------------
          * 三段階認証
-         * --------------------------------
          */
         model.addAttribute(
                 "threeStageExperimentCount",
@@ -376,6 +423,12 @@ public class AttackController {
                                 "three-stage"));
 
         model.addAttribute(
+                "threeStageAverageAttemptCount",
+                experimentResultService
+                        .getAverageAttemptCountByAuthMethod(
+                                "three-stage"));
+
+        model.addAttribute(
                 "threeStageSuccessAttackTimeTotal",
                 experimentResultService
                         .getSuccessAttackTimeTotalByAuthMethod(
@@ -388,9 +441,7 @@ public class AttackController {
                                 "three-stage"));
 
         /*
-         * --------------------------------
          * メールOTP
-         * --------------------------------
          */
         model.addAttribute(
                 "emailOtpExperimentCount",
@@ -411,6 +462,12 @@ public class AttackController {
                                 "email-otp"));
 
         model.addAttribute(
+                "emailOtpAverageAttemptCount",
+                experimentResultService
+                        .getAverageAttemptCountByAuthMethod(
+                                "email-otp"));
+
+        model.addAttribute(
                 "emailOtpSuccessAttackTimeTotal",
                 experimentResultService
                         .getSuccessAttackTimeTotalByAuthMethod(
@@ -425,9 +482,6 @@ public class AttackController {
         return "results";
     }
 
-    /**
-     * 実験結果をすべて削除
-     */
     @PostMapping("/results/clear")
     public String clearResults() {
 
@@ -436,9 +490,6 @@ public class AttackController {
         return "redirect:/results";
     }
 
-    /**
-     * パスワード方式の認証情報を作成
-     */
     private String createPasswordCredential(
             AttackResult result) {
 
