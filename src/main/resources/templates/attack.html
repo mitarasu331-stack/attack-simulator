@@ -2,6 +2,7 @@
 <html lang="ja">
 
 <head>
+
     <meta charset="UTF-8">
 
     <meta name="viewport"
@@ -86,6 +87,7 @@
         }
 
     </style>
+
 </head>
 
 <body>
@@ -141,16 +143,20 @@
             パスワードは4桁の数字
             （0000～9999）を使用します。
 
+            <br><br>
+
+            一段階認証：
+            ID + Password
+
             <br>
 
-            二段階認証では
-            Password → Password2、
+            二段階認証：
+            ID + Password → Password2
 
             <br>
 
-            三段階認証では
-            Password → Password2 → Password3
-            の順番で攻撃します。
+            三段階認証：
+            ID + Password → Password2 → Password3
 
         </div>
 
@@ -205,10 +211,10 @@
                 （000000～999999）
                 として扱います。
 
-                <br>
+                <br><br>
 
-                最大試行回数まで順番に
-                OTPを試行します。
+                最大試行回数まで
+                OTPを順番に試行します。
 
             </div>
 
@@ -223,6 +229,24 @@
         </form>
 
     </div>
+	
+	<!-- 実験結果一覧 -->
+	<div class="section">
+
+	    <h2>実験結果</h2>
+
+	    <a href="/results"
+	       class="button"
+	       style="display: block;
+	              box-sizing: border-box;
+	              text-align: center;
+	              text-decoration: none;">
+
+	        実験結果一覧を見る
+
+	    </a>
+
+	</div>
 
 </div>
 

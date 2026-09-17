@@ -8,8 +8,8 @@ public class EmailOtpBruteForceAttack {
     /**
      * メールOTP総当たり攻撃を実行する。
      *
-     * 今回の実験では、OTPを6桁の数字として扱う。
-     * 正解OTPは999999とする。
+     * OTPは6桁の数字として扱う。
+     * 実験用の正解OTPは999999とする。
      *
      * @param maxAttempts 最大試行回数
      * @return 攻撃結果
@@ -21,17 +21,18 @@ public class EmailOtpBruteForceAttack {
                     "最大試行回数は1以上にしてください。");
         }
 
-        // 実験用の正解OTP
         String targetOtp = "999999";
 
         int attemptCount = 0;
 
         /*
-         * 000000 ～ 999999 のOTPを順番に試行する。
+         * 000000～999999を順番に試行する。
          */
         for (int i = 0; i <= 999999; i++) {
 
-            // 最大試行回数に到達したら終了
+            /*
+             * 最大試行回数に到達したら終了
+             */
             if (attemptCount >= maxAttempts) {
                 break;
             }
@@ -47,7 +48,9 @@ public class EmailOtpBruteForceAttack {
                     + " : candidate="
                     + candidate);
 
-            // OTPが一致した場合
+            /*
+             * OTPが一致した場合
+             */
             if (candidate.equals(targetOtp)) {
 
                 System.out.println("----------------------------------------");

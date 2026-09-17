@@ -6,8 +6,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class AttacksimulatorApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(AttacksimulatorApplication.class, args);
-	}
+    public static void main(String[] args) {
 
+        SpringApplication.run(
+                AttacksimulatorApplication.class,
+                args);
+    }
 }

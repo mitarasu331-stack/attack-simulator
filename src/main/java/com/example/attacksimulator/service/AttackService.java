@@ -12,14 +12,18 @@ public class AttackService {
 
     private final PasswordBruteForceAttack passwordBruteForceAttack;
 
-    private final MultiStagePasswordBruteForceAttack multiStagePasswordBruteForceAttack;
+    private final MultiStagePasswordBruteForceAttack
+            multiStagePasswordBruteForceAttack;
 
-    private final EmailOtpBruteForceAttack emailOtpBruteForceAttack;
+    private final EmailOtpBruteForceAttack
+            emailOtpBruteForceAttack;
 
     public AttackService(
             PasswordBruteForceAttack passwordBruteForceAttack,
-            MultiStagePasswordBruteForceAttack multiStagePasswordBruteForceAttack,
-            EmailOtpBruteForceAttack emailOtpBruteForceAttack) {
+            MultiStagePasswordBruteForceAttack
+                    multiStagePasswordBruteForceAttack,
+            EmailOtpBruteForceAttack
+                    emailOtpBruteForceAttack) {
 
         this.passwordBruteForceAttack =
                 passwordBruteForceAttack;
@@ -29,26 +33,6 @@ public class AttackService {
 
         this.emailOtpBruteForceAttack =
                 emailOtpBruteForceAttack;
-    }
-
-    /**
-     * 従来のパスワード総当たり攻撃
-     */
-    public PasswordBruteForceAttack.AttackResult
-            executePasswordBruteForce() {
-
-        System.out.println("========================================");
-        System.out.println("      Password Brute Force Attack");
-        System.out.println("========================================");
-
-        PasswordBruteForceAttack.AttackResult result =
-                passwordBruteForceAttack.execute();
-
-        System.out.println("----------------------------------------");
-        System.out.println("Password brute force finished.");
-        System.out.println("----------------------------------------");
-
-        return result;
     }
 
     /**
@@ -139,6 +123,30 @@ public class AttackService {
 
         System.out.println("----------------------------------------");
         System.out.println("Email OTP brute force finished.");
+        System.out.println("----------------------------------------");
+
+        return result;
+    }
+
+    /**
+     * 従来の単独パスワード総当たり攻撃
+     *
+     * 現在の一段階認証とは別に、
+     * PasswordBruteForceAttack単体を
+     * 使用したい場合のメソッド。
+     */
+    public PasswordBruteForceAttack.AttackResult
+            executePasswordBruteForce() {
+
+        System.out.println("========================================");
+        System.out.println("      Password Brute Force Attack");
+        System.out.println("========================================");
+
+        PasswordBruteForceAttack.AttackResult result =
+                passwordBruteForceAttack.execute();
+
+        System.out.println("----------------------------------------");
+        System.out.println("Password brute force finished.");
         System.out.println("----------------------------------------");
 
         return result;
