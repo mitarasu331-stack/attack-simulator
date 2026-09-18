@@ -1,54 +1,94 @@
 package com.example.attacksimulator.service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.attacksimulator.model.ExperimentResult;
+import com.example.attacksimulator.repository.ExperimentResultRepository;
 
 @Service
 public class ExperimentResultService {
 
-    private final List<ExperimentResult> results =
-            new ArrayList<>();
+    private final ExperimentResultRepository
+            experimentResultRepository;
 
-    public void addResult(ExperimentResult result) {
-        results.add(result);
+    public ExperimentResultService(
+            ExperimentResultRepository
+                    experimentResultRepository) {
+
+        this.experimentResultRepository =
+                experimentResultRepository;
     }
 
-    public List<ExperimentResult> getResults() {
-        return new ArrayList<>(results);
-    }
+    /**
+     * 実験結果をDBに保存
+     */
+    public ExperimentResult addResult(
+            ExperimentResult result) {
 
-    public void clearResults() {
-        results.clear();
-    }
+        /*
+         * 実験番号を自動設定
+         */
+        if (result.getExperimentNumber() <= 0) {
 
-    public List<ExperimentResult> getResultsByAuthMethod(
-            String authMethod) {
+            int nextExperimentNumber =
+                    getResultCount() + 1;
 
-        List<ExperimentResult> filteredResults =
-                new ArrayList<>();
-
-        for (ExperimentResult result : results) {
-
-            if (authMethod.equals(
-                    result.getAuthMethod())) {
-
-                filteredResults.add(result);
-            }
+            result.setExperimentNumber(
+                    nextExperimentNumber);
         }
 
-        return filteredResults;
+        return experimentResultRepository.save(
+                result);
     }
 
+    /**
+     * 全実験結果を取得
+     *
+     * 実験番号の昇順
+     */
+    public List<ExperimentResult> getResults() {
+
+        return experimentResultRepository
+                .findAllByOrderByExperimentNumberAsc();
+    }
+
+    /**
+     * 認証方式ごとの実験結果を取得
+     */
+    public List<ExperimentResult>
+    getResultsByAuthMethod(
+            String authMethod) {
+
+        return experimentResultRepository
+                .findByAuthMethodOrderByExperimentNumberAsc(
+                        authMethod);
+    }
+
+    /**
+     * 実験結果の総数
+     */
+    public int getResultCount() {
+
+        return (int)
+                experimentResultRepository.count();
+    }
+
+    /**
+     * 認証方式ごとの実験回数
+     */
     public int getExperimentCountByAuthMethod(
             String authMethod) {
 
-        return getResultsByAuthMethod(authMethod).size();
+        return getResultsByAuthMethod(
+                authMethod).size();
     }
 
+    /**
+     * 認証方式ごとの成功回数
+     */
     public int getSuccessCountByAuthMethod(
             String authMethod) {
 
@@ -65,6 +105,9 @@ public class ExperimentResultService {
         return successCount;
     }
 
+    /**
+     * 認証方式ごとの認証突破率
+     */
     public double getSuccessRateByAuthMethod(
             String authMethod) {
 
@@ -91,26 +134,30 @@ public class ExperimentResultService {
     public double getAverageAttemptCountByAuthMethod(
             String authMethod) {
 
-        List<ExperimentResult> filteredResults =
-                getResultsByAuthMethod(authMethod);
+        List<ExperimentResult> results =
+                getResultsByAuthMethod(
+                        authMethod);
 
-        if (filteredResults.isEmpty()) {
+        if (results.isEmpty()) {
             return 0.0;
         }
 
         long totalAttemptCount = 0;
 
-        for (ExperimentResult result :
-                filteredResults) {
+        for (ExperimentResult result : results) {
 
             totalAttemptCount +=
                     result.getAttemptCount();
         }
 
         return (double) totalAttemptCount
-                / filteredResults.size();
+                / results.size();
     }
 
+    /**
+     * 認証方式ごとの
+     * 成功時の攻撃時間の合計
+     */
     public long getSuccessAttackTimeTotalByAuthMethod(
             String authMethod) {
 
@@ -129,6 +176,10 @@ public class ExperimentResultService {
         return totalTime;
     }
 
+    /**
+     * 認証方式ごとの
+     * 平均攻撃成功時間
+     */
     public double getAverageSuccessAttackTimeByAuthMethod(
             String authMethod) {
 
@@ -146,19 +197,27 @@ public class ExperimentResultService {
                 / successCount;
     }
 
-    // ----------------------------------------
+    // ========================================
     // 全体集計
-    // ----------------------------------------
+    // ========================================
 
+    /**
+     * 全実験回数
+     */
     public int getTotalExperimentCount() {
-        return results.size();
+
+        return getResultCount();
     }
 
+    /**
+     * 全成功回数
+     */
     public int getSuccessCount() {
 
         int successCount = 0;
 
-        for (ExperimentResult result : results) {
+        for (ExperimentResult result :
+                getResults()) {
 
             if (result.isSuccess()) {
                 successCount++;
@@ -168,6 +227,9 @@ public class ExperimentResultService {
         return successCount;
     }
 
+    /**
+     * 全体の認証突破率
+     */
     public double getSuccessRate() {
 
         int totalExperimentCount =
@@ -177,18 +239,18 @@ public class ExperimentResultService {
             return 0.0;
         }
 
-        int successCount =
-                getSuccessCount();
-
-        return (double) successCount
+        return (double) getSuccessCount()
                 / totalExperimentCount
                 * 100.0;
     }
 
     /**
-     * 全認証方式の平均攻撃試行回数
+     * 全体の平均攻撃試行回数
      */
     public double getAverageAttemptCount() {
+
+        List<ExperimentResult> results =
+                getResults();
 
         if (results.isEmpty()) {
             return 0.0;
@@ -206,11 +268,15 @@ public class ExperimentResultService {
                 / results.size();
     }
 
+    /**
+     * 全体の成功時の攻撃時間の合計
+     */
     public long getSuccessAttackTimeTotal() {
 
         long totalTime = 0;
 
-        for (ExperimentResult result : results) {
+        for (ExperimentResult result :
+                getResults()) {
 
             if (result.isSuccess()) {
 
@@ -222,6 +288,9 @@ public class ExperimentResultService {
         return totalTime;
     }
 
+    /**
+     * 全体の平均攻撃成功時間
+     */
     public double getAverageSuccessAttackTime() {
 
         int successCount =
@@ -236,7 +305,60 @@ public class ExperimentResultService {
                 / successCount;
     }
 
-    public int getResultCount() {
-        return results.size();
+    // ========================================
+    // 削除処理
+    // ========================================
+
+    /**
+     * 指定したIDの実験結果を複数削除する
+     */
+    @Transactional
+    public void deleteResultsByIds(
+            List<Long> ids) {
+
+        if (ids == null || ids.isEmpty()) {
+            return;
+        }
+
+        experimentResultRepository.deleteAllById(
+                ids);
+
+        /*
+         * 削除後に実験番号を1から詰め直す
+         */
+        renumberExperiments();
+    }
+
+    /**
+     * 全実験結果を削除する
+     */
+    @Transactional
+    public void clearResults() {
+
+        experimentResultRepository.deleteAll();
+    }
+
+    /**
+     * 実験番号を1から振り直す
+     */
+    @Transactional
+    public void renumberExperiments() {
+
+        List<ExperimentResult> results =
+                experimentResultRepository
+                        .findAllByOrderByExperimentNumberAsc();
+
+        int experimentNumber = 1;
+
+        for (ExperimentResult result : results) {
+
+            result.setExperimentNumber(
+                    experimentNumber);
+
+            experimentNumber++;
+        }
+
+        experimentResultRepository.saveAll(
+                results);
     }
 }

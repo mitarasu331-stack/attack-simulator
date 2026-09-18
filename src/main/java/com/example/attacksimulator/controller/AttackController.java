@@ -1,6 +1,7 @@
 package com.example.attacksimulator.controller;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,22 +20,33 @@ public class AttackController {
 
     private final AttackService attackService;
 
-    private final ExperimentResultService experimentResultService;
+    private final ExperimentResultService
+            experimentResultService;
 
     public AttackController(
             AttackService attackService,
             ExperimentResultService experimentResultService) {
 
         this.attackService = attackService;
+
         this.experimentResultService =
                 experimentResultService;
     }
 
+    /**
+     * 攻撃実験画面
+     */
     @GetMapping("/")
     public String index() {
+
         return "attack";
     }
 
+    /**
+     * パスワード総当たり攻撃
+     *
+     * 一段階・二段階・三段階
+     */
     @PostMapping("/attack/password")
     public String passwordBruteForce(
             @RequestParam(defaultValue = "one-stage")
@@ -44,22 +56,29 @@ public class AttackController {
         LocalDateTime experimentDateTime =
                 LocalDateTime.now();
 
-        long startTime = System.nanoTime();
+        long startTime =
+                System.nanoTime();
 
         AttackResult result;
 
+        /*
+         * 認証方式によって攻撃を実行
+         */
         switch (authMethod) {
 
             case "one-stage":
-                result = attackService.executeOneStage();
+                result =
+                        attackService.executeOneStage();
                 break;
 
             case "two-stage":
-                result = attackService.executeTwoStage();
+                result =
+                        attackService.executeTwoStage();
                 break;
 
             case "three-stage":
-                result = attackService.executeThreeStage();
+                result =
+                        attackService.executeThreeStage();
                 break;
 
             default:
@@ -68,12 +87,16 @@ public class AttackController {
                         + authMethod);
         }
 
-        long endTime = System.nanoTime();
+        long endTime =
+                System.nanoTime();
 
         long attackTimeMs =
                 (endTime - startTime)
                 / 1_000_000;
 
+        /*
+         * 認証操作回数
+         */
         int operationCount;
 
         switch (authMethod) {
@@ -95,7 +118,7 @@ public class AttackController {
         }
 
         /*
-         * 認証方式ごとの最大攻撃試行回数
+         * 最大攻撃試行回数
          */
         int maxAttemptCount;
 
@@ -118,7 +141,7 @@ public class AttackController {
         }
 
         /*
-         * 認証方式ごとの認証構成
+         * 認証構成
          */
         String authenticationConfiguration;
 
@@ -147,15 +170,21 @@ public class AttackController {
         /*
          * 実験番号
          *
-         * 現在の実験結果数 + 1
+         * 現在のDB内の実験結果数 + 1
          */
         int experimentNumber =
                 experimentResultService
                         .getResultCount() + 1;
 
+        /*
+         * 攻撃によって突破した認証情報
+         */
         String credential =
                 createPasswordCredential(result);
 
+        /*
+         * 実験結果を作成
+         */
         ExperimentResult experimentResult =
                 new ExperimentResult(
                         experimentNumber,
@@ -169,9 +198,15 @@ public class AttackController {
                         attackTimeMs,
                         experimentDateTime);
 
+        /*
+         * MySQLへ保存
+         */
         experimentResultService.addResult(
                 experimentResult);
 
+        /*
+         * 結果画面へ渡すデータ
+         */
         model.addAttribute(
                 "experimentNumber",
                 experimentNumber);
@@ -223,6 +258,9 @@ public class AttackController {
         return "result";
     }
 
+    /**
+     * メールOTP総当たり攻撃
+     */
     @PostMapping("/attack/email-otp")
     public String emailOtpBruteForce(
             @RequestParam(defaultValue = "10000")
@@ -232,13 +270,15 @@ public class AttackController {
         LocalDateTime experimentDateTime =
                 LocalDateTime.now();
 
-        long startTime = System.nanoTime();
+        long startTime =
+                System.nanoTime();
 
         EmailOtpBruteForceAttack.AttackResult result =
                 attackService.executeEmailOtpBruteForce(
                         maxAttempts);
 
-        long endTime = System.nanoTime();
+        long endTime =
+                System.nanoTime();
 
         long attackTimeMs =
                 (endTime - startTime)
@@ -257,6 +297,9 @@ public class AttackController {
                 experimentResultService
                         .getResultCount() + 1;
 
+        /*
+         * 実験結果を作成
+         */
         ExperimentResult experimentResult =
                 new ExperimentResult(
                         experimentNumber,
@@ -270,9 +313,15 @@ public class AttackController {
                         attackTimeMs,
                         experimentDateTime);
 
+        /*
+         * MySQLへ保存
+         */
         experimentResultService.addResult(
                 experimentResult);
 
+        /*
+         * 結果画面へ渡すデータ
+         */
         model.addAttribute(
                 "experimentNumber",
                 experimentNumber);
@@ -316,9 +365,15 @@ public class AttackController {
         return "result";
     }
 
+    /**
+     * 実験結果一覧
+     */
     @GetMapping("/results")
     public String results(Model model) {
 
+        /*
+         * DBから全実験結果を取得
+         */
         model.addAttribute(
                 "results",
                 experimentResultService.getResults());
@@ -482,6 +537,36 @@ public class AttackController {
         return "results";
     }
 
+    /**
+     * 選択した実験結果を複数削除
+     *
+     * DBのIDを使用して削除する
+     */
+    @PostMapping("/results/delete")
+    public String deleteResults(
+            @RequestParam(
+                    name = "ids",
+                    required = false)
+            List<Long> ids) {
+
+        /*
+         * 選択された実験結果を削除
+         */
+        experimentResultService
+                .deleteResultsByIds(ids);
+
+        /*
+         * 削除後は実験番号を
+         * 1, 2, 3... と詰め直す
+         *
+         * サービス側で実行済み
+         */
+        return "redirect:/results";
+    }
+
+    /**
+     * 全実験結果を削除
+     */
     @PostMapping("/results/clear")
     public String clearResults() {
 
@@ -490,6 +575,9 @@ public class AttackController {
         return "redirect:/results";
     }
 
+    /**
+     * パスワード認証情報を文字列化
+     */
     private String createPasswordCredential(
             AttackResult result) {
 

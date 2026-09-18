@@ -17,16 +17,16 @@
         body {
             margin: 0;
             padding: 30px;
-            background-color: #f5f7fa;
+            background-color: #f4f6f8;
             color: #333;
             font-family:
+                "Segoe UI",
                 "Yu Gothic",
                 "Meiryo",
                 sans-serif;
         }
 
         .container {
-            width: 100%;
             max-width: 1500px;
             margin: 0 auto;
         }
@@ -34,148 +34,193 @@
         h1 {
             margin-bottom: 30px;
             text-align: center;
-            color: #222;
         }
 
         h2 {
-            margin-top: 35px;
-            margin-bottom: 15px;
-            padding-left: 10px;
-            border-left: 5px solid #333;
-            color: #333;
-        }
-
-        .measurement-box {
-            background-color: #ffffff;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 30px;
-            box-shadow:
-                0 2px 6px rgba(0, 0, 0, 0.08);
-        }
-
-        .measurement-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 10px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .measurement-row:last-child {
-            border-bottom: none;
-        }
-
-        .measurement-label {
-            font-weight: bold;
-            color: #555;
-        }
-
-        .measurement-value {
-            font-size: 18px;
-            font-weight: bold;
-            color: #222;
-        }
-
-        .formula-box {
-            background-color: #fafafa;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            margin-top: 40px;
-            margin-bottom: 40px;
-        }
-
-        .formula-box h2 {
             margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .section {
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow:
+                0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .section h2 {
+            border-left: 5px solid #333;
+            padding-left: 12px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns:
+                repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+        }
+
+        .summary-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 18px;
+            background: #fafafa;
+        }
+
+        .summary-title {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .summary-value {
+            font-size: 24px;
+            font-weight: bold;
         }
 
         .formula {
-            margin: 12px 0;
-            padding: 12px;
-            background-color: #fff;
-            border-left: 4px solid #777;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f1f3f5;
+            border-radius: 6px;
+            line-height: 1.8;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .table-header h2 {
+            margin-bottom: 0;
+        }
+
+        .button-area {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button,
+        .back-button {
+            border: none;
+            border-radius: 6px;
+            padding: 10px 18px;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .delete-button {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .delete-button:hover {
+            background-color: #bb2d3b;
+        }
+
+        .clear-button {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .clear-button:hover {
+            background-color: #5c636a;
+        }
+
+        .back-button {
+            background-color: #333;
+            color: white;
+        }
+
+        .back-button:hover {
+            background-color: #555;
         }
 
         .table-wrapper {
             width: 100%;
             overflow-x: auto;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-shadow:
-                0 2px 6px rgba(0, 0, 0, 0.08);
         }
 
         table {
             width: 100%;
-            min-width: 1400px;
+            min-width: 1300px;
             border-collapse: collapse;
+            background-color: white;
         }
 
         th,
         td {
-            padding: 12px 10px;
             border: 1px solid #ddd;
+            padding: 10px;
             text-align: center;
             white-space: nowrap;
         }
 
         th {
-            background-color: #333;
-            color: #fff;
-            font-weight: bold;
+            background-color: #343a40;
+            color: white;
         }
 
-        tr:nth-child(even) td {
-            background-color: #f8f8f8;
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
         }
 
-        .success {
+        tr:hover {
+            background-color: #eef2f5;
+        }
+
+        .checkbox-cell {
+            width: 50px;
+        }
+
+        .result-success {
             color: #198754;
             font-weight: bold;
         }
 
-        .failure {
+        .result-failure {
             color: #dc3545;
             font-weight: bold;
         }
 
-        .button-area {
+        .empty-message {
+            text-align: center;
+            padding: 40px;
+            color: #777;
+        }
+
+        .select-area {
             display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 30px;
-            margin-bottom: 30px;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
         }
 
-        button,
-        .back-button {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 6px;
-            font-size: 15px;
+        .select-area input {
+            width: 18px;
+            height: 18px;
             cursor: pointer;
-            text-decoration: none;
         }
 
-        .clear-button {
-            background-color: #dc3545;
-            color: #fff;
+        .row-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
         }
 
-        .clear-button:hover {
-            background-color: #bb2d3b;
-        }
-
-        .back-button {
-            background-color: #333;
-            color: #fff;
-        }
-
-        .back-button:hover {
-            background-color: #555;
+        .danger-zone {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
         }
 
     </style>
@@ -189,659 +234,987 @@
     <h1>実験結果一覧</h1>
 
 
-    <!-- ======================================== -->
+    <!-- ====================================== -->
     <!-- 一段階認証 -->
-    <!-- ======================================== -->
+    <!-- ====================================== -->
 
-    <h2>一段階認証</h2>
+    <div class="section">
 
-    <div class="measurement-box">
+        <h2>一段階認証</h2>
 
-        <div class="measurement-row">
-            <span class="measurement-label">
-                総実験回数
-            </span>
+        <div class="summary-grid">
 
-            <span class="measurement-value">
-                <span th:text="${oneStageExperimentCount}">
+            <div class="summary-card">
+
+                <div class="summary-title">
+                    総実験回数
+                </div>
+
+                <div class="summary-value"
+                     th:text="${oneStageExperimentCount}">
                     0
-                </span>
-                回
-            </span>
-        </div>
+                </div>
+
+            </div>
 
 
-        <div class="measurement-row">
-            <span class="measurement-label">
-                成功回数
-            </span>
+            <div class="summary-card">
 
-            <span class="measurement-value">
-                <span th:text="${oneStageSuccessCount}">
+                <div class="summary-title">
+                    成功回数
+                </div>
+
+                <div class="summary-value"
+                     th:text="${oneStageSuccessCount}">
                     0
-                </span>
-                回
-            </span>
+                </div>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <div class="summary-title">
+                    認証突破率
+                </div>
+
+                <div class="summary-value">
+
+                    <span
+                        th:text="${#numbers.formatDecimal(
+                            oneStageSuccessRate,
+                            1,
+                            2)}">
+                        0.00
+                    </span>
+
+                    %
+
+                </div>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <div class="summary-title">
+                    平均攻撃試行回数
+                </div>
+
+                <div class="summary-value">
+
+                    <span
+                        th:text="${#numbers.formatDecimal(
+                            oneStageAverageAttemptCount,
+                            1,
+                            2)}">
+                        0.00
+                    </span>
+
+                    回
+
+                </div>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <div class="summary-title">
+                    成功時の攻撃時間の合計
+                </div>
+
+                <div class="summary-value">
+
+                    <span
+                        th:text="${oneStageSuccessAttackTimeTotal}">
+                        0
+                    </span>
+
+                    ms
+
+                </div>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <div class="summary-title">
+                    平均攻撃成功時間
+                </div>
+
+                <div class="summary-value">
+
+                    <span
+                        th:text="${#numbers.formatDecimal(
+                            oneStageAverageSuccessAttackTime,
+                            1,
+                            2)}">
+                        0.00
+                    </span>
+
+                    ms
+
+                </div>
+
+            </div>
+
         </div>
 
 
-        <div class="measurement-row">
-            <span class="measurement-label">
-                認証突破率
-            </span>
+        <div class="formula">
 
-            <span class="measurement-value">
+            <strong>計算式</strong><br>
 
-                <span th:text="${#numbers.formatDecimal(
-                    oneStageSuccessRate,
-                    1,
-                    2)}">
-                    0.00
-                </span>
+            認証突破率 =
+            成功回数 ÷ 総実験回数 × 100<br>
 
-                %
-            </span>
-        </div>
+            平均攻撃試行回数 =
+            実際の攻撃試行回数の合計
+            ÷ 総実験回数<br>
 
+            平均攻撃成功時間 =
+            成功時の攻撃時間の合計
+            ÷ 成功回数
 
-        <div class="measurement-row">
-            <span class="measurement-label">
-                平均攻撃試行回数
-            </span>
-
-            <span class="measurement-value">
-
-                <span th:text="${#numbers.formatDecimal(
-                    oneStageAverageAttemptCount,
-                    1,
-                    2)}">
-                    0.00
-                </span>
-
-                回
-            </span>
-        </div>
-
-
-        <div class="measurement-row">
-            <span class="measurement-label">
-                成功時の攻撃時間の合計
-            </span>
-
-            <span class="measurement-value">
-
-                <span th:text="${oneStageSuccessAttackTimeTotal}">
-                    0
-                </span>
-
-                ms
-            </span>
-        </div>
-
-
-        <div class="measurement-row">
-            <span class="measurement-label">
-                平均攻撃成功時間
-            </span>
-
-            <span class="measurement-value">
-
-                <span th:text="${#numbers.formatDecimal(
-                    oneStageAverageSuccessAttackTime,
-                    1,
-                    2)}">
-                    0.00
-                </span>
-
-                ms
-            </span>
         </div>
 
     </div>
 
 
-    <!-- ======================================== -->
+    <!-- ====================================== -->
     <!-- 二段階認証 -->
-    <!-- ======================================== -->
+    <!-- ====================================== -->
 
-    <h2>二段階認証</h2>
+    <div class="section">
 
-    <div class="measurement-box">
+        <h2>二段階認証</h2>
 
-        <div class="measurement-row">
-            <span class="measurement-label">
-                総実験回数
-            </span>
+        <div class="summary-grid">
 
-            <span class="measurement-value">
+            <div class="summary-card">
 
-                <span th:text="${twoStageExperimentCount}">
+                <div class="summary-title">
+                    総実験回数
+                </div>
+
+                <div class="summary-value"
+                     th:text="${twoStageExperimentCount}">
                     0
-                </span>
+                </div>
 
-                回
-            </span>
-        </div>
+            </div>
 
 
-        <div class="measurement-row">
-            <span class="measurement-label">
-                成功回数
-            </span>
+            <div class="summary-card">
 
-            <span class="measurement-value">
+                <div class="summary-title">
+                    成功回数
+                </div>
 
-                <span th:text="${twoStageSuccessCount}">
+                <div class="summary-value"
+                     th:text="${twoStageSuccessCount}">
                     0
-                </span>
+                </div>
 
-                回
-            </span>
+            </div>
+
+
+            <div class="summary-card">
+
+                <div class="summary-title">
+                    認証突破率
+                </div>
+
+                <div class="summary-value">
+
+                    <span
+                        th:text="${#numbers.formatDecimal(
+                            twoStageSuccessRate,
+                            1,
+                            2)}">
+                        0.00
+                    </span>
+
+                    %
+
+                </div>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <div class="summary-title">
+                    平均攻撃試行回数
+                </div>
+
+                <div class="summary-value">
+
+                    <span
+                        th:text="${#numbers.formatDecimal(
+                            twoStageAverageAttemptCount,
+                            1,
+                            2)}">
+                        0.00
+                    </span>
+
+                    回
+
+                </div>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <div class="summary-title">
+                    成功時の攻撃時間の合計
+                </div>
+
+                <div class="summary-value">
+
+                    <span
+                        th:text="${twoStageSuccessAttackTimeTotal}">
+                        0
+                    </span>
+
+                    ms
+
+                </div>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <div class="summary-title">
+                    平均攻撃成功時間
+                </div>
+
+                <div class="summary-value">
+
+                    <span
+                        th:text="${#numbers.formatDecimal(
+                            twoStageAverageSuccessAttackTime,
+                            1,
+                            2)}">
+                        0.00
+                    </span>
+
+                    ms
+
+                </div>
+
+            </div>
+
         </div>
 
 
-        <div class="measurement-row">
-            <span class="measurement-label">
-                認証突破率
-            </span>
+        <div class="formula">
 
-            <span class="measurement-value">
+            <strong>計算式</strong><br>
 
-                <span th:text="${#numbers.formatDecimal(
-                    twoStageSuccessRate,
-                    1,
-                    2)}">
-                    0.00
-                </span>
+            認証突破率 =
+            成功回数 ÷ 総実験回数 × 100<br>
 
-                %
-            </span>
-        </div>
+            平均攻撃試行回数 =
+            実際の攻撃試行回数の合計
+            ÷ 総実験回数<br>
 
+            平均攻撃成功時間 =
+            成功時の攻撃時間の合計
+            ÷ 成功回数
 
-        <div class="measurement-row">
-            <span class="measurement-label">
-                平均攻撃試行回数
-            </span>
-
-            <span class="measurement-value">
-
-                <span th:text="${#numbers.formatDecimal(
-                    twoStageAverageAttemptCount,
-                    1,
-                    2)}">
-                    0.00
-                </span>
-
-                回
-            </span>
-        </div>
-
-
-        <div class="measurement-row">
-            <span class="measurement-label">
-                成功時の攻撃時間の合計
-            </span>
-
-            <span class="measurement-value">
-
-                <span th:text="${twoStageSuccessAttackTimeTotal}">
-                    0
-                </span>
-
-                ms
-            </span>
-        </div>
-
-
-        <div class="measurement-row">
-            <span class="measurement-label">
-                平均攻撃成功時間
-            </span>
-
-            <span class="measurement-value">
-
-                <span th:text="${#numbers.formatDecimal(
-                    twoStageAverageSuccessAttackTime,
-                    1,
-                    2)}">
-                    0.00
-                </span>
-
-                ms
-            </span>
         </div>
 
     </div>
 
 
-    <!-- ======================================== -->
+    <!-- ====================================== -->
     <!-- 三段階認証 -->
-    <!-- ======================================== -->
+    <!-- ====================================== -->
 
-    <h2>三段階認証</h2>
+    <div class="section">
 
-    <div class="measurement-box">
+        <h2>三段階認証</h2>
 
-        <div class="measurement-row">
-            <span class="measurement-label">
-                総実験回数
-            </span>
+        <div class="summary-grid">
 
-            <span class="measurement-value">
+            <div class="summary-card">
 
-                <span th:text="${threeStageExperimentCount}">
+                <div class="summary-title">
+                    総実験回数
+                </div>
+
+                <div class="summary-value"
+                     th:text="${threeStageExperimentCount}">
                     0
-                </span>
+                </div>
 
-                回
-            </span>
-        </div>
+            </div>
 
 
-        <div class="measurement-row">
-            <span class="measurement-label">
-                成功回数
-            </span>
+            <div class="summary-card">
 
-            <span class="measurement-value">
+                <div class="summary-title">
+                    成功回数
+                </div>
 
-                <span th:text="${threeStageSuccessCount}">
+                <div class="summary-value"
+                     th:text="${threeStageSuccessCount}">
                     0
-                </span>
+                </div>
 
-                回
-            </span>
+            </div>
+
+
+            <div class="summary-card">
+
+                <div class="summary-title">
+                    認証突破率
+                </div>
+
+                <div class="summary-value">
+
+                    <span
+                        th:text="${#numbers.formatDecimal(
+                            threeStageSuccessRate,
+                            1,
+                            2)}">
+                        0.00
+                    </span>
+
+                    %
+
+                </div>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <div class="summary-title">
+                    平均攻撃試行回数
+                </div>
+
+                <div class="summary-value">
+
+                    <span
+                        th:text="${#numbers.formatDecimal(
+                            threeStageAverageAttemptCount,
+                            1,
+                            2)}">
+                        0.00
+                    </span>
+
+                    回
+
+                </div>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <div class="summary-title">
+                    成功時の攻撃時間の合計
+                </div>
+
+                <div class="summary-value">
+
+                    <span
+                        th:text="${threeStageSuccessAttackTimeTotal}">
+                        0
+                    </span>
+
+                    ms
+
+                </div>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <div class="summary-title">
+                    平均攻撃成功時間
+                </div>
+
+                <div class="summary-value">
+
+                    <span
+                        th:text="${#numbers.formatDecimal(
+                            threeStageAverageSuccessAttackTime,
+                            1,
+                            2)}">
+                        0.00
+                    </span>
+
+                    ms
+
+                </div>
+
+            </div>
+
         </div>
 
 
-        <div class="measurement-row">
-            <span class="measurement-label">
-                認証突破率
-            </span>
+        <div class="formula">
 
-            <span class="measurement-value">
+            <strong>計算式</strong><br>
 
-                <span th:text="${#numbers.formatDecimal(
-                    threeStageSuccessRate,
-                    1,
-                    2)}">
-                    0.00
-                </span>
+            認証突破率 =
+            成功回数 ÷ 総実験回数 × 100<br>
 
-                %
-            </span>
-        </div>
+            平均攻撃試行回数 =
+            実際の攻撃試行回数の合計
+            ÷ 総実験回数<br>
 
+            平均攻撃成功時間 =
+            成功時の攻撃時間の合計
+            ÷ 成功回数
 
-        <div class="measurement-row">
-            <span class="measurement-label">
-                平均攻撃試行回数
-            </span>
-
-            <span class="measurement-value">
-
-                <span th:text="${#numbers.formatDecimal(
-                    threeStageAverageAttemptCount,
-                    1,
-                    2)}">
-                    0.00
-                </span>
-
-                回
-            </span>
-        </div>
-
-
-        <div class="measurement-row">
-            <span class="measurement-label">
-                成功時の攻撃時間の合計
-            </span>
-
-            <span class="measurement-value">
-
-                <span th:text="${threeStageSuccessAttackTimeTotal}">
-                    0
-                </span>
-
-                ms
-            </span>
-        </div>
-
-
-        <div class="measurement-row">
-            <span class="measurement-label">
-                平均攻撃成功時間
-            </span>
-
-            <span class="measurement-value">
-
-                <span th:text="${#numbers.formatDecimal(
-                    threeStageAverageSuccessAttackTime,
-                    1,
-                    2)}">
-                    0.00
-                </span>
-
-                ms
-            </span>
         </div>
 
     </div>
 
 
-    <!-- ======================================== -->
+    <!-- ====================================== -->
     <!-- メールOTP -->
-    <!-- ======================================== -->
+    <!-- ====================================== -->
 
-    <h2>メールOTP認証</h2>
+    <div class="section">
 
-    <div class="measurement-box">
+        <h2>メールOTP認証</h2>
 
-        <div class="measurement-row">
-            <span class="measurement-label">
-                総実験回数
-            </span>
+        <div class="summary-grid">
 
-            <span class="measurement-value">
+            <div class="summary-card">
 
-                <span th:text="${emailOtpExperimentCount}">
+                <div class="summary-title">
+                    総実験回数
+                </div>
+
+                <div class="summary-value"
+                     th:text="${emailOtpExperimentCount}">
                     0
-                </span>
+                </div>
 
-                回
-            </span>
-        </div>
+            </div>
 
 
-        <div class="measurement-row">
-            <span class="measurement-label">
-                成功回数
-            </span>
+            <div class="summary-card">
 
-            <span class="measurement-value">
+                <div class="summary-title">
+                    成功回数
+                </div>
 
-                <span th:text="${emailOtpSuccessCount}">
+                <div class="summary-value"
+                     th:text="${emailOtpSuccessCount}">
                     0
-                </span>
+                </div>
 
-                回
-            </span>
+            </div>
+
+
+            <div class="summary-card">
+
+                <div class="summary-title">
+                    認証突破率
+                </div>
+
+                <div class="summary-value">
+
+                    <span
+                        th:text="${#numbers.formatDecimal(
+                            emailOtpSuccessRate,
+                            1,
+                            2)}">
+                        0.00
+                    </span>
+
+                    %
+
+                </div>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <div class="summary-title">
+                    平均攻撃試行回数
+                </div>
+
+                <div class="summary-value">
+
+                    <span
+                        th:text="${#numbers.formatDecimal(
+                            emailOtpAverageAttemptCount,
+                            1,
+                            2)}">
+                        0.00
+                    </span>
+
+                    回
+
+                </div>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <div class="summary-title">
+                    成功時の攻撃時間の合計
+                </div>
+
+                <div class="summary-value">
+
+                    <span
+                        th:text="${emailOtpSuccessAttackTimeTotal}">
+                        0
+                    </span>
+
+                    ms
+
+                </div>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <div class="summary-title">
+                    平均攻撃成功時間
+                </div>
+
+                <div class="summary-value">
+
+                    <span
+                        th:text="${#numbers.formatDecimal(
+                            emailOtpAverageSuccessAttackTime,
+                            1,
+                            2)}">
+                        0.00
+                    </span>
+
+                    ms
+
+                </div>
+
+            </div>
+
         </div>
 
 
-        <div class="measurement-row">
-            <span class="measurement-label">
-                認証突破率
-            </span>
+        <div class="formula">
 
-            <span class="measurement-value">
+            <strong>計算式</strong><br>
 
-                <span th:text="${#numbers.formatDecimal(
-                    emailOtpSuccessRate,
-                    1,
-                    2)}">
-                    0.00
-                </span>
+            認証突破率 =
+            成功回数 ÷ 総実験回数 × 100<br>
 
-                %
-            </span>
-        </div>
+            平均攻撃試行回数 =
+            実際の攻撃試行回数の合計
+            ÷ 総実験回数<br>
 
+            平均攻撃成功時間 =
+            成功時の攻撃時間の合計
+            ÷ 成功回数
 
-        <div class="measurement-row">
-            <span class="measurement-label">
-                平均攻撃試行回数
-            </span>
-
-            <span class="measurement-value">
-
-                <span th:text="${#numbers.formatDecimal(
-                    emailOtpAverageAttemptCount,
-                    1,
-                    2)}">
-                    0.00
-                </span>
-
-                回
-            </span>
-        </div>
-
-
-        <div class="measurement-row">
-            <span class="measurement-label">
-                成功時の攻撃時間の合計
-            </span>
-
-            <span class="measurement-value">
-
-                <span th:text="${emailOtpSuccessAttackTimeTotal}">
-                    0
-                </span>
-
-                ms
-            </span>
-        </div>
-
-
-        <div class="measurement-row">
-            <span class="measurement-label">
-                平均攻撃成功時間
-            </span>
-
-            <span class="measurement-value">
-
-                <span th:text="${#numbers.formatDecimal(
-                    emailOtpAverageSuccessAttackTime,
-                    1,
-                    2)}">
-                    0.00
-                </span>
-
-                ms
-            </span>
         </div>
 
     </div>
 
 
-    <!-- ======================================== -->
-    <!-- 計算式 -->
-    <!-- ======================================== -->
+    <!-- ====================================== -->
+    <!-- 実験結果一覧 -->
+    <!-- ====================================== -->
 
-    <div class="formula-box">
+    <div class="section">
 
-        <h2>計算式</h2>
+        <div class="table-header">
 
-        <div class="formula">
-            <strong>認証突破率（%）</strong>
-            ＝ 成功回数 ÷ 総実験回数 × 100
+            <h2>実験結果</h2>
+
+            <div class="button-area">
+
+                <a href="/"
+                   class="back-button">
+                    実験画面へ戻る
+                </a>
+
+            </div>
+
         </div>
 
-        <div class="formula">
-            <strong>平均攻撃試行回数</strong>
-            ＝ 実際の攻撃試行回数の合計 ÷ 総実験回数
-        </div>
 
-        <div class="formula">
-            <strong>平均攻撃成功時間（ms）</strong>
-            ＝ 成功時の攻撃時間の合計 ÷ 成功回数
-        </div>
+        <!-- ================================== -->
+        <!-- 複数選択削除フォーム -->
+        <!-- ================================== -->
 
-    </div>
+        <form th:action="@{/results/delete}"
+              method="post"
+              onsubmit="return confirmDelete();">
 
 
-    <!-- ======================================== -->
-    <!-- 個別実験結果 -->
-    <!-- ======================================== -->
+            <div class="table-header">
 
-    <h2>個別実験結果</h2>
+                <div class="select-area">
 
-    <div class="table-wrapper">
+                    <input
+                        type="checkbox"
+                        id="selectAll"
+                        onchange="toggleAll(this)">
 
-        <table>
+                    <label for="selectAll">
+                        全選択
+                    </label>
 
-            <thead>
-
-                <tr>
-
-                    <th>実験番号</th>
-
-                    <th>実験日時</th>
-
-                    <th>認証方式</th>
-
-                    <th>認証構成</th>
-
-                    <th>認証操作回数</th>
-
-                    <th>最大攻撃試行回数</th>
-
-                    <th>実際の攻撃試行回数</th>
-
-                    <th>攻撃時間</th>
-
-                    <th>結果</th>
-
-                    <th>突破した認証情報</th>
-
-                </tr>
-
-            </thead>
+                </div>
 
 
-            <tbody>
+                <div class="button-area">
 
-                <tr th:each="result : ${results}">
+                    <button
+                        type="submit"
+                        class="delete-button">
 
-                    <!-- 実験番号 -->
-                    <td th:text="${result.experimentNumber}">
-                        1
-                    </td>
+                        選択した実験結果を削除
 
+                    </button>
 
-                    <!-- 実験日時 -->
-                    <td th:text="${result.experimentDateTime}">
-                        2026-09-17T10:00
-                    </td>
+                </div>
 
-
-                    <!-- 認証方式 -->
-                    <td th:text="${result.authMethod}">
-                        one-stage
-                    </td>
+            </div>
 
 
-                    <!-- 認証構成 -->
-                    <td th:text="${result.authenticationConfiguration}">
-                        ID + Password
-                    </td>
+            <div class="table-wrapper">
+
+                <table>
+
+                    <thead>
+
+                    <tr>
+
+                        <th class="checkbox-cell">
+                            選択
+                        </th>
+
+                        <th>
+                            実験番号
+                        </th>
+
+                        <th>
+                            実験日時
+                        </th>
+
+                        <th>
+                            認証方式
+                        </th>
+
+                        <th>
+                            認証構成
+                        </th>
+
+                        <th>
+                            認証操作回数
+                        </th>
+
+                        <th>
+                            最大攻撃試行回数
+                        </th>
+
+                        <th>
+                            実際の攻撃試行回数
+                        </th>
+
+                        <th>
+                            攻撃時間
+                        </th>
+
+                        <th>
+                            結果
+                        </th>
+
+                        <th>
+                            突破した認証情報
+                        </th>
+
+                    </tr>
+
+                    </thead>
 
 
-                    <!-- 認証操作回数 -->
-                    <td th:text="${result.operationCount}">
-                        3
-                    </td>
+                    <tbody>
+
+                    <!-- 実験結果が存在する場合 -->
+
+                    <tr th:each="result : ${results}">
+
+                        <td>
+
+                            <input
+                                type="checkbox"
+                                name="ids"
+                                class="row-checkbox"
+                                th:value="${result.id}">
+
+                        </td>
 
 
-                    <!-- 最大攻撃試行回数 -->
-                    <td th:text="${result.maxAttemptCount}">
-                        10000
-                    </td>
+                        <td
+                            th:text="${result.experimentNumber}">
+                            1
+                        </td>
 
 
-                    <!-- 実際の攻撃試行回数 -->
-                    <td th:text="${result.attemptCount}">
-                        10000
-                    </td>
+                        <td
+                            th:text="${result.experimentDateTime}">
+                            -
+                        </td>
 
 
-                    <!-- 攻撃時間 -->
-                    <td>
+                        <td
+                            th:switch="${result.authMethod}">
 
-                        <span th:text="${result.attackTimeMs}">
+                            <span th:case="'one-stage'">
+                                一段階認証
+                            </span>
+
+                            <span th:case="'two-stage'">
+                                二段階認証
+                            </span>
+
+                            <span th:case="'three-stage'">
+                                三段階認証
+                            </span>
+
+                            <span th:case="'email-otp'">
+                                メールOTP認証
+                            </span>
+
+                            <span th:case="*"
+                                  th:text="${result.authMethod}">
+                            </span>
+
+                        </td>
+
+
+                        <td
+                            th:text="${result.authenticationConfiguration}">
+                            -
+                        </td>
+
+
+                        <td
+                            th:text="${result.operationCount}">
                             0
-                        </span>
-
-                        ms
-
-                    </td>
+                        </td>
 
 
-                    <!-- 結果 -->
-                    <td>
-
-                        <span
-                            th:if="${result.success}"
-                            class="success">
-                            成功
-                        </span>
-
-                        <span
-                            th:unless="${result.success}"
-                            class="failure">
-                            失敗
-                        </span>
-
-                    </td>
+                        <td
+                            th:text="${result.maxAttemptCount}">
+                            0
+                        </td>
 
 
-                    <!-- 突破した認証情報 -->
-                    <td th:text="${result.credential}">
-                        Password=9999
-                    </td>
-
-                </tr>
+                        <td
+                            th:text="${result.attemptCount}">
+                            0
+                        </td>
 
 
-                <!-- 実験結果が0件の場合 -->
-                <tr th:if="${#lists.isEmpty(results)}">
+                        <td>
 
-                    <td colspan="10">
-                        まだ実験結果がありません。
-                    </td>
+                            <span
+                                th:text="${result.attackTimeMs}">
+                                0
+                            </span>
 
-                </tr>
+                            ms
 
-            </tbody>
-
-        </table>
-
-    </div>
+                        </td>
 
 
-    <!-- ======================================== -->
-    <!-- ボタン -->
-    <!-- ======================================== -->
+                        <td>
 
-    <div class="button-area">
+                            <span
+                                th:if="${result.success}"
+                                class="result-success">
+                                成功
+                            </span>
 
-        <form
-            th:action="@{/results/clear}"
-            method="post">
+                            <span
+                                th:unless="${result.success}"
+                                class="result-failure">
+                                失敗
+                            </span>
 
-            <button
-                type="submit"
-                class="clear-button">
+                        </td>
 
-                実験結果を削除
 
-            </button>
+                        <td
+                            th:text="${result.credential}">
+                            -
+                        </td>
+
+                    </tr>
+
+
+                    <!-- 結果が0件の場合 -->
+
+                    <tr th:if="${#lists.isEmpty(results)}">
+
+                        <td colspan="11"
+                            class="empty-message">
+
+                            実験結果はありません。
+
+                        </td>
+
+                    </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
 
         </form>
 
 
-        <a
-            th:href="@{/}"
-            class="back-button">
+        <!-- ================================== -->
+        <!-- 全件削除 -->
+        <!-- ================================== -->
 
-            攻撃実験画面に戻る
+        <div class="danger-zone"
+             th:if="${not #lists.isEmpty(results)}">
 
-        </a>
+            <form
+                th:action="@{/results/clear}"
+                method="post"
+                onsubmit="return confirmClearAll();">
+
+                <button
+                    type="submit"
+                    class="clear-button">
+
+                    実験結果をすべて削除
+
+                </button>
+
+            </form>
+
+        </div>
 
     </div>
 
 </div>
+
+
+<script>
+
+    /**
+     * 全選択・全解除
+     */
+    function toggleAll(source) {
+
+        const checkboxes =
+            document.querySelectorAll(
+                ".row-checkbox");
+
+        checkboxes.forEach(
+            function (checkbox) {
+
+                checkbox.checked =
+                    source.checked;
+            }
+        );
+    }
+
+
+    /**
+     * 個別チェックボックスの状態から
+     * 「全選択」の状態を更新
+     */
+    document.addEventListener(
+        "change",
+        function (event) {
+
+            if (!event.target.classList.contains(
+                    "row-checkbox")) {
+
+                return;
+            }
+
+            const checkboxes =
+                document.querySelectorAll(
+                    ".row-checkbox");
+
+            const checked =
+                document.querySelectorAll(
+                    ".row-checkbox:checked");
+
+            const selectAll =
+                document.getElementById(
+                    "selectAll");
+
+            if (checkboxes.length === 0) {
+
+                selectAll.checked = false;
+
+                return;
+            }
+
+            selectAll.checked =
+                checkboxes.length ===
+                checked.length;
+        }
+    );
+
+
+    /**
+     * 選択削除時の確認
+     */
+    function confirmDelete() {
+
+        const checked =
+            document.querySelectorAll(
+                ".row-checkbox:checked");
+
+        if (checked.length === 0) {
+
+            alert(
+                "削除する実験結果を選択してください。");
+
+            return false;
+        }
+
+        return confirm(
+            checked.length
+            + "件の実験結果を削除します。\n"
+            + "よろしいですか？"
+        );
+    }
+
+
+    /**
+     * 全件削除時の確認
+     */
+    function confirmClearAll() {
+
+        return confirm(
+            "すべての実験結果を削除します。\n"
+            + "この操作は元に戻せません。\n"
+            + "本当に削除しますか？"
+        );
+    }
+
+</script>
 
 </body>
 
