@@ -102,7 +102,6 @@ public class AttackController {
             experimentResultService.addResult(
                     experimentNumber,
                     authMethod,
-                    3,
                     "ID + Password",
                     maxAttempts,
                     result.getAttemptCount(),
@@ -184,7 +183,6 @@ public class AttackController {
             MultiStagePasswordBruteForceAttack
                     .AttackResult result;
 
-            int operationCount;
 
             int maxAttemptCount;
 
@@ -199,7 +197,6 @@ public class AttackController {
                                 .executeOneStage(
                                         username);
 
-                operationCount = 3;
 
                 maxAttemptCount = 10000;
 
@@ -214,7 +211,6 @@ public class AttackController {
                                 .executeTwoStage(
                                         username);
 
-                operationCount = 5;
 
                 maxAttemptCount = 20000;
 
@@ -229,7 +225,6 @@ public class AttackController {
                                 .executeThreeStage(
                                         username);
 
-                operationCount = 7;
 
                 maxAttemptCount = 30000;
 
@@ -259,7 +254,6 @@ public class AttackController {
             experimentResultService.addResult(
                     experimentNumber,
                     authMethod,
-                    operationCount,
                     configuration,
                     maxAttemptCount,
                     result.getTotalAttempts(),
@@ -347,7 +341,6 @@ public class AttackController {
             FactorAuthenticationAttack
                     .FactorAttackResult result;
 
-            int operationCount;
 
             int maxAttemptCount;
 
@@ -363,7 +356,6 @@ public class AttackController {
                                 .executeOneFactorPassword(
                                         username);
 
-                operationCount = 3;
 
                 maxAttemptCount = 10000;
 
@@ -379,7 +371,6 @@ public class AttackController {
                                 .executeOneFactorEmailOtp(
                                         maxAttempts);
 
-                operationCount = 3;
 
                 maxAttemptCount = maxAttempts;
 
@@ -397,7 +388,6 @@ public class AttackController {
                                         username,
                                         maxAttempts);
 
-                operationCount = 5;
 
                 maxAttemptCount =
                         10000 + maxAttempts;
@@ -424,7 +414,6 @@ public class AttackController {
             experimentResultService.addResult(
                     experimentNumber,
                     result.getAuthMethod(),
-                    operationCount,
                     result.getAuthenticationConfiguration(),
                     maxAttemptCount,
                     result.getAttemptCount(),

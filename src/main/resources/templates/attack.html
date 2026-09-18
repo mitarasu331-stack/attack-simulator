@@ -311,19 +311,6 @@
 
 
     <!-- ================================================== -->
-    <!-- 認証操作回数 -->
-    <!-- ================================================== -->
-
-    <div
-        id="operationCount"
-        class="operation-count">
-
-        認証操作回数：3回
-
-    </div>
-
-
-    <!-- ================================================== -->
     <!-- Email OTP最大試行回数 -->
     <!-- ================================================== -->
 
@@ -476,9 +463,6 @@
             description.innerHTML =
                 "ID + Passwordによる一段階認証です。";
 
-            operationCount.textContent =
-                "認証操作回数：3回";
-
             otpArea.style.display =
                 "none";
 
@@ -491,41 +475,26 @@
         /*
          * 二段階認証
          */
-        else if (authMethod === "two-stage") {
+		 else if (authMethod === "two-stage") {
+		     description.textContent =
+		         "ID + Password → Password2 の二段階認証";
 
-            description.innerHTML =
-                "ID + Password → Password2による二段階認証です。";
+		     otpArea.style.display = "none";
 
-            operationCount.textContent =
-                "認証操作回数：5回";
-
-            otpArea.style.display =
-                "none";
-
-            attackForm.action =
-                "/attack/password";
-
-        }
-
+		     attackForm.action = "/attack/multi-stage";
+		 }
 
         /*
          * 三段階認証
          */
-        else if (authMethod === "three-stage") {
+		 else if (authMethod === "three-stage") {
+		     description.textContent =
+		         "ID + Password → Password2 → Password3 の三段階認証";
 
-            description.innerHTML =
-                "ID + Password → Password2 → Password3による三段階認証です。";
+		     otpArea.style.display = "none";
 
-            operationCount.textContent =
-                "認証操作回数：7回";
-
-            otpArea.style.display =
-                "none";
-
-            attackForm.action =
-                "/attack/password";
-
-        }
+		     attackForm.action = "/attack/multi-stage";
+		 }
 
 
         /*
@@ -537,9 +506,6 @@
 
             description.innerHTML =
                 "ID + Passwordによる一要素認証です。";
-
-            operationCount.textContent =
-                "認証操作回数：3回";
 
             otpArea.style.display =
                 "none";
@@ -560,9 +526,6 @@
             description.innerHTML =
                 "ID + Email OTPによる一要素認証です。";
 
-            operationCount.textContent =
-                "認証操作回数：3回";
-
             otpArea.style.display =
                 "block";
 
@@ -581,9 +544,6 @@
 
             description.innerHTML =
                 "ID + Password → Email OTPによる二要素認証です。";
-
-            operationCount.textContent =
-                "認証操作回数：5回";
 
             otpArea.style.display =
                 "block";

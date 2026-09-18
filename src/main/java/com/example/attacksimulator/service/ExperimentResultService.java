@@ -55,7 +55,6 @@ public class ExperimentResultService {
     public ExperimentResult addResult(
             int experimentNumber,
             String authMethod,
-            int operationCount,
             String authenticationConfiguration,
             int maxAttemptCount,
             int attemptCount,
@@ -71,9 +70,6 @@ public class ExperimentResultService {
 
         result.setAuthMethod(
                 authMethod);
-
-        result.setOperationCount(
-                operationCount);
 
         result.setAuthenticationConfiguration(
                 authenticationConfiguration);

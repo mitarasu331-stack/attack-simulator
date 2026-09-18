@@ -33,12 +33,6 @@ public class ExperimentResult {
     private String authMethod;
 
     /**
-     * 認証操作回数
-     */
-    @Column(name = "operation_count")
-    private int operationCount;
-
-    /**
      * 認証構成
      */
     @Column(name = "authentication_configuration")
@@ -103,7 +97,6 @@ public class ExperimentResult {
 
         this.experimentNumber = experimentNumber;
         this.authMethod = authMethod;
-        this.operationCount = operationCount;
         this.authenticationConfiguration =
                 authenticationConfiguration;
         this.maxAttemptCount = maxAttemptCount;
@@ -140,17 +133,6 @@ public class ExperimentResult {
 
     public void setAuthMethod(String authMethod) {
         this.authMethod = authMethod;
-    }
-
-    public int getOperationCount() {
-        return operationCount;
-    }
-
-    public void setOperationCount(
-            int operationCount) {
-
-        this.operationCount =
-                operationCount;
     }
 
     public String getAuthenticationConfiguration() {
