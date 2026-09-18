@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.example.attacksimulator.attack.EmailOtpBruteForceAttack;
+import com.example.attacksimulator.attack.FactorAuthenticationAttack.FactorAttackResult;
 import com.example.attacksimulator.attack.MultiStagePasswordBruteForceAttack.AttackResult;
 import com.example.attacksimulator.model.ExperimentResult;
 import com.example.attacksimulator.service.AttackService;
@@ -27,7 +27,8 @@ public class AttackController {
             AttackService attackService,
             ExperimentResultService experimentResultService) {
 
-        this.attackService = attackService;
+        this.attackService =
+                attackService;
 
         this.experimentResultService =
                 experimentResultService;
@@ -43,14 +44,22 @@ public class AttackController {
     }
 
     /**
-     * パスワード総当たり攻撃
+     * 一段階・二段階・三段階認証
      *
-     * 一段階・二段階・三段階
+     * ID + Password
+     * ID + Password → Password2
+     * ID + Password → Password2 → Password3
      */
     @PostMapping("/attack/password")
     public String passwordBruteForce(
             @RequestParam(defaultValue = "one-stage")
             String authMethod,
+
+            @RequestParam(
+                    name = "username",
+                    required = false)
+            String username,
+
             Model model) {
 
         LocalDateTime experimentDateTime =
@@ -61,27 +70,34 @@ public class AttackController {
 
         AttackResult result;
 
-        /*
-         * 認証方式によって攻撃を実行
-         */
         switch (authMethod) {
 
             case "one-stage":
+
                 result =
-                        attackService.executeOneStage();
+                        attackService
+                                .executeOneStage();
+
                 break;
 
             case "two-stage":
+
                 result =
-                        attackService.executeTwoStage();
+                        attackService
+                                .executeTwoStage();
+
                 break;
 
             case "three-stage":
+
                 result =
-                        attackService.executeThreeStage();
+                        attackService
+                                .executeThreeStage();
+
                 break;
 
             default:
+
                 throw new IllegalArgumentException(
                         "不正な認証方式です: "
                         + authMethod);
@@ -94,97 +110,64 @@ public class AttackController {
                 (endTime - startTime)
                 / 1_000_000;
 
-        /*
-         * 認証操作回数
-         */
         int operationCount;
 
-        switch (authMethod) {
-
-            case "one-stage":
-                operationCount = 3;
-                break;
-
-            case "two-stage":
-                operationCount = 5;
-                break;
-
-            case "three-stage":
-                operationCount = 7;
-                break;
-
-            default:
-                operationCount = 0;
-        }
-
-        /*
-         * 最大攻撃試行回数
-         */
         int maxAttemptCount;
 
-        switch (authMethod) {
-
-            case "one-stage":
-                maxAttemptCount = 10000;
-                break;
-
-            case "two-stage":
-                maxAttemptCount = 20000;
-                break;
-
-            case "three-stage":
-                maxAttemptCount = 30000;
-                break;
-
-            default:
-                maxAttemptCount = 0;
-        }
-
-        /*
-         * 認証構成
-         */
         String authenticationConfiguration;
 
         switch (authMethod) {
 
             case "one-stage":
+
+                operationCount = 3;
+
+                maxAttemptCount = 10000;
+
                 authenticationConfiguration =
                         "ID + Password";
+
                 break;
 
             case "two-stage":
+
+                operationCount = 5;
+
+                maxAttemptCount = 20000;
+
                 authenticationConfiguration =
                         "ID + Password → Password2";
+
                 break;
 
             case "three-stage":
+
+                operationCount = 7;
+
+                maxAttemptCount = 30000;
+
                 authenticationConfiguration =
                         "ID + Password → Password2 → Password3";
+
                 break;
 
             default:
+
+                operationCount = 0;
+
+                maxAttemptCount = 0;
+
                 authenticationConfiguration =
                         "不明";
         }
 
-        /*
-         * 実験番号
-         *
-         * 現在のDB内の実験結果数 + 1
-         */
         int experimentNumber =
                 experimentResultService
                         .getResultCount() + 1;
 
-        /*
-         * 攻撃によって突破した認証情報
-         */
         String credential =
                 createPasswordCredential(result);
 
-        /*
-         * 実験結果を作成
-         */
         ExperimentResult experimentResult =
                 new ExperimentResult(
                         experimentNumber,
@@ -198,22 +181,23 @@ public class AttackController {
                         attackTimeMs,
                         experimentDateTime);
 
-        /*
-         * MySQLへ保存
-         */
         experimentResultService.addResult(
                 experimentResult);
 
         /*
-         * 結果画面へ渡すデータ
+         * 結果画面へ渡す値
          */
         model.addAttribute(
                 "experimentNumber",
                 experimentNumber);
 
         model.addAttribute(
+                "username",
+                username);
+
+        model.addAttribute(
                 "authMethod",
-                result.getAuthMethod());
+                authMethod);
 
         model.addAttribute(
                 "success",
@@ -240,6 +224,10 @@ public class AttackController {
                 result.getPassword3());
 
         model.addAttribute(
+                "otp",
+                null);
+
+        model.addAttribute(
                 "attackTimeMs",
                 attackTimeMs);
 
@@ -255,16 +243,35 @@ public class AttackController {
                 "authenticationConfiguration",
                 authenticationConfiguration);
 
+        model.addAttribute(
+                "operationCount",
+                operationCount);
+
         return "result";
     }
 
     /**
-     * メールOTP総当たり攻撃
+     * 一要素認証・二要素認証
+     *
+     * 一要素（Password）
+     * 一要素（Email OTP）
+     * 二要素（Password + Email OTP）
      */
-    @PostMapping("/attack/email-otp")
-    public String emailOtpBruteForce(
-            @RequestParam(defaultValue = "10000")
+    @PostMapping("/attack/factor")
+    public String factorAuthentication(
+            @RequestParam
+            String authMethod,
+
+            @RequestParam(
+                    name = "username",
+                    required = false)
+            String username,
+
+            @RequestParam(
+                    name = "maxAttempts",
+                    defaultValue = "10000")
             int maxAttempts,
+
             Model model) {
 
         LocalDateTime experimentDateTime =
@@ -273,9 +280,42 @@ public class AttackController {
         long startTime =
                 System.nanoTime();
 
-        EmailOtpBruteForceAttack.AttackResult result =
-                attackService.executeEmailOtpBruteForce(
-                        maxAttempts);
+        FactorAttackResult result;
+
+        switch (authMethod) {
+
+            case "one-factor-password":
+
+                result =
+                        attackService
+                                .executeOneFactorPassword();
+
+                break;
+
+            case "one-factor-email-otp":
+
+                result =
+                        attackService
+                                .executeOneFactorEmailOtp(
+                                        maxAttempts);
+
+                break;
+
+            case "two-factor-password-email-otp":
+
+                result =
+                        attackService
+                                .executeTwoFactorPasswordEmailOtp(
+                                        maxAttempts);
+
+                break;
+
+            default:
+
+                throw new IllegalArgumentException(
+                        "不正な認証方式です: "
+                        + authMethod);
+        }
 
         long endTime =
                 System.nanoTime();
@@ -284,51 +324,55 @@ public class AttackController {
                 (endTime - startTime)
                 / 1_000_000;
 
-        /*
-         * メールOTPの認証構成
-         */
-        String authenticationConfiguration =
-                "ID + Password → Email OTP";
-
-        /*
-         * 実験番号
-         */
         int experimentNumber =
                 experimentResultService
                         .getResultCount() + 1;
 
-        /*
-         * 実験結果を作成
-         */
+        int operationCount =
+                result.getOperationCount();
+
+        int maxAttemptCount;
+
+        if (authMethod.equals(
+                "one-factor-password")) {
+
+            maxAttemptCount = 10000;
+
+        } else {
+
+            maxAttemptCount = maxAttempts;
+        }
+
         ExperimentResult experimentResult =
                 new ExperimentResult(
                         experimentNumber,
-                        "email-otp",
-                        0,
-                        authenticationConfiguration,
-                        maxAttempts,
+                        authMethod,
+                        operationCount,
+                        result.getAuthenticationConfiguration(),
+                        maxAttemptCount,
                         result.getAttemptCount(),
                         result.isSuccess(),
-                        result.getOtp(),
+                        createFactorCredential(result),
                         attackTimeMs,
                         experimentDateTime);
 
-        /*
-         * MySQLへ保存
-         */
         experimentResultService.addResult(
                 experimentResult);
 
         /*
-         * 結果画面へ渡すデータ
+         * 結果画面へ渡す値
          */
         model.addAttribute(
                 "experimentNumber",
                 experimentNumber);
 
         model.addAttribute(
+                "username",
+                username);
+
+        model.addAttribute(
                 "authMethod",
-                "email-otp");
+                authMethod);
 
         model.addAttribute(
                 "success",
@@ -341,6 +385,18 @@ public class AttackController {
         model.addAttribute(
                 "attemptCount",
                 result.getAttemptCount());
+
+        model.addAttribute(
+                "password",
+                result.getPassword());
+
+        model.addAttribute(
+                "password2",
+                null);
+
+        model.addAttribute(
+                "password3",
+                null);
 
         model.addAttribute(
                 "otp",
@@ -356,11 +412,15 @@ public class AttackController {
 
         model.addAttribute(
                 "maxAttemptCount",
-                maxAttempts);
+                maxAttemptCount);
 
         model.addAttribute(
                 "authenticationConfiguration",
-                authenticationConfiguration);
+                result.getAuthenticationConfiguration());
+
+        model.addAttribute(
+                "operationCount",
+                operationCount);
 
         return "result";
     }
@@ -371,9 +431,6 @@ public class AttackController {
     @GetMapping("/results")
     public String results(Model model) {
 
-        /*
-         * DBから全実験結果を取得
-         */
         model.addAttribute(
                 "results",
                 experimentResultService.getResults());
@@ -496,51 +553,129 @@ public class AttackController {
                                 "three-stage"));
 
         /*
-         * メールOTP
+         * 一要素認証（Password）
          */
         model.addAttribute(
-                "emailOtpExperimentCount",
+                "oneFactorPasswordExperimentCount",
                 experimentResultService
                         .getExperimentCountByAuthMethod(
-                                "email-otp"));
+                                "one-factor-password"));
 
         model.addAttribute(
-                "emailOtpSuccessCount",
+                "oneFactorPasswordSuccessCount",
                 experimentResultService
                         .getSuccessCountByAuthMethod(
-                                "email-otp"));
+                                "one-factor-password"));
 
         model.addAttribute(
-                "emailOtpSuccessRate",
+                "oneFactorPasswordSuccessRate",
                 experimentResultService
                         .getSuccessRateByAuthMethod(
-                                "email-otp"));
+                                "one-factor-password"));
 
         model.addAttribute(
-                "emailOtpAverageAttemptCount",
+                "oneFactorPasswordAverageAttemptCount",
                 experimentResultService
                         .getAverageAttemptCountByAuthMethod(
-                                "email-otp"));
+                                "one-factor-password"));
 
         model.addAttribute(
-                "emailOtpSuccessAttackTimeTotal",
+                "oneFactorPasswordSuccessAttackTimeTotal",
                 experimentResultService
                         .getSuccessAttackTimeTotalByAuthMethod(
-                                "email-otp"));
+                                "one-factor-password"));
 
         model.addAttribute(
-                "emailOtpAverageSuccessAttackTime",
+                "oneFactorPasswordAverageSuccessAttackTime",
                 experimentResultService
                         .getAverageSuccessAttackTimeByAuthMethod(
-                                "email-otp"));
+                                "one-factor-password"));
+
+        /*
+         * 一要素認証（Email OTP）
+         */
+        model.addAttribute(
+                "oneFactorEmailOtpExperimentCount",
+                experimentResultService
+                        .getExperimentCountByAuthMethod(
+                                "one-factor-email-otp"));
+
+        model.addAttribute(
+                "oneFactorEmailOtpSuccessCount",
+                experimentResultService
+                        .getSuccessCountByAuthMethod(
+                                "one-factor-email-otp"));
+
+        model.addAttribute(
+                "oneFactorEmailOtpSuccessRate",
+                experimentResultService
+                        .getSuccessRateByAuthMethod(
+                                "one-factor-email-otp"));
+
+        model.addAttribute(
+                "oneFactorEmailOtpAverageAttemptCount",
+                experimentResultService
+                        .getAverageAttemptCountByAuthMethod(
+                                "one-factor-email-otp"));
+
+        model.addAttribute(
+                "oneFactorEmailOtpSuccessAttackTimeTotal",
+                experimentResultService
+                        .getSuccessAttackTimeTotalByAuthMethod(
+                                "one-factor-email-otp"));
+
+        model.addAttribute(
+                "oneFactorEmailOtpAverageSuccessAttackTime",
+                experimentResultService
+                        .getAverageSuccessAttackTimeByAuthMethod(
+                                "one-factor-email-otp"));
+
+        /*
+         * 二要素認証
+         *
+         * Password + Email OTP
+         */
+        model.addAttribute(
+                "twoFactorPasswordEmailOtpExperimentCount",
+                experimentResultService
+                        .getExperimentCountByAuthMethod(
+                                "two-factor-password-email-otp"));
+
+        model.addAttribute(
+                "twoFactorPasswordEmailOtpSuccessCount",
+                experimentResultService
+                        .getSuccessCountByAuthMethod(
+                                "two-factor-password-email-otp"));
+
+        model.addAttribute(
+                "twoFactorPasswordEmailOtpSuccessRate",
+                experimentResultService
+                        .getSuccessRateByAuthMethod(
+                                "two-factor-password-email-otp"));
+
+        model.addAttribute(
+                "twoFactorPasswordEmailOtpAverageAttemptCount",
+                experimentResultService
+                        .getAverageAttemptCountByAuthMethod(
+                                "two-factor-password-email-otp"));
+
+        model.addAttribute(
+                "twoFactorPasswordEmailOtpSuccessAttackTimeTotal",
+                experimentResultService
+                        .getSuccessAttackTimeTotalByAuthMethod(
+                                "two-factor-password-email-otp"));
+
+        model.addAttribute(
+                "twoFactorPasswordEmailOtpAverageSuccessAttackTime",
+                experimentResultService
+                        .getAverageSuccessAttackTimeByAuthMethod(
+                                "two-factor-password-email-otp"));
 
         return "results";
     }
 
     /**
-     * 選択した実験結果を複数削除
-     *
-     * DBのIDを使用して削除する
+     * 選択した実験結果を削除
      */
     @PostMapping("/results/delete")
     public String deleteResults(
@@ -549,18 +684,9 @@ public class AttackController {
                     required = false)
             List<Long> ids) {
 
-        /*
-         * 選択された実験結果を削除
-         */
         experimentResultService
                 .deleteResultsByIds(ids);
 
-        /*
-         * 削除後は実験番号を
-         * 1, 2, 3... と詰め直す
-         *
-         * サービス側で実行済み
-         */
         return "redirect:/results";
     }
 
@@ -576,7 +702,7 @@ public class AttackController {
     }
 
     /**
-     * パスワード認証情報を文字列化
+     * 多段階認証の突破情報を作成
      */
     private String createPasswordCredential(
             AttackResult result) {
@@ -603,6 +729,37 @@ public class AttackController {
             credential.append(
                     " / Password3="
                     + result.getPassword3());
+        }
+
+        return credential.toString();
+    }
+
+    /**
+     * 一要素・二要素認証の突破情報を作成
+     */
+    private String createFactorCredential(
+            FactorAttackResult result) {
+
+        StringBuilder credential =
+                new StringBuilder();
+
+        if (result.getPassword() != null) {
+
+            credential.append(
+                    "Password="
+                    + result.getPassword());
+        }
+
+        if (result.getOtp() != null) {
+
+            if (credential.length() > 0) {
+
+                credential.append(" / ");
+            }
+
+            credential.append(
+                    "Email OTP="
+                    + result.getOtp());
         }
 
         return credential.toString();

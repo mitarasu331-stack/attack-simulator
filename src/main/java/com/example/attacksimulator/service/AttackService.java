@@ -3,6 +3,7 @@ package com.example.attacksimulator.service;
 import org.springframework.stereotype.Service;
 
 import com.example.attacksimulator.attack.EmailOtpBruteForceAttack;
+import com.example.attacksimulator.attack.FactorAuthenticationAttack;
 import com.example.attacksimulator.attack.MultiStagePasswordBruteForceAttack;
 import com.example.attacksimulator.attack.MultiStagePasswordBruteForceAttack.AttackResult;
 import com.example.attacksimulator.attack.PasswordBruteForceAttack;
@@ -10,7 +11,8 @@ import com.example.attacksimulator.attack.PasswordBruteForceAttack;
 @Service
 public class AttackService {
 
-    private final PasswordBruteForceAttack passwordBruteForceAttack;
+    private final PasswordBruteForceAttack
+            passwordBruteForceAttack;
 
     private final MultiStagePasswordBruteForceAttack
             multiStagePasswordBruteForceAttack;
@@ -18,12 +20,14 @@ public class AttackService {
     private final EmailOtpBruteForceAttack
             emailOtpBruteForceAttack;
 
+    private final FactorAuthenticationAttack
+            factorAuthenticationAttack;
+
     public AttackService(
             PasswordBruteForceAttack passwordBruteForceAttack,
-            MultiStagePasswordBruteForceAttack
-                    multiStagePasswordBruteForceAttack,
-            EmailOtpBruteForceAttack
-                    emailOtpBruteForceAttack) {
+            MultiStagePasswordBruteForceAttack multiStagePasswordBruteForceAttack,
+            EmailOtpBruteForceAttack emailOtpBruteForceAttack,
+            FactorAuthenticationAttack factorAuthenticationAttack) {
 
         this.passwordBruteForceAttack =
                 passwordBruteForceAttack;
@@ -33,122 +37,119 @@ public class AttackService {
 
         this.emailOtpBruteForceAttack =
                 emailOtpBruteForceAttack;
+
+        this.factorAuthenticationAttack =
+                factorAuthenticationAttack;
     }
 
     /**
      * 一段階認証
      *
      * ID + Password
+     *
+     * 認証操作回数：3回
      */
     public AttackResult executeOneStage() {
 
-        System.out.println("========================================");
-        System.out.println("       One Stage Authentication");
-        System.out.println("========================================");
-
-        AttackResult result =
-                multiStagePasswordBruteForceAttack
-                        .executeOneStage();
-
-        System.out.println("----------------------------------------");
-        System.out.println("One stage attack finished.");
-        System.out.println("----------------------------------------");
-
-        return result;
+        return multiStagePasswordBruteForceAttack
+                .executeOneStage();
     }
 
     /**
      * 二段階認証
      *
-     * ID + Password
-     * ↓
-     * Password2
+     * ID + Password → Password2
+     *
+     * 認証操作回数：5回
      */
     public AttackResult executeTwoStage() {
 
-        System.out.println("========================================");
-        System.out.println("       Two Stage Authentication");
-        System.out.println("========================================");
-
-        AttackResult result =
-                multiStagePasswordBruteForceAttack
-                        .executeTwoStage();
-
-        System.out.println("----------------------------------------");
-        System.out.println("Two stage attack finished.");
-        System.out.println("----------------------------------------");
-
-        return result;
+        return multiStagePasswordBruteForceAttack
+                .executeTwoStage();
     }
 
     /**
      * 三段階認証
      *
-     * ID + Password
-     * ↓
-     * Password2
-     * ↓
-     * Password3
+     * ID + Password → Password2 → Password3
+     *
+     * 認証操作回数：7回
      */
     public AttackResult executeThreeStage() {
 
-        System.out.println("========================================");
-        System.out.println("      Three Stage Authentication");
-        System.out.println("========================================");
-
-        AttackResult result =
-                multiStagePasswordBruteForceAttack
-                        .executeThreeStage();
-
-        System.out.println("----------------------------------------");
-        System.out.println("Three stage attack finished.");
-        System.out.println("----------------------------------------");
-
-        return result;
+        return multiStagePasswordBruteForceAttack
+                .executeThreeStage();
     }
 
     /**
      * メールOTP総当たり攻撃
+     *
+     * ※既存処理との互換性のため残している。
+     * 最終的な認証方式の選択では使用しない。
      */
     public EmailOtpBruteForceAttack.AttackResult
-            executeEmailOtpBruteForce(int maxAttempts) {
+    executeEmailOtpBruteForce(
+            int maxAttempts) {
 
-        System.out.println("========================================");
-        System.out.println("       Email OTP Brute Force Attack");
-        System.out.println("========================================");
-
-        EmailOtpBruteForceAttack.AttackResult result =
-                emailOtpBruteForceAttack.execute(
-                        maxAttempts);
-
-        System.out.println("----------------------------------------");
-        System.out.println("Email OTP brute force finished.");
-        System.out.println("----------------------------------------");
-
-        return result;
+        return emailOtpBruteForceAttack
+                .execute(maxAttempts);
     }
 
     /**
-     * 従来の単独パスワード総当たり攻撃
+     * 従来の4桁パスワード総当たり攻撃
      *
-     * 現在の一段階認証とは別に、
-     * PasswordBruteForceAttack単体を
-     * 使用したい場合のメソッド。
+     * ※既存処理との互換性のため残している。
      */
     public PasswordBruteForceAttack.AttackResult
-            executePasswordBruteForce() {
+    executePasswordBruteForce() {
 
-        System.out.println("========================================");
-        System.out.println("      Password Brute Force Attack");
-        System.out.println("========================================");
+        return passwordBruteForceAttack
+                .execute();
+    }
 
-        PasswordBruteForceAttack.AttackResult result =
-                passwordBruteForceAttack.execute();
+    /**
+     * 一要素認証（Password）
+     *
+     * ID + Password
+     *
+     * 認証操作回数：3回
+     */
+    public FactorAuthenticationAttack.FactorAttackResult
+    executeOneFactorPassword() {
 
-        System.out.println("----------------------------------------");
-        System.out.println("Password brute force finished.");
-        System.out.println("----------------------------------------");
+        return factorAuthenticationAttack
+                .executeOneFactorPassword();
+    }
 
-        return result;
+    /**
+     * 一要素認証（Email OTP）
+     *
+     * ID + Email OTP
+     *
+     * 認証操作回数：3回
+     */
+    public FactorAuthenticationAttack.FactorAttackResult
+    executeOneFactorEmailOtp(
+            int maxAttempts) {
+
+        return factorAuthenticationAttack
+                .executeOneFactorEmailOtp(
+                        maxAttempts);
+    }
+
+    /**
+     * 二要素認証
+     *
+     * ID + Password → Email OTP
+     *
+     * 認証操作回数：5回
+     */
+    public FactorAuthenticationAttack.FactorAttackResult
+    executeTwoFactorPasswordEmailOtp(
+            int maxOtpAttempts) {
+
+        return factorAuthenticationAttack
+                .executeTwoFactorPasswordEmailOtp(
+                        maxOtpAttempts);
     }
 }
