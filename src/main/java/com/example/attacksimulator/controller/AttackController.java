@@ -1,6 +1,5 @@
 package com.example.attacksimulator.controller;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Controller;
@@ -8,12 +7,14 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.example.attacksimulator.attack.FactorAuthenticationAttack.FactorAttackResult;
-import com.example.attacksimulator.attack.MultiStagePasswordBruteForceAttack.AttackResult;
-import com.example.attacksimulator.model.ExperimentResult;
+import com.example.attacksimulator.attack.FactorAuthenticationAttack;
+import com.example.attacksimulator.attack.MultiStagePasswordBruteForceAttack;
+import com.example.attacksimulator.attack.PasswordBruteForceAttack;
 import com.example.attacksimulator.service.AttackService;
 import com.example.attacksimulator.service.ExperimentResultService;
+import com.example.attacksimulator.service.NewAuthLabUserService;
 
 @Controller
 public class AttackController {
@@ -23,745 +24,767 @@ public class AttackController {
     private final ExperimentResultService
             experimentResultService;
 
+    private final NewAuthLabUserService
+            newAuthLabUserService;
+
     public AttackController(
             AttackService attackService,
-            ExperimentResultService experimentResultService) {
+            ExperimentResultService experimentResultService,
+            NewAuthLabUserService newAuthLabUserService) {
 
-        this.attackService =
-                attackService;
+        this.attackService = attackService;
 
         this.experimentResultService =
                 experimentResultService;
+
+        this.newAuthLabUserService =
+                newAuthLabUserService;
     }
 
-    /**
-     * 攻撃実験画面
-     */
+    // =========================================================
+    // 攻撃実験画面
+    // =========================================================
+
     @GetMapping("/")
-    public String index() {
+    public String index(Model model) {
+
+        List<String> usernames =
+                newAuthLabUserService
+                        .getAllUsernames();
+
+        model.addAttribute(
+                "usernames",
+                usernames);
 
         return "attack";
     }
 
-    /**
-     * 一段階・二段階・三段階認証
-     *
-     * ID + Password
-     * ID + Password → Password2
-     * ID + Password → Password2 → Password3
-     */
+    // =========================================================
+    // パスワード攻撃
+    // =========================================================
+
     @PostMapping("/attack/password")
-    public String passwordBruteForce(
-            @RequestParam(defaultValue = "one-stage")
+    public String attackPassword(
+            @RequestParam("username")
+            String username,
+
+            @RequestParam("authMethod")
             String authMethod,
 
             @RequestParam(
-                    name = "username",
-                    required = false)
-            String username,
+                    value = "maxAttempts",
+                    required = false,
+                    defaultValue = "10000")
+            int maxAttempts,
 
-            Model model) {
-
-        LocalDateTime experimentDateTime =
-                LocalDateTime.now();
+            RedirectAttributes redirectAttributes) {
 
         long startTime =
                 System.nanoTime();
 
-        AttackResult result;
+        try {
 
-        switch (authMethod) {
+            PasswordBruteForceAttack.AttackResult
+                    result =
+                    attackService
+                            .executePasswordBruteForce(
+                                    username);
 
-            case "one-stage":
+            long attackTimeMs =
+                    (System.nanoTime()
+                            - startTime)
+                    / 1_000_000;
 
-                result =
-                        attackService
-                                .executeOneStage();
+            int experimentNumber =
+                    experimentResultService
+                            .getNextExperimentNumber();
 
-                break;
+            experimentResultService.addResult(
+                    experimentNumber,
+                    authMethod,
+                    3,
+                    "ID + Password",
+                    maxAttempts,
+                    result.getAttemptCount(),
+                    result.isSuccess(),
+                    result.getPassword(),
+                    attackTimeMs);
 
-            case "two-stage":
+            // =================================================
+            // result.html に渡す値
+            // =================================================
 
-                result =
-                        attackService
-                                .executeTwoStage();
+            redirectAttributes.addFlashAttribute(
+                    "authMethod",
+                    authMethod);
 
-                break;
+            redirectAttributes.addFlashAttribute(
+                    "stageCount",
+                    1);
 
-            case "three-stage":
+            redirectAttributes.addFlashAttribute(
+                    "attemptCount",
+                    result.getAttemptCount());
 
-                result =
-                        attackService
-                                .executeThreeStage();
+            redirectAttributes.addFlashAttribute(
+                    "success",
+                    result.isSuccess());
 
-                break;
+            redirectAttributes.addFlashAttribute(
+                    "password",
+                    result.getPassword());
 
-            default:
+            redirectAttributes.addFlashAttribute(
+                    "password2",
+                    null);
 
-                throw new IllegalArgumentException(
-                        "不正な認証方式です: "
-                        + authMethod);
+            redirectAttributes.addFlashAttribute(
+                    "password3",
+                    null);
+
+            redirectAttributes.addFlashAttribute(
+                    "otp",
+                    null);
+
+            redirectAttributes.addFlashAttribute(
+                    "message",
+                    result.isSuccess()
+                            ? "認証突破に成功しました。"
+                            : "認証突破に失敗しました。");
+
+        } catch (Exception e) {
+
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    e.getMessage());
         }
 
-        long endTime =
+        return "redirect:/result";
+    }
+
+    // =========================================================
+    // 多段階認証
+    // =========================================================
+
+    @PostMapping("/attack/multi-stage")
+    public String attackMultiStage(
+            @RequestParam("username")
+            String username,
+
+            @RequestParam("authMethod")
+            String authMethod,
+
+            RedirectAttributes redirectAttributes) {
+
+        long startTime =
                 System.nanoTime();
 
-        long attackTimeMs =
-                (endTime - startTime)
-                / 1_000_000;
+        try {
 
-        int operationCount;
+            MultiStagePasswordBruteForceAttack
+                    .AttackResult result;
 
-        int maxAttemptCount;
+            int operationCount;
 
-        String authenticationConfiguration;
+            int maxAttemptCount;
 
-        switch (authMethod) {
+            // =================================================
+            // 一段階認証
+            // =================================================
 
-            case "one-stage":
+            if ("one-stage".equals(authMethod)) {
+
+                result =
+                        attackService
+                                .executeOneStage(
+                                        username);
 
                 operationCount = 3;
 
                 maxAttemptCount = 10000;
 
-                authenticationConfiguration =
-                        "ID + Password";
+            // =================================================
+            // 二段階認証
+            // =================================================
 
-                break;
+            } else if ("two-stage".equals(authMethod)) {
 
-            case "two-stage":
+                result =
+                        attackService
+                                .executeTwoStage(
+                                        username);
 
                 operationCount = 5;
 
                 maxAttemptCount = 20000;
 
-                authenticationConfiguration =
-                        "ID + Password → Password2";
+            // =================================================
+            // 三段階認証
+            // =================================================
 
-                break;
+            } else if ("three-stage".equals(authMethod)) {
 
-            case "three-stage":
+                result =
+                        attackService
+                                .executeThreeStage(
+                                        username);
 
                 operationCount = 7;
 
                 maxAttemptCount = 30000;
 
-                authenticationConfiguration =
-                        "ID + Password → Password2 → Password3";
+            } else {
 
-                break;
+                throw new IllegalArgumentException(
+                        "不正な認証方式です。");
+            }
 
-            default:
+            long attackTimeMs =
+                    (System.nanoTime()
+                            - startTime)
+                    / 1_000_000;
 
-                operationCount = 0;
+            String credential =
+                    createMultiStageCredential(
+                            result);
 
-                maxAttemptCount = 0;
+            String configuration =
+                    createMultiStageConfiguration(
+                            result);
 
-                authenticationConfiguration =
-                        "不明";
+            int experimentNumber =
+                    experimentResultService
+                            .getNextExperimentNumber();
+
+            experimentResultService.addResult(
+                    experimentNumber,
+                    authMethod,
+                    operationCount,
+                    configuration,
+                    maxAttemptCount,
+                    result.getTotalAttempts(),
+                    result.isSuccess(),
+                    credential,
+                    attackTimeMs);
+
+            // =================================================
+            // result.html に渡す値
+            // =================================================
+
+            redirectAttributes.addFlashAttribute(
+                    "authMethod",
+                    authMethod);
+
+            redirectAttributes.addFlashAttribute(
+                    "stageCount",
+                    result.getStageCount());
+
+            redirectAttributes.addFlashAttribute(
+                    "attemptCount",
+                    result.getTotalAttempts());
+
+            redirectAttributes.addFlashAttribute(
+                    "success",
+                    result.isSuccess());
+
+            redirectAttributes.addFlashAttribute(
+                    "password",
+                    result.getPassword());
+
+            redirectAttributes.addFlashAttribute(
+                    "password2",
+                    result.getPassword2());
+
+            redirectAttributes.addFlashAttribute(
+                    "password3",
+                    result.getPassword3());
+
+            redirectAttributes.addFlashAttribute(
+                    "otp",
+                    null);
+
+            redirectAttributes.addFlashAttribute(
+                    "message",
+                    result.isSuccess()
+                            ? "認証突破に成功しました。"
+                            : "認証突破に失敗しました。");
+
+        } catch (Exception e) {
+
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    e.getMessage());
         }
 
-        int experimentNumber =
-                experimentResultService
-                        .getResultCount() + 1;
-
-        String credential =
-                createPasswordCredential(result);
-
-        ExperimentResult experimentResult =
-                new ExperimentResult(
-                        experimentNumber,
-                        authMethod,
-                        operationCount,
-                        authenticationConfiguration,
-                        maxAttemptCount,
-                        result.getTotalAttempts(),
-                        result.isSuccess(),
-                        credential,
-                        attackTimeMs,
-                        experimentDateTime);
-
-        experimentResultService.addResult(
-                experimentResult);
-
-        /*
-         * 結果画面へ渡す値
-         */
-        model.addAttribute(
-                "experimentNumber",
-                experimentNumber);
-
-        model.addAttribute(
-                "username",
-                username);
-
-        model.addAttribute(
-                "authMethod",
-                authMethod);
-
-        model.addAttribute(
-                "success",
-                result.isSuccess());
-
-        model.addAttribute(
-                "stageCount",
-                result.getStageCount());
-
-        model.addAttribute(
-                "attemptCount",
-                result.getTotalAttempts());
-
-        model.addAttribute(
-                "password",
-                result.getPassword());
-
-        model.addAttribute(
-                "password2",
-                result.getPassword2());
-
-        model.addAttribute(
-                "password3",
-                result.getPassword3());
-
-        model.addAttribute(
-                "otp",
-                null);
-
-        model.addAttribute(
-                "attackTimeMs",
-                attackTimeMs);
-
-        model.addAttribute(
-                "experimentDateTime",
-                experimentDateTime);
-
-        model.addAttribute(
-                "maxAttemptCount",
-                maxAttemptCount);
-
-        model.addAttribute(
-                "authenticationConfiguration",
-                authenticationConfiguration);
-
-        model.addAttribute(
-                "operationCount",
-                operationCount);
-
-        return "result";
+        return "redirect:/result";
     }
 
-    /**
-     * 一要素認証・二要素認証
-     *
-     * 一要素（Password）
-     * 一要素（Email OTP）
-     * 二要素（Password + Email OTP）
-     */
+    // =========================================================
+    // 要素認証
+    // =========================================================
+
     @PostMapping("/attack/factor")
-    public String factorAuthentication(
-            @RequestParam
+    public String attackFactor(
+            @RequestParam("username")
+            String username,
+
+            @RequestParam("authMethod")
             String authMethod,
 
             @RequestParam(
-                    name = "username",
-                    required = false)
-            String username,
-
-            @RequestParam(
-                    name = "maxAttempts",
+                    value = "maxAttempts",
+                    required = false,
                     defaultValue = "10000")
             int maxAttempts,
 
-            Model model) {
-
-        LocalDateTime experimentDateTime =
-                LocalDateTime.now();
+            RedirectAttributes redirectAttributes) {
 
         long startTime =
                 System.nanoTime();
 
-        FactorAttackResult result;
+        try {
 
-        switch (authMethod) {
+            FactorAuthenticationAttack
+                    .FactorAttackResult result;
 
-            case "one-factor-password":
+            int operationCount;
+
+            int maxAttemptCount;
+
+            // =================================================
+            // 一要素認証：Password
+            // =================================================
+
+            if ("one-factor-password"
+                    .equals(authMethod)) {
 
                 result =
                         attackService
-                                .executeOneFactorPassword();
+                                .executeOneFactorPassword(
+                                        username);
 
-                break;
+                operationCount = 3;
 
-            case "one-factor-email-otp":
+                maxAttemptCount = 10000;
+
+            // =================================================
+            // 一要素認証：Email OTP
+            // =================================================
+
+            } else if ("one-factor-email-otp"
+                    .equals(authMethod)) {
 
                 result =
                         attackService
                                 .executeOneFactorEmailOtp(
                                         maxAttempts);
 
-                break;
+                operationCount = 3;
 
-            case "two-factor-password-email-otp":
+                maxAttemptCount = maxAttempts;
+
+            // =================================================
+            // 二要素認証
+            // Password → Email OTP
+            // =================================================
+
+            } else if ("two-factor-password-email-otp"
+                    .equals(authMethod)) {
 
                 result =
                         attackService
                                 .executeTwoFactorPasswordEmailOtp(
+                                        username,
                                         maxAttempts);
 
-                break;
+                operationCount = 5;
 
-            default:
+                maxAttemptCount =
+                        10000 + maxAttempts;
+
+            } else {
 
                 throw new IllegalArgumentException(
-                        "不正な認証方式です: "
-                        + authMethod);
+                        "不正な認証方式です。");
+            }
+
+            long attackTimeMs =
+                    (System.nanoTime()
+                            - startTime)
+                    / 1_000_000;
+
+            String credential =
+                    createFactorCredential(
+                            result);
+
+            int experimentNumber =
+                    experimentResultService
+                            .getNextExperimentNumber();
+
+            experimentResultService.addResult(
+                    experimentNumber,
+                    result.getAuthMethod(),
+                    operationCount,
+                    result.getAuthenticationConfiguration(),
+                    maxAttemptCount,
+                    result.getAttemptCount(),
+                    result.isSuccess(),
+                    credential,
+                    attackTimeMs);
+
+            // =================================================
+            // result.html に渡す値
+            // =================================================
+
+            redirectAttributes.addFlashAttribute(
+                    "authMethod",
+                    authMethod);
+
+            redirectAttributes.addFlashAttribute(
+                    "attemptCount",
+                    result.getAttemptCount());
+
+            redirectAttributes.addFlashAttribute(
+                    "success",
+                    result.isSuccess());
+
+            redirectAttributes.addFlashAttribute(
+                    "password",
+                    result.getPassword());
+
+            redirectAttributes.addFlashAttribute(
+                    "otp",
+                    result.getOtp());
+
+            redirectAttributes.addFlashAttribute(
+                    "password2",
+                    null);
+
+            redirectAttributes.addFlashAttribute(
+                    "password3",
+                    null);
+
+            // =================================================
+            // Passwordの場合だけstageCountを1にする
+            // =================================================
+
+            if ("one-factor-password"
+                    .equals(authMethod)) {
+
+                redirectAttributes.addFlashAttribute(
+                        "stageCount",
+                        1);
+
+            } else if ("one-factor-email-otp"
+                    .equals(authMethod)) {
+
+                redirectAttributes.addFlashAttribute(
+                        "stageCount",
+                        1);
+
+            } else {
+
+                redirectAttributes.addFlashAttribute(
+                        "stageCount",
+                        2);
+            }
+
+            redirectAttributes.addFlashAttribute(
+                    "message",
+                    result.isSuccess()
+                            ? "認証突破に成功しました。"
+                            : "認証突破に失敗しました。");
+
+        } catch (Exception e) {
+
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    e.getMessage());
         }
 
-        long endTime =
-                System.nanoTime();
+        return "redirect:/result";
+    }
 
-        long attackTimeMs =
-                (endTime - startTime)
-                / 1_000_000;
+    // =========================================================
+    // 1回の攻撃結果画面
+    // =========================================================
 
-        int experimentNumber =
-                experimentResultService
-                        .getResultCount() + 1;
-
-        int operationCount =
-                result.getOperationCount();
-
-        int maxAttemptCount;
-
-        if (authMethod.equals(
-                "one-factor-password")) {
-
-            maxAttemptCount = 10000;
-
-        } else {
-
-            maxAttemptCount = maxAttempts;
-        }
-
-        ExperimentResult experimentResult =
-                new ExperimentResult(
-                        experimentNumber,
-                        authMethod,
-                        operationCount,
-                        result.getAuthenticationConfiguration(),
-                        maxAttemptCount,
-                        result.getAttemptCount(),
-                        result.isSuccess(),
-                        createFactorCredential(result),
-                        attackTimeMs,
-                        experimentDateTime);
-
-        experimentResultService.addResult(
-                experimentResult);
-
-        /*
-         * 結果画面へ渡す値
-         */
-        model.addAttribute(
-                "experimentNumber",
-                experimentNumber);
-
-        model.addAttribute(
-                "username",
-                username);
-
-        model.addAttribute(
-                "authMethod",
-                authMethod);
-
-        model.addAttribute(
-                "success",
-                result.isSuccess());
-
-        model.addAttribute(
-                "stageCount",
-                null);
-
-        model.addAttribute(
-                "attemptCount",
-                result.getAttemptCount());
-
-        model.addAttribute(
-                "password",
-                result.getPassword());
-
-        model.addAttribute(
-                "password2",
-                null);
-
-        model.addAttribute(
-                "password3",
-                null);
-
-        model.addAttribute(
-                "otp",
-                result.getOtp());
-
-        model.addAttribute(
-                "attackTimeMs",
-                attackTimeMs);
-
-        model.addAttribute(
-                "experimentDateTime",
-                experimentDateTime);
-
-        model.addAttribute(
-                "maxAttemptCount",
-                maxAttemptCount);
-
-        model.addAttribute(
-                "authenticationConfiguration",
-                result.getAuthenticationConfiguration());
-
-        model.addAttribute(
-                "operationCount",
-                operationCount);
+    @GetMapping("/result")
+    public String result() {
 
         return "result";
     }
 
-    /**
-     * 実験結果一覧
-     */
-    @GetMapping("/results")
-    public String results(Model model) {
+ // =========================================================
+ // 実験結果一覧画面
+ // =========================================================
 
-        model.addAttribute(
-                "results",
-                experimentResultService.getResults());
+ @GetMapping("/results")
+ public String results(Model model) {
 
-        /*
-         * 一段階認証
-         */
-        model.addAttribute(
-                "oneStageExperimentCount",
-                experimentResultService
-                        .getExperimentCountByAuthMethod(
-                                "one-stage"));
+     // =====================================================
+     // 全実験結果
+     // =====================================================
 
-        model.addAttribute(
-                "oneStageSuccessCount",
-                experimentResultService
-                        .getSuccessCountByAuthMethod(
-                                "one-stage"));
+     model.addAttribute(
+             "results",
+             experimentResultService
+                     .getAllResults());
 
-        model.addAttribute(
-                "oneStageSuccessRate",
-                experimentResultService
-                        .getSuccessRateByAuthMethod(
-                                "one-stage"));
 
-        model.addAttribute(
-                "oneStageAverageAttemptCount",
-                experimentResultService
-                        .getAverageAttemptCountByAuthMethod(
-                                "one-stage"));
+     // =====================================================
+     // 一段階認証
+     // =====================================================
 
-        model.addAttribute(
-                "oneStageSuccessAttackTimeTotal",
-                experimentResultService
-                        .getSuccessAttackTimeTotalByAuthMethod(
-                                "one-stage"));
+     addSummaryToModel(
+             model,
+             "one-stage",
+             "oneStage");
 
-        model.addAttribute(
-                "oneStageAverageSuccessAttackTime",
-                experimentResultService
-                        .getAverageSuccessAttackTimeByAuthMethod(
-                                "one-stage"));
 
-        /*
-         * 二段階認証
-         */
-        model.addAttribute(
-                "twoStageExperimentCount",
-                experimentResultService
-                        .getExperimentCountByAuthMethod(
-                                "two-stage"));
+     // =====================================================
+     // 二段階認証
+     // =====================================================
 
-        model.addAttribute(
-                "twoStageSuccessCount",
-                experimentResultService
-                        .getSuccessCountByAuthMethod(
-                                "two-stage"));
+     addSummaryToModel(
+             model,
+             "two-stage",
+             "twoStage");
 
-        model.addAttribute(
-                "twoStageSuccessRate",
-                experimentResultService
-                        .getSuccessRateByAuthMethod(
-                                "two-stage"));
 
-        model.addAttribute(
-                "twoStageAverageAttemptCount",
-                experimentResultService
-                        .getAverageAttemptCountByAuthMethod(
-                                "two-stage"));
+     // =====================================================
+     // 三段階認証
+     // =====================================================
 
-        model.addAttribute(
-                "twoStageSuccessAttackTimeTotal",
-                experimentResultService
-                        .getSuccessAttackTimeTotalByAuthMethod(
-                                "two-stage"));
+     addSummaryToModel(
+             model,
+             "three-stage",
+             "threeStage");
 
-        model.addAttribute(
-                "twoStageAverageSuccessAttackTime",
-                experimentResultService
-                        .getAverageSuccessAttackTimeByAuthMethod(
-                                "two-stage"));
 
-        /*
-         * 三段階認証
-         */
-        model.addAttribute(
-                "threeStageExperimentCount",
-                experimentResultService
-                        .getExperimentCountByAuthMethod(
-                                "three-stage"));
+     // =====================================================
+     // 一要素認証（Password）
+     // =====================================================
 
-        model.addAttribute(
-                "threeStageSuccessCount",
-                experimentResultService
-                        .getSuccessCountByAuthMethod(
-                                "three-stage"));
+     addSummaryToModel(
+             model,
+             "one-factor-password",
+             "oneFactorPassword");
 
-        model.addAttribute(
-                "threeStageSuccessRate",
-                experimentResultService
-                        .getSuccessRateByAuthMethod(
-                                "three-stage"));
 
-        model.addAttribute(
-                "threeStageAverageAttemptCount",
-                experimentResultService
-                        .getAverageAttemptCountByAuthMethod(
-                                "three-stage"));
+     // =====================================================
+     // 一要素認証（Email OTP）
+     // =====================================================
 
-        model.addAttribute(
-                "threeStageSuccessAttackTimeTotal",
-                experimentResultService
-                        .getSuccessAttackTimeTotalByAuthMethod(
-                                "three-stage"));
+     addSummaryToModel(
+             model,
+             "one-factor-email-otp",
+             "oneFactorEmailOtp");
 
-        model.addAttribute(
-                "threeStageAverageSuccessAttackTime",
-                experimentResultService
-                        .getAverageSuccessAttackTimeByAuthMethod(
-                                "three-stage"));
 
-        /*
-         * 一要素認証（Password）
-         */
-        model.addAttribute(
-                "oneFactorPasswordExperimentCount",
-                experimentResultService
-                        .getExperimentCountByAuthMethod(
-                                "one-factor-password"));
+     // =====================================================
+     // 二要素認証（Password + Email OTP）
+     // =====================================================
 
-        model.addAttribute(
-                "oneFactorPasswordSuccessCount",
-                experimentResultService
-                        .getSuccessCountByAuthMethod(
-                                "one-factor-password"));
+     addSummaryToModel(
+             model,
+             "two-factor-password-email-otp",
+             "twoFactorPasswordEmailOtp");
 
-        model.addAttribute(
-                "oneFactorPasswordSuccessRate",
-                experimentResultService
-                        .getSuccessRateByAuthMethod(
-                                "one-factor-password"));
 
-        model.addAttribute(
-                "oneFactorPasswordAverageAttemptCount",
-                experimentResultService
-                        .getAverageAttemptCountByAuthMethod(
-                                "one-factor-password"));
+     return "results";
+ }
 
-        model.addAttribute(
-                "oneFactorPasswordSuccessAttackTimeTotal",
-                experimentResultService
-                        .getSuccessAttackTimeTotalByAuthMethod(
-                                "one-factor-password"));
 
-        model.addAttribute(
-                "oneFactorPasswordAverageSuccessAttackTime",
-                experimentResultService
-                        .getAverageSuccessAttackTimeByAuthMethod(
-                                "one-factor-password"));
+ // =========================================================
+ // 認証方式ごとの集計値をModelに設定
+ // =========================================================
 
-        /*
-         * 一要素認証（Email OTP）
-         */
-        model.addAttribute(
-                "oneFactorEmailOtpExperimentCount",
-                experimentResultService
-                        .getExperimentCountByAuthMethod(
-                                "one-factor-email-otp"));
+ private void addSummaryToModel(
+	        Model model,
+	        String authMethod,
+	        String prefix) {
 
-        model.addAttribute(
-                "oneFactorEmailOtpSuccessCount",
-                experimentResultService
-                        .getSuccessCountByAuthMethod(
-                                "one-factor-email-otp"));
+	    // 総実験回数
+	    int experimentCount =
+	            experimentResultService
+	                    .getExperimentCountByAuthMethod(
+	                            authMethod);
 
-        model.addAttribute(
-                "oneFactorEmailOtpSuccessRate",
-                experimentResultService
-                        .getSuccessRateByAuthMethod(
-                                "one-factor-email-otp"));
+	    model.addAttribute(
+	            prefix + "ExperimentCount",
+	            experimentCount);
 
-        model.addAttribute(
-                "oneFactorEmailOtpAverageAttemptCount",
-                experimentResultService
-                        .getAverageAttemptCountByAuthMethod(
-                                "one-factor-email-otp"));
+	    // 成功回数
+	    int successCount =
+	            experimentResultService
+	                    .getSuccessCountByAuthMethod(
+	                            authMethod);
 
-        model.addAttribute(
-                "oneFactorEmailOtpSuccessAttackTimeTotal",
-                experimentResultService
-                        .getSuccessAttackTimeTotalByAuthMethod(
-                                "one-factor-email-otp"));
+	    model.addAttribute(
+	            prefix + "SuccessCount",
+	            successCount);
 
-        model.addAttribute(
-                "oneFactorEmailOtpAverageSuccessAttackTime",
-                experimentResultService
-                        .getAverageSuccessAttackTimeByAuthMethod(
-                                "one-factor-email-otp"));
+	    // 認証突破率
+	    double successRate =
+	            experimentResultService
+	                    .getSuccessRateByAuthMethod(
+	                            authMethod);
 
-        /*
-         * 二要素認証
-         *
-         * Password + Email OTP
-         */
-        model.addAttribute(
-                "twoFactorPasswordEmailOtpExperimentCount",
-                experimentResultService
-                        .getExperimentCountByAuthMethod(
-                                "two-factor-password-email-otp"));
+	    model.addAttribute(
+	            prefix + "SuccessRate",
+	            successRate);
 
-        model.addAttribute(
-                "twoFactorPasswordEmailOtpSuccessCount",
-                experimentResultService
-                        .getSuccessCountByAuthMethod(
-                                "two-factor-password-email-otp"));
+	    // 平均攻撃試行回数
+	    double averageAttemptCount =
+	            experimentResultService
+	                    .getAverageAttemptCountByAuthMethod(
+	                            authMethod);
 
-        model.addAttribute(
-                "twoFactorPasswordEmailOtpSuccessRate",
-                experimentResultService
-                        .getSuccessRateByAuthMethod(
-                                "two-factor-password-email-otp"));
+	    model.addAttribute(
+	            prefix + "AverageAttemptCount",
+	            averageAttemptCount);
 
-        model.addAttribute(
-                "twoFactorPasswordEmailOtpAverageAttemptCount",
-                experimentResultService
-                        .getAverageAttemptCountByAuthMethod(
-                                "two-factor-password-email-otp"));
+	    // 成功時の攻撃時間合計
+	    long successAttackTimeTotal =
+	            experimentResultService
+	                    .getSuccessAttackTimeTotalByAuthMethod(
+	                            authMethod);
 
-        model.addAttribute(
-                "twoFactorPasswordEmailOtpSuccessAttackTimeTotal",
-                experimentResultService
-                        .getSuccessAttackTimeTotalByAuthMethod(
-                                "two-factor-password-email-otp"));
+	    model.addAttribute(
+	            prefix + "SuccessAttackTimeTotal",
+	            successAttackTimeTotal);
 
-        model.addAttribute(
-                "twoFactorPasswordEmailOtpAverageSuccessAttackTime",
-                experimentResultService
-                        .getAverageSuccessAttackTimeByAuthMethod(
-                                "two-factor-password-email-otp"));
+	    // 平均攻撃成功時間
+	    double averageSuccessAttackTime =
+	            experimentResultService
+	                    .getAverageSuccessAttackTimeByAuthMethod(
+	                            authMethod);
 
-        return "results";
-    }
+	    model.addAttribute(
+	            prefix + "AverageSuccessAttackTime",
+	            averageSuccessAttackTime);
+	}
 
-    /**
-     * 選択した実験結果を削除
-     */
+    // =========================================================
+    // 選択した結果を削除
+    // =========================================================
+
     @PostMapping("/results/delete")
     public String deleteResults(
             @RequestParam(
-                    name = "ids",
+                    value = "ids",
                     required = false)
             List<Long> ids) {
 
-        experimentResultService
-                .deleteResultsByIds(ids);
+        if (ids != null && !ids.isEmpty()) {
+
+            experimentResultService
+                    .deleteResults(ids);
+        }
 
         return "redirect:/results";
     }
 
-    /**
-     * 全実験結果を削除
-     */
+    // =========================================================
+    // 全結果削除
+    // =========================================================
+
     @PostMapping("/results/clear")
     public String clearResults() {
 
-        experimentResultService.clearResults();
+        experimentResultService
+                .clearResults();
 
         return "redirect:/results";
     }
 
-    /**
-     * 多段階認証の突破情報を作成
-     */
-    private String createPasswordCredential(
-            AttackResult result) {
+    // =========================================================
+    // 多段階認証の認証情報表示用
+    // =========================================================
 
-        StringBuilder credential =
-                new StringBuilder();
+    private String createMultiStageCredential(
+            MultiStagePasswordBruteForceAttack
+                    .AttackResult result) {
 
-        if (result.getPassword() != null) {
+        if (result.getStageCount() == 1) {
 
-            credential.append(
-                    "Password="
-                    + result.getPassword());
+            return result.getPassword();
+
+        } else if (result.getStageCount() == 2) {
+
+            return result.getPassword()
+                    + " → "
+                    + result.getPassword2();
+
+        } else if (result.getStageCount() == 3) {
+
+            return result.getPassword()
+                    + " → "
+                    + result.getPassword2()
+                    + " → "
+                    + result.getPassword3();
         }
 
-        if (result.getPassword2() != null) {
-
-            credential.append(
-                    " / Password2="
-                    + result.getPassword2());
-        }
-
-        if (result.getPassword3() != null) {
-
-            credential.append(
-                    " / Password3="
-                    + result.getPassword3());
-        }
-
-        return credential.toString();
+        return null;
     }
 
-    /**
-     * 一要素・二要素認証の突破情報を作成
-     */
+    // =========================================================
+    // 多段階認証の構成表示用
+    // =========================================================
+
+    private String createMultiStageConfiguration(
+            MultiStagePasswordBruteForceAttack
+                    .AttackResult result) {
+
+        if (result.getStageCount() == 1) {
+
+            return "ID + Password";
+
+        } else if (result.getStageCount() == 2) {
+
+            return "ID + Password → Password2";
+
+        } else if (result.getStageCount() == 3) {
+
+            return "ID + Password → Password2 → Password3";
+        }
+
+        return null;
+    }
+
+    // =========================================================
+    // 要素認証の認証情報表示用
+    // =========================================================
+
     private String createFactorCredential(
-            FactorAttackResult result) {
+            FactorAuthenticationAttack
+                    .FactorAttackResult result) {
 
-        StringBuilder credential =
-                new StringBuilder();
+        String password =
+                result.getPassword();
 
-        if (result.getPassword() != null) {
+        String otp =
+                result.getOtp();
 
-            credential.append(
-                    "Password="
-                    + result.getPassword());
+        if (password != null
+                && otp != null) {
+
+            return password
+                    + " → "
+                    + otp;
         }
 
-        if (result.getOtp() != null) {
+        if (password != null) {
 
-            if (credential.length() > 0) {
-
-                credential.append(" / ");
-            }
-
-            credential.append(
-                    "Email OTP="
-                    + result.getOtp());
+            return password;
         }
 
-        return credential.toString();
+        if (otp != null) {
+
+            return otp;
+        }
+
+        return null;
     }
 }

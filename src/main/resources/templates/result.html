@@ -22,11 +22,15 @@
 
         .container {
             width: 420px;
+            max-width: calc(100% - 40px);
             margin: 80px auto;
             padding: 30px;
             background: white;
             border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            box-shadow:
+                0 4px 12px
+                rgba(0, 0, 0, 0.15);
+            box-sizing: border-box;
         }
 
         h1 {
@@ -36,8 +40,8 @@
 
         h2 {
             font-size: 18px;
-            margin-top: 25px;
-            margin-bottom: 10px;
+            margin-top: 5px;
+            margin-bottom: 15px;
         }
 
         .result-box {
@@ -73,8 +77,8 @@
         }
 
         .password-box {
-            margin-top: 15px;
-            padding: 12px;
+            margin-top: 20px;
+            padding: 15px;
             background: #eeeeee;
             border-radius: 5px;
         }
@@ -105,10 +109,10 @@
 
 <div class="container">
 
-    <h1>攻撃シミュレーション結果</h1>
-
+    <h2>攻撃シミュレーション結果</h2>
 
     <!-- 攻撃方式 -->
+
     <div class="result-box">
 
         <div class="result-row">
@@ -118,6 +122,8 @@
             </span>
 
             <span th:switch="${authMethod}">
+
+                <!-- 多段階認証 -->
 
                 <span th:case="'one-stage'">
                     一段階認証
@@ -131,9 +137,33 @@
                     三段階認証
                 </span>
 
+
+                <!-- 一要素認証 -->
+
+                <span th:case="'one-factor-password'">
+                    一要素認証（Password）
+                </span>
+
+                <span th:case="'one-factor-email-otp'">
+                    一要素認証（Email OTP）
+                </span>
+
+
+                <!-- 二要素認証 -->
+
+                <span th:case="'two-factor-password-email-otp'">
+                    二要素認証（Password + Email OTP）
+                </span>
+
+
+                <!-- 旧方式 -->
+
                 <span th:case="'email-otp'">
                     メールOTP総当たり
                 </span>
+
+
+                <!-- その他 -->
 
                 <span th:case="*">
                     不明
@@ -145,6 +175,7 @@
 
 
         <!-- 認証段階数 -->
+
         <div class="result-row"
              th:if="${stageCount != null}">
 
@@ -164,6 +195,7 @@
 
 
         <!-- 総試行回数 -->
+
         <div class="result-row">
 
             <span class="label">
@@ -171,7 +203,7 @@
             </span>
 
             <span th:text="${attemptCount}">
-                10000
+                0
             </span>
 
             <span>
@@ -184,8 +216,9 @@
 
 
     <!-- 攻撃成功 -->
+
     <div class="success"
-         th:if="${success}">
+         th:if="${success == true}">
 
         攻撃結果：成功
 
@@ -193,22 +226,25 @@
 
 
     <!-- 攻撃失敗 -->
+
     <div class="failure"
-         th:if="${!success}">
+         th:if="${success == false}">
 
         攻撃結果：失敗
 
     </div>
 
 
-    <!-- パスワード総当たり結果 -->
+    <!-- パスワード関連の突破結果 -->
+
     <div class="password-box"
-         th:if="${success and authMethod != 'email-otp'}">
+         th:if="${success == true and password != null}">
 
         <h2>突破した認証情報</h2>
 
 
         <!-- Password -->
+
         <div class="result-row"
              th:if="${password != null}">
 
@@ -224,6 +260,7 @@
 
 
         <!-- Password2 -->
+
         <div class="result-row"
              th:if="${password2 != null}">
 
@@ -239,6 +276,7 @@
 
 
         <!-- Password3 -->
+
         <div class="result-row"
              th:if="${password3 != null}">
 
@@ -252,14 +290,8 @@
 
         </div>
 
-    </div>
 
-
-    <!-- メールOTP総当たり結果 -->
-    <div class="password-box"
-         th:if="${success and authMethod == 'email-otp'}">
-
-        <h2>突破した認証情報</h2>
+        <!-- OTP -->
 
         <div class="result-row"
              th:if="${otp != null}">
@@ -277,7 +309,32 @@
     </div>
 
 
+    <!-- OTPだけが突破された場合 -->
+
+    <div class="password-box"
+         th:if="${success == true
+                 and password == null
+                 and otp != null}">
+
+        <h2>突破した認証情報</h2>
+
+        <div class="result-row">
+
+            <span class="label">
+                OTP：
+            </span>
+
+            <span th:text="${otp}">
+                999999
+            </span>
+
+        </div>
+
+    </div>
+
+
     <!-- 戻る -->
+
     <a href="/"
        class="back-button">
 

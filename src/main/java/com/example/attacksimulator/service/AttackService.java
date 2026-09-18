@@ -7,6 +7,8 @@ import com.example.attacksimulator.attack.FactorAuthenticationAttack;
 import com.example.attacksimulator.attack.MultiStagePasswordBruteForceAttack;
 import com.example.attacksimulator.attack.MultiStagePasswordBruteForceAttack.AttackResult;
 import com.example.attacksimulator.attack.PasswordBruteForceAttack;
+import com.example.attacksimulator.model.NewAuthLabUser;
+import com.example.attacksimulator.repository.NewAuthLabUserRepository;
 
 @Service
 public class AttackService {
@@ -23,11 +25,15 @@ public class AttackService {
     private final FactorAuthenticationAttack
             factorAuthenticationAttack;
 
+    private final NewAuthLabUserRepository
+            newAuthLabUserRepository;
+
     public AttackService(
             PasswordBruteForceAttack passwordBruteForceAttack,
             MultiStagePasswordBruteForceAttack multiStagePasswordBruteForceAttack,
             EmailOtpBruteForceAttack emailOtpBruteForceAttack,
-            FactorAuthenticationAttack factorAuthenticationAttack) {
+            FactorAuthenticationAttack factorAuthenticationAttack,
+            NewAuthLabUserRepository newAuthLabUserRepository) {
 
         this.passwordBruteForceAttack =
                 passwordBruteForceAttack;
@@ -40,53 +46,97 @@ public class AttackService {
 
         this.factorAuthenticationAttack =
                 factorAuthenticationAttack;
+
+        this.newAuthLabUserRepository =
+                newAuthLabUserRepository;
     }
 
-    /**
-     * 一段階認証
-     *
-     * ID + Password
-     *
-     * 認証操作回数：3回
-     */
-    public AttackResult executeOneStage() {
+    // =========================================================
+    // 対象ユーザー取得
+    // =========================================================
+
+    private NewAuthLabUser getUser(
+            String username) {
+
+        return newAuthLabUserRepository
+                .findByUsername(username)
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "指定されたユーザーが見つかりません: "
+                                + username));
+    }
+
+    // =========================================================
+    // 一段階認証
+    // ID + Password
+    // =========================================================
+
+    public AttackResult executeOneStage(
+            String username) {
+
+        NewAuthLabUser user =
+                getUser(username);
 
         return multiStagePasswordBruteForceAttack
-                .executeOneStage();
+                .executeOneStage(
+                        user.getPassword());
     }
 
-    /**
-     * 二段階認証
-     *
-     * ID + Password → Password2
-     *
-     * 認証操作回数：5回
-     */
-    public AttackResult executeTwoStage() {
+    // =========================================================
+    // 二段階認証
+    // Password → Password2
+    // =========================================================
+
+    public AttackResult executeTwoStage(
+            String username) {
+
+        NewAuthLabUser user =
+                getUser(username);
 
         return multiStagePasswordBruteForceAttack
-                .executeTwoStage();
+                .executeTwoStage(
+                        user.getPassword(),
+                        user.getPassword2());
     }
 
-    /**
-     * 三段階認証
-     *
-     * ID + Password → Password2 → Password3
-     *
-     * 認証操作回数：7回
-     */
-    public AttackResult executeThreeStage() {
+    // =========================================================
+    // 三段階認証
+    // Password → Password2 → Password3
+    // =========================================================
+
+    public AttackResult executeThreeStage(
+            String username) {
+
+        NewAuthLabUser user =
+                getUser(username);
 
         return multiStagePasswordBruteForceAttack
-                .executeThreeStage();
+                .executeThreeStage(
+                        user.getPassword(),
+                        user.getPassword2(),
+                        user.getPassword3());
     }
 
-    /**
-     * メールOTP総当たり攻撃
-     *
-     * ※既存処理との互換性のため残している。
-     * 最終的な認証方式の選択では使用しない。
-     */
+    // =========================================================
+    // Password総当たり
+    // =========================================================
+
+    public PasswordBruteForceAttack.AttackResult
+    executePasswordBruteForce(
+            String username) {
+
+        NewAuthLabUser user =
+                getUser(username);
+
+        return passwordBruteForceAttack
+                .execute(
+                        user.getPassword());
+    }
+
+    // =========================================================
+    // Email OTP総当たり
+    // =========================================================
+
     public EmailOtpBruteForceAttack.AttackResult
     executeEmailOtpBruteForce(
             int maxAttempts) {
@@ -95,39 +145,26 @@ public class AttackService {
                 .execute(maxAttempts);
     }
 
-    /**
-     * 従来の4桁パスワード総当たり攻撃
-     *
-     * ※既存処理との互換性のため残している。
-     */
-    public PasswordBruteForceAttack.AttackResult
-    executePasswordBruteForce() {
+    // =========================================================
+    // 一要素認証 Password
+    // =========================================================
 
-        return passwordBruteForceAttack
-                .execute();
-    }
-
-    /**
-     * 一要素認証（Password）
-     *
-     * ID + Password
-     *
-     * 認証操作回数：3回
-     */
     public FactorAuthenticationAttack.FactorAttackResult
-    executeOneFactorPassword() {
+    executeOneFactorPassword(
+            String username) {
+
+        NewAuthLabUser user =
+                getUser(username);
 
         return factorAuthenticationAttack
-                .executeOneFactorPassword();
+                .executeOneFactorPassword(
+                        user.getPassword());
     }
 
-    /**
-     * 一要素認証（Email OTP）
-     *
-     * ID + Email OTP
-     *
-     * 認証操作回数：3回
-     */
+    // =========================================================
+    // 一要素認証 Email OTP
+    // =========================================================
+
     public FactorAuthenticationAttack.FactorAttackResult
     executeOneFactorEmailOtp(
             int maxAttempts) {
@@ -137,19 +174,22 @@ public class AttackService {
                         maxAttempts);
     }
 
-    /**
-     * 二要素認証
-     *
-     * ID + Password → Email OTP
-     *
-     * 認証操作回数：5回
-     */
+    // =========================================================
+    // 二要素認証
+    // Password → Email OTP
+    // =========================================================
+
     public FactorAuthenticationAttack.FactorAttackResult
     executeTwoFactorPasswordEmailOtp(
+            String username,
             int maxOtpAttempts) {
+
+        NewAuthLabUser user =
+                getUser(username);
 
         return factorAuthenticationAttack
                 .executeTwoFactorPasswordEmailOtp(
+                        user.getPassword(),
                         maxOtpAttempts);
     }
 }

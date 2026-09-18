@@ -22,27 +22,104 @@ public class ExperimentResultService {
                 experimentResultRepository;
     }
 
+    // ========================================
+    // 保存
+    // ========================================
+
     /**
-     * 実験結果をDBに保存
+     * ExperimentResultオブジェクトをDBに保存
      */
     public ExperimentResult addResult(
             ExperimentResult result) {
 
         /*
-         * 実験番号を自動設定
+         * 実験番号が設定されていない場合は
+         * 次の実験番号を自動設定
          */
         if (result.getExperimentNumber() <= 0) {
 
-            int nextExperimentNumber =
-                    getResultCount() + 1;
-
             result.setExperimentNumber(
-                    nextExperimentNumber);
+                    getNextExperimentNumber());
         }
 
         return experimentResultRepository.save(
                 result);
     }
+
+    /**
+     * 各項目を指定して実験結果を作成し、
+     * DBに保存する
+     *
+     * AttackControllerから使用
+     */
+    public ExperimentResult addResult(
+            int experimentNumber,
+            String authMethod,
+            int operationCount,
+            String authenticationConfiguration,
+            int maxAttemptCount,
+            int attemptCount,
+            boolean success,
+            String credential,
+            long attackTimeMs) {
+
+        ExperimentResult result =
+                new ExperimentResult();
+
+        result.setExperimentNumber(
+                experimentNumber);
+
+        result.setAuthMethod(
+                authMethod);
+
+        result.setOperationCount(
+                operationCount);
+
+        result.setAuthenticationConfiguration(
+                authenticationConfiguration);
+
+        result.setMaxAttemptCount(
+                maxAttemptCount);
+
+        result.setAttemptCount(
+                attemptCount);
+
+        result.setSuccess(
+                success);
+
+        result.setCredential(
+                credential);
+
+        result.setAttackTimeMs(
+                attackTimeMs);
+        
+        result.setExperimentDateTime(
+                java.time.LocalDateTime.now());
+
+        return experimentResultRepository.save(
+                result);
+    }
+
+    /**
+     * 次の実験番号を取得
+     */
+    public int getNextExperimentNumber() {
+
+        List<ExperimentResult> results =
+                experimentResultRepository
+                        .findAllByOrderByExperimentNumberAsc();
+
+        if (results.isEmpty()) {
+            return 1;
+        }
+
+        return results.get(results.size() - 1)
+                .getExperimentNumber() + 1;
+    }
+
+    // ========================================
+    // 取得
+    // ========================================
 
     /**
      * 全実験結果を取得
@@ -56,6 +133,16 @@ public class ExperimentResultService {
     }
 
     /**
+     * AttackControllerとの互換用
+     *
+     * 全実験結果を取得
+     */
+    public List<ExperimentResult> getAllResults() {
+
+        return getResults();
+    }
+
+    /**
      * 認証方式ごとの実験結果を取得
      */
     public List<ExperimentResult>
@@ -66,6 +153,10 @@ public class ExperimentResultService {
                 .findByAuthMethodOrderByExperimentNumberAsc(
                         authMethod);
     }
+
+    // ========================================
+    // 件数
+    // ========================================
 
     /**
      * 実験結果の総数
@@ -105,6 +196,10 @@ public class ExperimentResultService {
         return successCount;
     }
 
+    // ========================================
+    // 認証突破率
+    // ========================================
+
     /**
      * 認証方式ごとの認証突破率
      */
@@ -127,6 +222,10 @@ public class ExperimentResultService {
                 / totalExperimentCount
                 * 100.0;
     }
+
+    // ========================================
+    // 攻撃試行回数
+    // ========================================
 
     /**
      * 認証方式ごとの平均攻撃試行回数
@@ -153,6 +252,10 @@ public class ExperimentResultService {
         return (double) totalAttemptCount
                 / results.size();
     }
+
+    // ========================================
+    // 攻撃時間
+    // ========================================
 
     /**
      * 認証方式ごとの
@@ -327,6 +430,16 @@ public class ExperimentResultService {
          * 削除後に実験番号を1から詰め直す
          */
         renumberExperiments();
+    }
+
+    /**
+     * AttackControllerとの互換用
+     */
+    @Transactional
+    public void deleteResults(
+            List<Long> ids) {
+
+        deleteResultsByIds(ids);
     }
 
     /**

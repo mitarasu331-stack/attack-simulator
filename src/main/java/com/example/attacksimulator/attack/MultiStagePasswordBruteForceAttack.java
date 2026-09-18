@@ -1,257 +1,334 @@
 package com.example.attacksimulator.attack;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
 public class MultiStagePasswordBruteForceAttack {
 
-    /**
-     * 4桁数字パスワードの候補を生成する。
-     */
-    private String generateCandidate(int number) {
+    private final PasswordEncoder passwordEncoder;
 
-        if (number < 0 || number > 9999) {
-            throw new IllegalArgumentException(
-                    "4桁パスワードの範囲は0000～9999です。");
-        }
+    public MultiStagePasswordBruteForceAttack(
+            PasswordEncoder passwordEncoder) {
 
-        return String.format("%04d", number);
+        this.passwordEncoder = passwordEncoder;
     }
 
-    /**
-     * 一段階認証の総当たり攻撃。
-     *
-     * ID + Password
-     */
-    public AttackResult executeOneStage() {
+    // =========================================================
+    // 一段階認証
+    // Password
+    // =========================================================
 
-        String targetPassword = "9999";
+    public AttackResult executeOneStage(
+            String passwordHash) {
+
+        int attemptCount = 0;
 
         for (int i = 0; i <= 9999; i++) {
 
-            String candidate = generateCandidate(i);
+            String candidate =
+                    String.format("%04d", i);
 
-            int attemptCount = i + 1;
+            attemptCount++;
 
             System.out.println(
-                    "Stage 1 - Attempt "
+                    "Stage 1 Attempt "
                     + attemptCount
-                    + " : password="
+                    + " : candidate="
                     + candidate);
 
-            if (candidate.equals(targetPassword)) {
+            if (passwordEncoder.matches(
+                    candidate,
+                    passwordHash)) {
 
                 System.out.println(
-                        "Stage 1 password found: "
+                        "Password found: "
                         + candidate);
 
                 return new AttackResult(
-                        "one-stage",
                         true,
                         1,
                         attemptCount,
                         candidate,
                         null,
-                        null);
+                        null,
+                        "one-stage");
             }
         }
 
         return new AttackResult(
-                "one-stage",
                 false,
                 1,
-                10000,
+                attemptCount,
                 null,
                 null,
-                null);
+                null,
+                "one-stage");
     }
 
-    /**
-     * 二段階認証の総当たり攻撃。
-     *
-     * ID + Password
-     * ↓
-     * Password2
-     */
-    public AttackResult executeTwoStage() {
+    // =========================================================
+    // 二段階認証
+    // Password → Password2
+    // =========================================================
 
-        String targetPassword = "9999";
-        String targetPassword2 = "9999";
+    public AttackResult executeTwoStage(
+            String passwordHash,
+            String password2Hash) {
 
         int totalAttempts = 0;
 
-        // 第1段階
+        String password = null;
+        String password2 = null;
+
+        // -----------------------------------------------------
+        // 第1段階 Password
+        // -----------------------------------------------------
+
         for (int i = 0; i <= 9999; i++) {
 
-            String candidate = generateCandidate(i);
+            String candidate =
+                    String.format("%04d", i);
 
             totalAttempts++;
 
             System.out.println(
-                    "Stage 1 - Attempt "
-                    + (i + 1)
-                    + " : password="
+                    "Stage 1 Attempt "
+                    + totalAttempts
+                    + " : candidate="
                     + candidate);
 
-            if (candidate.equals(targetPassword)) {
+            if (passwordEncoder.matches(
+                    candidate,
+                    passwordHash)) {
+
+                password = candidate;
 
                 System.out.println(
-                        "Stage 1 password found: "
-                        + candidate);
+                        "Password found: "
+                        + password);
 
                 break;
             }
         }
 
-        // 第2段階
+        if (password == null) {
+
+            return new AttackResult(
+                    false,
+                    2,
+                    totalAttempts,
+                    null,
+                    null,
+                    null,
+                    "two-stage");
+        }
+
+        // -----------------------------------------------------
+        // 第2段階 Password2
+        // -----------------------------------------------------
+
+        int password2Attempts = 0;
+
         for (int i = 0; i <= 9999; i++) {
 
-            String candidate = generateCandidate(i);
+            String candidate =
+                    String.format("%04d", i);
 
+            password2Attempts++;
             totalAttempts++;
 
             System.out.println(
-                    "Stage 2 - Attempt "
-                    + (i + 1)
-                    + " : password2="
+                    "Stage 2 Attempt "
+                    + password2Attempts
+                    + " : candidate="
                     + candidate);
 
-            if (candidate.equals(targetPassword2)) {
+            if (passwordEncoder.matches(
+                    candidate,
+                    password2Hash)) {
+
+                password2 = candidate;
 
                 System.out.println(
-                        "Stage 2 password found: "
-                        + candidate);
+                        "Password2 found: "
+                        + password2);
 
                 return new AttackResult(
-                        "two-stage",
                         true,
                         2,
                         totalAttempts,
-                        targetPassword,
-                        candidate,
-                        null);
+                        password,
+                        password2,
+                        null,
+                        "two-stage");
             }
         }
 
         return new AttackResult(
-                "two-stage",
                 false,
                 2,
                 totalAttempts,
-                targetPassword,
+                password,
                 null,
-                null);
+                null,
+                "two-stage");
     }
 
-    /**
-     * 三段階認証の総当たり攻撃。
-     *
-     * ID + Password
-     * ↓
-     * Password2
-     * ↓
-     * Password3
-     */
-    public AttackResult executeThreeStage() {
+    // =========================================================
+    // 三段階認証
+    // Password → Password2 → Password3
+    // =========================================================
 
-        String targetPassword = "9999";
-        String targetPassword2 = "9999";
-        String targetPassword3 = "9999";
+    public AttackResult executeThreeStage(
+            String passwordHash,
+            String password2Hash,
+            String password3Hash) {
 
         int totalAttempts = 0;
 
-        // 第1段階
+        String password = null;
+        String password2 = null;
+        String password3 = null;
+
+        // -----------------------------------------------------
+        // 第1段階 Password
+        // -----------------------------------------------------
+
         for (int i = 0; i <= 9999; i++) {
 
-            String candidate = generateCandidate(i);
+            String candidate =
+                    String.format("%04d", i);
 
             totalAttempts++;
 
             System.out.println(
-                    "Stage 1 - Attempt "
-                    + (i + 1)
-                    + " : password="
+                    "Stage 1 Attempt "
+                    + totalAttempts
+                    + " : candidate="
                     + candidate);
 
-            if (candidate.equals(targetPassword)) {
+            if (passwordEncoder.matches(
+                    candidate,
+                    passwordHash)) {
+
+                password = candidate;
 
                 System.out.println(
-                        "Stage 1 password found: "
-                        + candidate);
+                        "Password found: "
+                        + password);
 
                 break;
             }
         }
 
-        // 第2段階
+        if (password == null) {
+
+            return new AttackResult(
+                    false,
+                    3,
+                    totalAttempts,
+                    null,
+                    null,
+                    null,
+                    "three-stage");
+        }
+
+        // -----------------------------------------------------
+        // 第2段階 Password2
+        // -----------------------------------------------------
+
         for (int i = 0; i <= 9999; i++) {
 
-            String candidate = generateCandidate(i);
+            String candidate =
+                    String.format("%04d", i);
 
             totalAttempts++;
 
             System.out.println(
-                    "Stage 2 - Attempt "
-                    + (i + 1)
-                    + " : password2="
+                    "Stage 2 Attempt "
+                    + totalAttempts
+                    + " : candidate="
                     + candidate);
 
-            if (candidate.equals(targetPassword2)) {
+            if (passwordEncoder.matches(
+                    candidate,
+                    password2Hash)) {
+
+                password2 = candidate;
 
                 System.out.println(
-                        "Stage 2 password found: "
-                        + candidate);
+                        "Password2 found: "
+                        + password2);
 
                 break;
             }
         }
 
-        // 第3段階
+        if (password2 == null) {
+
+            return new AttackResult(
+                    false,
+                    3,
+                    totalAttempts,
+                    password,
+                    null,
+                    null,
+                    "three-stage");
+        }
+
+        // -----------------------------------------------------
+        // 第3段階 Password3
+        // -----------------------------------------------------
+
         for (int i = 0; i <= 9999; i++) {
 
-            String candidate = generateCandidate(i);
+            String candidate =
+                    String.format("%04d", i);
 
             totalAttempts++;
 
             System.out.println(
-                    "Stage 3 - Attempt "
-                    + (i + 1)
-                    + " : password3="
+                    "Stage 3 Attempt "
+                    + totalAttempts
+                    + " : candidate="
                     + candidate);
 
-            if (candidate.equals(targetPassword3)) {
+            if (passwordEncoder.matches(
+                    candidate,
+                    password3Hash)) {
+
+                password3 = candidate;
 
                 System.out.println(
-                        "Stage 3 password found: "
-                        + candidate);
+                        "Password3 found: "
+                        + password3);
 
                 return new AttackResult(
-                        "three-stage",
                         true,
                         3,
                         totalAttempts,
-                        targetPassword,
-                        targetPassword2,
-                        candidate);
+                        password,
+                        password2,
+                        password3,
+                        "three-stage");
             }
         }
 
         return new AttackResult(
-                "three-stage",
                 false,
                 3,
                 totalAttempts,
-                targetPassword,
-                targetPassword2,
-                null);
+                password,
+                password2,
+                null,
+                "three-stage");
     }
 
-    /**
-     * 攻撃結果
-     */
-    public static class AttackResult {
+    // =========================================================
+    // 結果
+    // =========================================================
 
-        private final String authMethod;
+    public static class AttackResult {
 
         private final boolean success;
 
@@ -265,26 +342,24 @@ public class MultiStagePasswordBruteForceAttack {
 
         private final String password3;
 
+        private final String authMethod;
+
         public AttackResult(
-                String authMethod,
                 boolean success,
                 int stageCount,
                 int totalAttempts,
                 String password,
                 String password2,
-                String password3) {
+                String password3,
+                String authMethod) {
 
-            this.authMethod = authMethod;
             this.success = success;
             this.stageCount = stageCount;
             this.totalAttempts = totalAttempts;
             this.password = password;
             this.password2 = password2;
             this.password3 = password3;
-        }
-
-        public String getAuthMethod() {
-            return authMethod;
+            this.authMethod = authMethod;
         }
 
         public boolean isSuccess() {
@@ -309,6 +384,10 @@ public class MultiStagePasswordBruteForceAttack {
 
         public String getPassword3() {
             return password3;
+        }
+
+        public String getAuthMethod() {
+            return authMethod;
         }
     }
 }
