@@ -29,12 +29,18 @@ public class FactorAuthenticationAttack {
      * ID + Password
      *
      * 認証操作回数：3回
+     *
+     * @param passwordHash
+     *        DBに保存されているPasswordのBCryptハッシュ
      */
-    public FactorAttackResult executeOneFactorPassword() {
+    public FactorAttackResult
+    executeOneFactorPassword(
+            String passwordHash) {
 
         PasswordBruteForceAttack.AttackResult
                 result =
-                passwordBruteForceAttack.execute();
+                passwordBruteForceAttack
+                        .execute(passwordHash);
 
         return new FactorAttackResult(
                 "one-factor-password",
@@ -54,7 +60,8 @@ public class FactorAuthenticationAttack {
      *
      * 認証操作回数：3回
      */
-    public FactorAttackResult executeOneFactorEmailOtp(
+    public FactorAttackResult
+    executeOneFactorEmailOtp(
             int maxAttempts) {
 
         EmailOtpBruteForceAttack.AttackResult
@@ -79,18 +86,29 @@ public class FactorAuthenticationAttack {
      * ID + Password → Email OTP
      *
      * 認証操作回数：5回
+     *
+     * @param passwordHash
+     *        DBに保存されているPasswordのBCryptハッシュ
+     *
+     * @param maxOtpAttempts
+     *        Email OTPの最大試行回数
      */
     public FactorAttackResult
     executeTwoFactorPasswordEmailOtp(
+            String passwordHash,
             int maxOtpAttempts) {
 
         /*
          * 第1要素：
          * ID + Password
+         *
+         * DBから取得したBCryptハッシュに対して
+         * Password総当たりを実行する。
          */
         PasswordBruteForceAttack.AttackResult
                 passwordResult =
-                passwordBruteForceAttack.execute();
+                passwordBruteForceAttack
+                        .execute(passwordHash);
 
         /*
          * Passwordを突破できなかった場合、
