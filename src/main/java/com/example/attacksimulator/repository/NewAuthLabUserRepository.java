@@ -41,7 +41,12 @@ public class NewAuthLabUserRepository {
 
 	/**
 	 * usernameを指定して、
-	 * パスワードのBCryptハッシュを取得する
+	 * ユーザー情報を取得する
+	 *
+	 * password / password2 / password3 は
+	 * BCryptハッシュ
+	 *
+	 * emailも取得する
 	 */
 	public Optional<NewAuthLabUser> findByUsername(
 			String username) {
@@ -50,7 +55,8 @@ public class NewAuthLabUserRepository {
 				"SELECT username, "
 						+ "password, "
 						+ "password2, "
-						+ "password3 "
+						+ "password3, "
+						+ "email "
 						+ "FROM users "
 						+ "WHERE username = ?";
 
@@ -66,7 +72,9 @@ public class NewAuthLabUserRepository {
 								resultSet.getString(
 										"password2"),
 								resultSet.getString(
-										"password3")),
+										"password3"),
+								resultSet.getString(
+										"email")),
 						username);
 
 		if (users.isEmpty()) {

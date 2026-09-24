@@ -582,6 +582,159 @@ public class NewAuthLabLoginClient {
 	}
 
 	// =========================================================
+	// 一要素認証
+	// Email OTP
+	// =========================================================
+
+	public LoginResult loginOneFactorEmailOtp(
+			String email,
+			String otp) {
+
+		// 前回のセッションを削除
+		cookieManager.getCookieStore().removeAll();
+
+		System.out.println(
+				"===== loginOneFactorEmailOtp 呼び出し =====");
+
+		System.out.println(
+				"email = " + email);
+
+		System.out.println(
+				"otp = " + otp);
+
+		try {
+
+			// =================================================
+			// 1. OTP送信
+			// =================================================
+
+			String sendOtpBody =
+					"email="
+							+ URLEncoder.encode(
+									email,
+									StandardCharsets.UTF_8);
+
+			HttpRequest sendOtpRequest =
+					HttpRequest.newBuilder()
+					.uri(URI.create(
+							NEW_AUTH_LAB_URL
+							+ "/send-otp"))
+					.header(
+							"Content-Type",
+							"application/x-www-form-urlencoded")
+					.POST(
+							HttpRequest.BodyPublishers
+							.ofString(
+									sendOtpBody,
+									StandardCharsets.UTF_8))
+					.build();
+
+			System.out.println(
+					"POST /send-otp を送信");
+
+			HttpResponse<String> sendOtpResponse =
+					httpClient.send(
+							sendOtpRequest,
+							HttpResponse.BodyHandlers
+							.ofString(
+									StandardCharsets.UTF_8));
+
+			System.out.println(
+					"OTP送信 HTTP Status = "
+							+ sendOtpResponse.statusCode());
+
+			// =================================================
+			// 2. OTP確認
+			// =================================================
+
+			String verifyOtpBody =
+					"otp="
+							+ URLEncoder.encode(
+									otp,
+									StandardCharsets.UTF_8);
+
+			HttpRequest verifyOtpRequest =
+					HttpRequest.newBuilder()
+					.uri(URI.create(
+							NEW_AUTH_LAB_URL
+							+ "/verify-otp"))
+					.header(
+							"Content-Type",
+							"application/x-www-form-urlencoded")
+					.POST(
+							HttpRequest.BodyPublishers
+							.ofString(
+									verifyOtpBody,
+									StandardCharsets.UTF_8))
+					.build();
+
+			System.out.println(
+					"POST /verify-otp を送信");
+
+			HttpResponse<String> verifyOtpResponse =
+					httpClient.send(
+							verifyOtpRequest,
+							HttpResponse.BodyHandlers
+							.ofString(
+									StandardCharsets.UTF_8));
+
+			System.out.println(
+					"OTP確認 HTTP Status = "
+							+ verifyOtpResponse.statusCode());
+
+			System.out.println(
+					"OTP確認後 URL = "
+							+ verifyOtpResponse.uri());
+
+			// =================================================
+			// 現在のEmailControllerでは
+			// 成功時も redirect ではなく "index" を返す
+			// =================================================
+
+			boolean success =
+					verifyOtpResponse.body()
+					.contains("ログイン成功");
+
+			System.out.println(
+					"Email OTP実ログイン成功 = "
+							+ success);
+
+			System.out.println(
+					"========================================");
+
+			return new LoginResult(
+					success,
+					verifyOtpResponse.statusCode(),
+					verifyOtpResponse.uri().toString(),
+					verifyOtpResponse.body());
+
+		} catch (IOException e) {
+
+			e.printStackTrace();
+
+			return new LoginResult(
+					false,
+					-1,
+					null,
+					"通信エラー: "
+							+ e.getMessage());
+
+		} catch (InterruptedException e) {
+
+			Thread.currentThread().interrupt();
+
+			e.printStackTrace();
+
+			return new LoginResult(
+					false,
+					-1,
+					null,
+					"通信が中断されました: "
+							+ e.getMessage());
+		}
+	}
+
+	// =========================================================
 	// ログイン結果
 	// =========================================================
 
