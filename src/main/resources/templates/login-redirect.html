@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ja"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>ログイン処理中</title>
+</head>
+
+<body>
+
+    <p>newauthlabへログインしています...</p>
+
+	<form id="loginForm"
+	      action="http://localhost:8080/login/one-stage"
+	      method="post">
+
+	    <input type="hidden"
+	           name="username"
+	           th:value="${username}">
+
+	    <input type="hidden"
+	           name="password"
+	           th:value="${password}">
+
+	    <input type="hidden"
+	           name="fromAttackSimulator"
+	           value="true">
+
+	</form>
+
+    <script>
+        document.getElementById("loginForm").submit();
+    </script>
+
+</body>
+</html>

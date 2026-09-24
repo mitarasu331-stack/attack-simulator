@@ -22,79 +22,80 @@ public class ExperimentResultService {
                 experimentResultRepository;
     }
 
-    // ========================================
-    // 保存
-    // ========================================
+ // ========================================
+ // 保存
+ // ========================================
 
-    /**
-     * ExperimentResultオブジェクトをDBに保存
-     */
-    public ExperimentResult addResult(
-            ExperimentResult result) {
+ /**
+  * ExperimentResultオブジェクトをDBに保存
+  */
+ public ExperimentResult addResult(
+         ExperimentResult result) {
 
-        /*
-         * 実験番号が設定されていない場合は
-         * 次の実験番号を自動設定
-         */
-        if (result.getExperimentNumber() <= 0) {
+     if (result.getExperimentNumber() <= 0) {
 
-            result.setExperimentNumber(
-                    getNextExperimentNumber());
-        }
+         result.setExperimentNumber(
+                 getNextExperimentNumber());
+     }
 
-        return experimentResultRepository.save(
-                result);
-    }
+     return experimentResultRepository.save(
+             result);
+ }
+ 
+ public ExperimentResult getLatestResult() {
 
-    /**
-     * 各項目を指定して実験結果を作成し、
-     * DBに保存する
-     *
-     * AttackControllerから使用
-     */
-    public ExperimentResult addResult(
-            int experimentNumber,
-            String authMethod,
-            String authenticationConfiguration,
-            int maxAttemptCount,
-            int attemptCount,
-            boolean success,
-            String credential,
-            long attackTimeMs) {
+	    return experimentResultRepository
+	            .findTopByOrderByExperimentNumberDesc()
+	            .orElse(null);
+ }
 
-        ExperimentResult result =
-                new ExperimentResult();
+ /**
+  * 各項目を指定して実験結果を作成し、
+  * DBに保存する
+  */
+ public ExperimentResult addResult(
+	        int experimentNumber,
+	        String authMethod,
+	        String authenticationConfiguration,
+	        int maxAttemptCount,
+	        int attemptCount,
+	        boolean success,
+	        String credential,
+	        long attackTimeMs) {
 
-        result.setExperimentNumber(
-                experimentNumber);
+     ExperimentResult result =
+             new ExperimentResult();
 
-        result.setAuthMethod(
-                authMethod);
+     result.setExperimentNumber(
+             experimentNumber);
 
-        result.setAuthenticationConfiguration(
-                authenticationConfiguration);
+     result.setAuthMethod(
+             authMethod);
 
-        result.setMaxAttemptCount(
-                maxAttemptCount);
+     result.setAuthenticationConfiguration(
+             authenticationConfiguration);
 
-        result.setAttemptCount(
-                attemptCount);
+     result.setMaxAttemptCount(
+             maxAttemptCount);
 
-        result.setSuccess(
-                success);
+     result.setAttemptCount(
+             attemptCount);
 
-        result.setCredential(
-                credential);
+     result.setSuccess(
+             success);
+     
+     result.setCredential(
+    		 credential);
 
-        result.setAttackTimeMs(
-                attackTimeMs);
-        
-        result.setExperimentDateTime(
-                java.time.LocalDateTime.now());
+     result.setAttackTimeMs(
+             attackTimeMs);
 
-        return experimentResultRepository.save(
-                result);
-    }
+     result.setExperimentDateTime(
+             java.time.LocalDateTime.now());
+
+     return experimentResultRepository.save(
+             result);
+ }
 
     /**
      * 次の実験番号を取得

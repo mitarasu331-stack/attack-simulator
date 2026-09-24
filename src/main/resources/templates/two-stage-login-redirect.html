@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>二段階認証ログイン処理中</title>
+</head>
+
+<body>
+
+    <p>newauthlabへ二段階認証でログインしています...</p>
+
+    <!--
+         1段階目
+         Password
+    -->
+	<form id="firstLoginForm"
+	      action="http://localhost:8080/login/two-stage"
+	      method="post">
+
+	    <input type="hidden"
+	           name="username"
+	           th:value="${username}">
+
+	    <input type="hidden"
+	           name="password"
+	           th:value="${password}">
+
+	    <input type="hidden"
+	           name="password2"
+	           th:value="${password2}">
+
+	    <input type="hidden"
+	           name="fromAttackSimulator"
+	           value="true">
+
+	</form>
+
+    <script>
+        /*
+         * まずPasswordを送信する
+         */
+        document.getElementById(
+            "firstLoginForm"
+        ).submit();
+    </script>
+
+</body>
+</html>

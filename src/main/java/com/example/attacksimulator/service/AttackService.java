@@ -7,6 +7,8 @@ import com.example.attacksimulator.attack.FactorAuthenticationAttack;
 import com.example.attacksimulator.attack.MultiStagePasswordBruteForceAttack;
 import com.example.attacksimulator.attack.MultiStagePasswordBruteForceAttack.AttackResult;
 import com.example.attacksimulator.attack.PasswordBruteForceAttack;
+import com.example.attacksimulator.client.NewAuthLabLoginClient;
+import com.example.attacksimulator.client.NewAuthLabLoginClient.LoginResult;
 import com.example.attacksimulator.model.NewAuthLabUser;
 import com.example.attacksimulator.repository.NewAuthLabUserRepository;
 
@@ -28,12 +30,16 @@ public class AttackService {
     private final NewAuthLabUserRepository
             newAuthLabUserRepository;
 
+    private final NewAuthLabLoginClient
+            newAuthLabLoginClient;
+
     public AttackService(
             PasswordBruteForceAttack passwordBruteForceAttack,
             MultiStagePasswordBruteForceAttack multiStagePasswordBruteForceAttack,
             EmailOtpBruteForceAttack emailOtpBruteForceAttack,
             FactorAuthenticationAttack factorAuthenticationAttack,
-            NewAuthLabUserRepository newAuthLabUserRepository) {
+            NewAuthLabUserRepository newAuthLabUserRepository,
+            NewAuthLabLoginClient newAuthLabLoginClient) {
 
         this.passwordBruteForceAttack =
                 passwordBruteForceAttack;
@@ -49,6 +55,9 @@ public class AttackService {
 
         this.newAuthLabUserRepository =
                 newAuthLabUserRepository;
+
+        this.newAuthLabLoginClient =
+                newAuthLabLoginClient;
     }
 
     // =========================================================
@@ -63,7 +72,7 @@ public class AttackService {
                 .orElseThrow(() ->
                         new IllegalArgumentException(
                                 "指定されたユーザーが見つかりません: "
-                                + username));
+                                        + username));
     }
 
     // =========================================================
@@ -80,6 +89,40 @@ public class AttackService {
         return multiStagePasswordBruteForceAttack
                 .executeOneStage(
                         user.getPassword());
+    }
+
+    // =========================================================
+    // 一段階認証
+    // 総当たり成功後にnewauthlabへ実ログイン
+    // =========================================================
+
+    public OneStageLoginResult executeOneStageWithLogin(
+            String username) {
+
+        AttackResult attackResult =
+                executeOneStage(username);
+
+        if (!attackResult.isSuccess()) {
+
+            return new OneStageLoginResult(
+                    attackResult,
+                    false,
+                    null);
+        }
+
+        String password =
+                attackResult.getPassword();
+
+        LoginResult loginResult =
+                newAuthLabLoginClient
+                        .loginOneStage(
+                                username,
+                                password);
+
+        return new OneStageLoginResult(
+                attackResult,
+                loginResult.isSuccess(),
+                loginResult);
     }
 
     // =========================================================
@@ -100,6 +143,55 @@ public class AttackService {
     }
 
     // =========================================================
+    // 二段階認証
+    // 総当たり成功後にnewauthlabへ実ログイン
+    // =========================================================
+
+    public TwoStageLoginResult executeTwoStageWithLogin(
+            String username) {
+
+        AttackResult attackResult =
+                executeTwoStage(username);
+
+        /*
+         * Password または Password2 の
+         * 総当たりに失敗した場合
+         */
+        if (!attackResult.isSuccess()) {
+
+            return new TwoStageLoginResult(
+                    attackResult,
+                    false,
+                    null);
+        }
+
+        /*
+         * 総当たりで発見した
+         * Password / Password2
+         */
+        String password =
+                attackResult.getPassword();
+
+        String password2 =
+                attackResult.getPassword2();
+
+        /*
+         * newauthlabで実際の二段階ログイン
+         */
+        LoginResult loginResult =
+                newAuthLabLoginClient
+                        .loginTwoStage(
+                                username,
+                                password,
+                                password2);
+
+        return new TwoStageLoginResult(
+                attackResult,
+                loginResult.isSuccess(),
+                loginResult);
+    }
+
+    // =========================================================
     // 三段階認証
     // Password → Password2 → Password3
     // =========================================================
@@ -116,6 +208,65 @@ public class AttackService {
                         user.getPassword2(),
                         user.getPassword3());
     }
+    
+	 // =========================================================
+	 // 三段階認証
+	 // 総当たり成功後にnewauthlabへ実ログイン
+	 // =========================================================
+	
+	 public ThreeStageLoginResult executeThreeStageWithLogin(
+	         String username) {
+	
+	     // -----------------------------------------------------
+	     // 三段階の総当たりを実行
+	     // -----------------------------------------------------
+	
+	     AttackResult attackResult =
+	             executeThreeStage(username);
+	
+	     // -----------------------------------------------------
+	     // Password / Password2 / Password3 の
+	     // いずれかの突破に失敗した場合
+	     // -----------------------------------------------------
+	
+	     if (!attackResult.isSuccess()) {
+	
+	         return new ThreeStageLoginResult(
+	                 attackResult,
+	                 false,
+	                 null);
+	     }
+	
+	     // -----------------------------------------------------
+	     // 総当たりで発見した認証情報
+	     // -----------------------------------------------------
+	
+	     String password =
+	             attackResult.getPassword();
+	
+	     String password2 =
+	             attackResult.getPassword2();
+	
+	     String password3 =
+	             attackResult.getPassword3();
+	
+	     // -----------------------------------------------------
+	     // newauthlabで実際の三段階ログイン
+	     // -----------------------------------------------------
+	
+	     LoginResult loginResult =
+	             newAuthLabLoginClient
+	                     .loginThreeStage(
+	                             username,
+	                             password,
+	                             password2,
+	                             password3);
+	
+	     return new ThreeStageLoginResult(
+	             attackResult,
+	             loginResult.isSuccess(),
+	             loginResult);
+	 }
 
     // =========================================================
     // Password総当たり
@@ -192,4 +343,118 @@ public class AttackService {
                         user.getPassword(),
                         maxOtpAttempts);
     }
+
+    // =========================================================
+    // 一段階実ログイン結果
+    // =========================================================
+
+    public static class OneStageLoginResult {
+
+        private final AttackResult attackResult;
+        private final boolean loginSuccess;
+        private final LoginResult loginResult;
+
+        public OneStageLoginResult(
+                AttackResult attackResult,
+                boolean loginSuccess,
+                LoginResult loginResult) {
+
+            this.attackResult =
+                    attackResult;
+
+            this.loginSuccess =
+                    loginSuccess;
+
+            this.loginResult =
+                    loginResult;
+        }
+
+        public AttackResult getAttackResult() {
+            return attackResult;
+        }
+
+        public boolean isLoginSuccess() {
+            return loginSuccess;
+        }
+
+        public LoginResult getLoginResult() {
+            return loginResult;
+        }
+    }
+
+    // =========================================================
+    // 二段階実ログイン結果
+    // =========================================================
+
+    public static class TwoStageLoginResult {
+
+        private final AttackResult attackResult;
+        private final boolean loginSuccess;
+        private final LoginResult loginResult;
+
+        public TwoStageLoginResult(
+                AttackResult attackResult,
+                boolean loginSuccess,
+                LoginResult loginResult) {
+
+            this.attackResult =
+                    attackResult;
+
+            this.loginSuccess =
+                    loginSuccess;
+
+            this.loginResult =
+                    loginResult;
+        }
+
+        public AttackResult getAttackResult() {
+            return attackResult;
+        }
+
+        public boolean isLoginSuccess() {
+            return loginSuccess;
+        }
+
+        public LoginResult getLoginResult() {
+            return loginResult;
+        }
+    }
+    
+ // =========================================================
+ // 三段階実ログイン結果
+ // =========================================================
+
+ public static class ThreeStageLoginResult {
+
+     private final AttackResult attackResult;
+     private final boolean loginSuccess;
+     private final LoginResult loginResult;
+
+     public ThreeStageLoginResult(
+             AttackResult attackResult,
+             boolean loginSuccess,
+             LoginResult loginResult) {
+
+         this.attackResult =
+                 attackResult;
+
+         this.loginSuccess =
+                 loginSuccess;
+
+         this.loginResult =
+                 loginResult;
+     }
+
+     public AttackResult getAttackResult() {
+         return attackResult;
+     }
+
+     public boolean isLoginSuccess() {
+         return loginSuccess;
+     }
+
+     public LoginResult getLoginResult() {
+         return loginResult;
+     }
+ }
 }
