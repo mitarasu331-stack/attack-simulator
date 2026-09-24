@@ -12,67 +12,67 @@ import com.example.attacksimulator.model.NewAuthLabUser;
 @Repository
 public class NewAuthLabUserRepository {
 
-    private final JdbcTemplate jdbcTemplate;
+	private final JdbcTemplate jdbcTemplate;
 
-    public NewAuthLabUserRepository(
-            @Qualifier("newAuthLabJdbcTemplate")
-            JdbcTemplate jdbcTemplate) {
+	public NewAuthLabUserRepository(
+			@Qualifier("newAuthLabJdbcTemplate")
+			JdbcTemplate jdbcTemplate) {
 
-        this.jdbcTemplate = jdbcTemplate;
-    }
+		this.jdbcTemplate = jdbcTemplate;
+	}
 
-    /**
-     * usersテーブルから全ユーザーの
-     * usernameを取得する
-     */
-    public List<String> findAllUsernames() {
+	/**
+	 * usersテーブルから全ユーザーの
+	 * usernameを取得する
+	 */
+	public List<String> findAllUsernames() {
 
-        String sql =
-                "SELECT username "
-                + "FROM users "
-                + "WHERE username IS NOT NULL "
-                + "ORDER BY username ASC";
+		String sql =
+				"SELECT username "
+						+ "FROM users "
+						+ "WHERE username IS NOT NULL "
+						+ "ORDER BY username ASC";
 
-        return jdbcTemplate.query(
-                sql,
-                (resultSet, rowNum) ->
-                        resultSet.getString("username"));
-    }
+		return jdbcTemplate.query(
+				sql,
+				(resultSet, rowNum) ->
+				resultSet.getString("username"));
+	}
 
-    /**
-     * usernameを指定して、
-     * パスワードのBCryptハッシュを取得する
-     */
-    public Optional<NewAuthLabUser> findByUsername(
-            String username) {
+	/**
+	 * usernameを指定して、
+	 * パスワードのBCryptハッシュを取得する
+	 */
+	public Optional<NewAuthLabUser> findByUsername(
+			String username) {
 
-        String sql =
-                "SELECT username, "
-                + "password, "
-                + "password2, "
-                + "password3 "
-                + "FROM users "
-                + "WHERE username = ?";
+		String sql =
+				"SELECT username, "
+						+ "password, "
+						+ "password2, "
+						+ "password3 "
+						+ "FROM users "
+						+ "WHERE username = ?";
 
-        List<NewAuthLabUser> users =
-                jdbcTemplate.query(
-                        sql,
-                        (resultSet, rowNum) ->
-                                new NewAuthLabUser(
-                                        resultSet.getString(
-                                                "username"),
-                                        resultSet.getString(
-                                                "password"),
-                                        resultSet.getString(
-                                                "password2"),
-                                        resultSet.getString(
-                                                "password3")),
-                        username);
+		List<NewAuthLabUser> users =
+				jdbcTemplate.query(
+						sql,
+						(resultSet, rowNum) ->
+						new NewAuthLabUser(
+								resultSet.getString(
+										"username"),
+								resultSet.getString(
+										"password"),
+								resultSet.getString(
+										"password2"),
+								resultSet.getString(
+										"password3")),
+						username);
 
-        if (users.isEmpty()) {
-            return Optional.empty();
-        }
+		if (users.isEmpty()) {
+			return Optional.empty();
+		}
 
-        return Optional.of(users.get(0));
-    }
+		return Optional.of(users.get(0));
+	}
 }

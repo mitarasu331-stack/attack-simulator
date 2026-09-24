@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.example.attacksimulator.entity.AuthExperiment;
 
 public interface AuthExperimentRepository
-        extends JpaRepository<AuthExperiment, Long> {
+extends JpaRepository<AuthExperiment, Long> {
 
-    Optional<AuthExperiment> findByExperimentId(String experimentId);
+	Optional<AuthExperiment> findByExperimentId(String experimentId);
 }

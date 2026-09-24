@@ -7,8 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.example.attacksimulator.entity.AuthExperimentLog;
 
 public interface AuthExperimentLogRepository
-        extends JpaRepository<AuthExperimentLog, Long> {
+extends JpaRepository<AuthExperimentLog, Long> {
 
-    List<AuthExperimentLog> findByExperimentIdOrderByAttemptNumberAsc(
-            String experimentId);
+	List<AuthExperimentLog> findByExperimentIdOrderByAttemptNumberAsc(
+			String experimentId);
 }

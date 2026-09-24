@@ -65,9 +65,9 @@ public class NewAuthLabLoginClient {
 									username,
 									StandardCharsets.UTF_8)
 							+ "&password="
-									+ URLEncoder.encode(
-											password,
-											StandardCharsets.UTF_8);
+							+ URLEncoder.encode(
+									password,
+									StandardCharsets.UTF_8);
 
 			HttpRequest request =
 					HttpRequest.newBuilder()
@@ -187,9 +187,9 @@ public class NewAuthLabLoginClient {
 									username,
 									StandardCharsets.UTF_8)
 							+ "&password="
-									+ URLEncoder.encode(
-											password,
-											StandardCharsets.UTF_8);
+							+ URLEncoder.encode(
+									password,
+									StandardCharsets.UTF_8);
 
 			HttpRequest firstRequest =
 					HttpRequest.newBuilder()
@@ -376,9 +376,9 @@ public class NewAuthLabLoginClient {
 									username,
 									StandardCharsets.UTF_8)
 							+ "&password="
-									+ URLEncoder.encode(
-											password,
-											StandardCharsets.UTF_8);
+							+ URLEncoder.encode(
+									password,
+									StandardCharsets.UTF_8);
 
 			HttpRequest firstRequest =
 					HttpRequest.newBuilder()

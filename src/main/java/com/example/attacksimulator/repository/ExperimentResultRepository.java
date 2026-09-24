@@ -10,30 +10,30 @@ import com.example.attacksimulator.model.ExperimentResult;
 
 @Repository
 public interface ExperimentResultRepository
-        extends JpaRepository<ExperimentResult, Long> {
+extends JpaRepository<ExperimentResult, Long> {
 
-    /**
-     * 実験番号の昇順で全実験結果を取得
-     */
-    List<ExperimentResult>
-    findAllByOrderByExperimentNumberAsc();
+	/**
+	 * 実験番号の昇順で全実験結果を取得
+	 */
+	List<ExperimentResult>
+	findAllByOrderByExperimentNumberAsc();
 
-    /**
-     * 認証方式ごとの実験結果を
-     * 実験番号の昇順で取得
-     */
-    List<ExperimentResult>
-    findByAuthMethodOrderByExperimentNumberAsc(
-            String authMethod);
+	/**
+	 * 認証方式ごとの実験結果を
+	 * 実験番号の昇順で取得
+	 */
+	List<ExperimentResult>
+	findByAuthMethodOrderByExperimentNumberAsc(
+			String authMethod);
 
-    /**
-     * 指定した実験番号より大きい番号の
-     * 実験結果を取得
-     */
-    List<ExperimentResult>
-    findByExperimentNumberGreaterThanOrderByExperimentNumberAsc(
-            int experimentNumber);
-    
-    Optional<ExperimentResult>
-    findTopByOrderByExperimentNumberDesc();
+	/**
+	 * 指定した実験番号より大きい番号の
+	 * 実験結果を取得
+	 */
+	List<ExperimentResult>
+	findByExperimentNumberGreaterThanOrderByExperimentNumberAsc(
+			int experimentNumber);
+
+	Optional<ExperimentResult>
+	findTopByOrderByExperimentNumberDesc();
 }

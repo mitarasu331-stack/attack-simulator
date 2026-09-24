@@ -11,50 +11,50 @@ import com.example.attacksimulator.repository.AuthExperimentRepository;
 @Service
 public class ExperimentService {
 
-    private final AuthExperimentRepository authExperimentRepository;
+	private final AuthExperimentRepository authExperimentRepository;
 
-    public ExperimentService(
-            AuthExperimentRepository authExperimentRepository) {
+	public ExperimentService(
+			AuthExperimentRepository authExperimentRepository) {
 
-        this.authExperimentRepository = authExperimentRepository;
-    }
+		this.authExperimentRepository = authExperimentRepository;
+	}
 
-    /**
-     * 実験結果を保存する
-     */
-    public AuthExperiment saveExperiment(
-            String experimentId,
-            String authMethod,
-            int authCount,
-            String authType,
-            String attackType,
-            int totalCount,
-            int successCount,
-            BigDecimal totalDurationMs) {
+	/**
+	 * 実験結果を保存する
+	 */
+	public AuthExperiment saveExperiment(
+			String experimentId,
+			String authMethod,
+			int authCount,
+			String authType,
+			String attackType,
+			int totalCount,
+			int successCount,
+			BigDecimal totalDurationMs) {
 
-        AuthExperiment experiment = new AuthExperiment();
+		AuthExperiment experiment = new AuthExperiment();
 
-        experiment.setExperimentId(experimentId);
-        experiment.setAuthMethod(authMethod);
-        experiment.setAuthCount(authCount);
-        experiment.setAuthType(authType);
-        experiment.setAttackType(attackType);
-        experiment.setTotalCount(totalCount);
-        experiment.setSuccessCount(successCount);
-        experiment.setTotalDurationMs(totalDurationMs);
-        experiment.setAuthTime(LocalDateTime.now());
+		experiment.setExperimentId(experimentId);
+		experiment.setAuthMethod(authMethod);
+		experiment.setAuthCount(authCount);
+		experiment.setAuthType(authType);
+		experiment.setAttackType(attackType);
+		experiment.setTotalCount(totalCount);
+		experiment.setSuccessCount(successCount);
+		experiment.setTotalDurationMs(totalDurationMs);
+		experiment.setAuthTime(LocalDateTime.now());
 
-        return authExperimentRepository.save(experiment);
-    }
+		return authExperimentRepository.save(experiment);
+	}
 
-    /**
-     * 実験IDから実験結果を取得する
-     */
-    public AuthExperiment findExperiment(
-            String experimentId) {
+	/**
+	 * 実験IDから実験結果を取得する
+	 */
+	public AuthExperiment findExperiment(
+			String experimentId) {
 
-        return authExperimentRepository
-                .findByExperimentId(experimentId)
-                .orElse(null);
-    }
+		return authExperimentRepository
+				.findByExperimentId(experimentId)
+				.orElse(null);
+	}
 }
