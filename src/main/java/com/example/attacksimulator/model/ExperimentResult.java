@@ -2,7 +2,6 @@ package com.example.attacksimulator.model;
 
 import java.time.LocalDateTime;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -13,99 +12,73 @@ import jakarta.persistence.Table;
 @Table(name = "experiment_results")
 public class ExperimentResult {
 
-	/**
-	 * DB内部で使用するID
-	 */
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	/**
-	 * 実験番号
+	 * 対象ユーザー名
 	 */
-	@Column(name = "experiment_number", nullable = false)
-	private int experimentNumber;
+	private String username;
 
 	/**
 	 * 認証方式
 	 */
-	@Column(name = "auth_method", nullable = false)
 	private String authMethod;
 
 	/**
 	 * 認証構成
 	 */
-	@Column(name = "authentication_configuration")
 	private String authenticationConfiguration;
 
 	/**
-	 * 攻撃で設定された最大試行回数
+	 * 各段階の最大攻撃試行回数
+	 *
+	 * 例：
+	 * 一段階認証
+	 * 10000
+	 *
+	 * 二段階認証
+	 * 10000 → 10000
+	 *
+	 * 三段階認証
+	 * 10000 → 10000 → 10000
 	 */
-	@Column(name = "max_attempt_count")
-	private int maxAttemptCount;
+	private String maxAttemptCount;
 
 	/**
-	 * 実際に攻撃を行った試行回数
+	 * 実際の攻撃試行回数
 	 */
-	@Column(name = "attempt_count")
 	private int attemptCount;
 
 	/**
 	 * 攻撃成功・失敗
 	 */
-	@Column(name = "success")
 	private boolean success;
 
 	/**
 	 * 突破した認証情報
+	 *
+	 * 例：
+	 * Password=1111
+	 *
+	 * Password=1111 → Password2=2222
+	 *
+	 * Password=1111 → Password2=2222 → Password3=3333
 	 */
-	@Column(name = "credential")
 	private String credential;
 
 	/**
-	 * 攻撃時間
+	 * 攻撃時間（ms）
 	 */
-	@Column(name = "attack_time_ms")
 	private long attackTimeMs;
 
 	/**
 	 * 実験日時
 	 */
-	@Column(name = "experiment_date_time")
 	private LocalDateTime experimentDateTime;
 
-	/**
-	 * デフォルトコンストラクタ
-	 */
 	public ExperimentResult() {
-	}
-
-	/**
-	 * コンストラクタ
-	 */
-	public ExperimentResult(
-			int experimentNumber,
-			String authMethod,
-			int operationCount,
-			String authenticationConfiguration,
-			int maxAttemptCount,
-			int attemptCount,
-			boolean success,
-			String credential,
-			long attackTimeMs,
-			LocalDateTime experimentDateTime) {
-
-		this.experimentNumber = experimentNumber;
-		this.authMethod = authMethod;
-		this.authenticationConfiguration =
-				authenticationConfiguration;
-		this.maxAttemptCount = maxAttemptCount;
-		this.attemptCount = attemptCount;
-		this.success = success;
-		this.credential = credential;
-		this.attackTimeMs = attackTimeMs;
-		this.experimentDateTime =
-				experimentDateTime;
 	}
 
 	public Long getId() {
@@ -116,15 +89,12 @@ public class ExperimentResult {
 		this.id = id;
 	}
 
-	public int getExperimentNumber() {
-		return experimentNumber;
+	public String getUsername() {
+		return username;
 	}
 
-	public void setExperimentNumber(
-			int experimentNumber) {
-
-		this.experimentNumber =
-				experimentNumber;
+	public void setUsername(String username) {
+		this.username = username;
 	}
 
 	public String getAuthMethod() {
@@ -146,15 +116,14 @@ public class ExperimentResult {
 				authenticationConfiguration;
 	}
 
-	public int getMaxAttemptCount() {
+	public String getMaxAttemptCount() {
 		return maxAttemptCount;
 	}
 
 	public void setMaxAttemptCount(
-			int maxAttemptCount) {
+			String maxAttemptCount) {
 
-		this.maxAttemptCount =
-				maxAttemptCount;
+		this.maxAttemptCount = maxAttemptCount;
 	}
 
 	public int getAttemptCount() {

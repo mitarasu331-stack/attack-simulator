@@ -6,7 +6,7 @@
 
     <meta charset="UTF-8">
 
-    <title>認証攻撃実験</title>
+    <title>攻撃実験</title>
 
     <style>
 
@@ -20,31 +20,37 @@
 
             margin: 0;
 
-            padding: 40px;
+            padding: 30px;
 
             color: #333;
         }
 
         .container {
+            width: 100%;
+
             max-width: 700px;
 
             margin: 0 auto;
-
-            background-color: white;
-
-            padding: 30px;
-
-            border-radius: 10px;
-
-            box-shadow:
-                0 2px 10px
-                rgba(0, 0, 0, 0.1);
         }
 
         h1 {
             text-align: center;
 
             margin-bottom: 30px;
+        }
+
+        .card {
+            background-color: white;
+
+            border-radius: 8px;
+
+            padding: 25px;
+
+            margin-bottom: 20px;
+
+            box-shadow:
+                0 2px 8px
+                rgba(0, 0, 0, 0.08);
         }
 
         .form-group {
@@ -59,8 +65,8 @@
             margin-bottom: 8px;
         }
 
-        input,
-        select {
+        select,
+        input[type="number"] {
             width: 100%;
 
             box-sizing: border-box;
@@ -76,47 +82,63 @@
             background-color: white;
         }
 
-        input:focus,
-        select:focus {
+        select:focus,
+        input[type="number"]:focus {
             outline: none;
 
             border-color: #0d6efd;
         }
 
-        .description {
-            margin-top: 10px;
+        .attempt-area {
+            border: 1px solid #ddd;
 
-            padding: 15px;
+            border-radius: 6px;
 
-            background-color: #f1f3f5;
+            padding: 18px;
 
-            border-radius: 5px;
+            background-color: #fafafa;
 
-            line-height: 1.7;
+            margin-top: 15px;
         }
 
-        .operation-count {
-            margin-top: 10px;
-
+        .attempt-title {
             font-weight: bold;
+
+            font-size: 16px;
+
+            margin-bottom: 15px;
         }
 
-        .otp-area {
+        .attempt-group {
+            margin-bottom: 15px;
+        }
+
+        .attempt-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .attempt-label {
+            display: block;
+
+            font-weight: normal;
+
+            margin-bottom: 6px;
+        }
+
+        .help-text {
+            color: #666;
+
+            font-size: 13px;
+
+            margin-top: 5px;
+        }
+
+        .hidden {
             display: none;
-
-            margin-top: 20px;
-
-            padding: 15px;
-
-            background-color: #fff3cd;
-
-            border-radius: 5px;
-
-            border: 1px solid #ffe69c;
         }
 
         .button-area {
-            margin-top: 30px;
+            margin-top: 25px;
 
             display: flex;
 
@@ -146,8 +168,6 @@
             background-color: #dc3545;
 
             color: white;
-
-            flex: 1;
         }
 
         .attack-button:hover {
@@ -158,265 +178,349 @@
             background-color: #0d6efd;
 
             color: white;
-
-            flex: 1;
         }
 
         .result-button:hover {
             background-color: #0b5ed7;
         }
 
-        .info {
-            margin-top: 25px;
+        .user-info {
+            padding: 12px;
 
-            padding: 15px;
-
-            background-color: #e9ecef;
+            background-color: #f1f3f5;
 
             border-radius: 5px;
 
-            font-size: 14px;
+            color: #555;
 
-            line-height: 1.7;
+            font-size: 14px;
+        }
+
+        .notice {
+            margin-top: 15px;
+
+            padding: 12px;
+
+            background-color: #fff3cd;
+
+            border: 1px solid #ffe69c;
+
+            border-radius: 5px;
+
+            color: #664d03;
+
+            font-size: 14px;
+        }
+
+        @media (max-width: 600px) {
+
+            body {
+                padding: 15px;
+            }
+
+            .card {
+                padding: 18px;
+            }
         }
 
     </style>
 
 </head>
 
-
 <body>
 
 <div class="container">
 
-    <h1>
-        Attacksimlator
-    </h1>
-
+    <h1>攻撃実験</h1>
 
     <!-- ================================================== -->
-    <!-- 実験対象ユーザー -->
+    <!-- 攻撃対象設定 -->
     <!-- ================================================== -->
 
-    <div class="form-group">
+    <div class="card">
 
-        <label for="username">
+        <form
+                id="attackForm"
+                method="post">
 
-            実験対象ユーザー
+            <!-- ========================================== -->
+            <!-- 対象ユーザー -->
+            <!-- ========================================== -->
 
-        </label>
+            <div class="form-group">
+
+                <label for="username">
+                    対象ユーザー
+                </label>
+
+                <select
+                        id="username"
+                        name="username"
+                        required>
+
+                    <option value="">
+                        ユーザーを選択してください
+                    </option>
+
+                    <option
+                            th:each="username : ${usernames}"
+                            th:value="${username}"
+                            th:text="${username}">
+                        username
+                    </option>
+
+                </select>
+
+                <div class="help-text">
+                    newauthlabに登録されているユーザーから選択します。
+                </div>
+
+            </div>
 
 
-        <select
-            id="username"
-            name="username"
-            required>
+            <!-- ========================================== -->
+            <!-- 認証方式 -->
+            <!-- ========================================== -->
 
-            <option
-                value=""
-                selected
-                disabled>
+            <div class="form-group">
 
-                usernameを選択してください
+                <label for="authMethod">
+                    認証方式
+                </label>
 
-            </option>
+                <select
+                        id="authMethod"
+                        name="authMethod"
+                        required>
+
+                    <option value="">
+                        認証方式を選択してください
+                    </option>
+
+                    <option value="one-stage">
+                        一段階認証（Password）
+                    </option>
+
+                    <option value="two-stage">
+                        二段階認証（Password→Password2）
+                    </option>
+
+                    <option value="three-stage">
+                        三段階認証（Password→Password2→Password3）
+                    </option>
+
+                    <option value="one-factor-password">
+                        一要素認証（Password）
+                    </option>
+
+                    <option value="one-factor-email-otp">
+                        一要素認証（Email OTP）
+                    </option>
+
+                    <option value="two-factor-password-email-otp">
+                        二要素認証（Password + Email OTP）
+                    </option>
+
+                </select>
+
+            </div>
 
 
-            <option
-                th:each="username : ${usernames}"
-                th:value="${username}"
-                th:text="${username}">
+            <!-- ========================================== -->
+            <!-- 最大攻撃試行回数 -->
+            <!-- ========================================== -->
 
-                username
+            <div
+                    id="attemptArea"
+                    class="attempt-area hidden">
 
-            </option>
+                <div class="attempt-title">
+                    最大攻撃試行回数
+                </div>
 
-        </select>
+
+                <!-- ====================================== -->
+                <!-- Password -->
+                <!-- ====================================== -->
+
+                <div
+                        id="passwordAttemptGroup"
+                        class="attempt-group hidden">
+
+                    <label
+                            for="maxAttemptsPassword"
+                            class="attempt-label">
+
+                        Password
+
+                    </label>
+
+                    <input
+                            type="number"
+                            id="maxAttemptsPassword"
+                            name="maxAttemptsPassword"
+                            value="10000"
+                            min="1"
+                            max="10000"
+                            step="1">
+
+                    <div class="help-text">
+                        1～10000回
+                    </div>
+
+                </div>
+
+
+                <!-- ====================================== -->
+                <!-- Password2 -->
+                <!-- ====================================== -->
+
+                <div
+                        id="password2AttemptGroup"
+                        class="attempt-group hidden">
+
+                    <label
+                            for="maxAttemptsPassword2"
+                            class="attempt-label">
+
+                        Password2
+
+                    </label>
+
+                    <input
+                            type="number"
+                            id="maxAttemptsPassword2"
+                            name="maxAttemptsPassword2"
+                            value="10000"
+                            min="1"
+                            max="10000"
+                            step="1">
+
+                    <div class="help-text">
+                        1～10000回
+                    </div>
+
+                </div>
+
+
+                <!-- ====================================== -->
+                <!-- Password3 -->
+                <!-- ====================================== -->
+
+                <div
+                        id="password3AttemptGroup"
+                        class="attempt-group hidden">
+
+                    <label
+                            for="maxAttemptsPassword3"
+                            class="attempt-label">
+
+                        Password3
+
+                    </label>
+
+                    <input
+                            type="number"
+                            id="maxAttemptsPassword3"
+                            name="maxAttemptsPassword3"
+                            value="10000"
+                            min="1"
+                            max="10000"
+                            step="1">
+
+                    <div class="help-text">
+                        1～10000回
+                    </div>
+
+                </div>
+
+
+                <!-- ====================================== -->
+                <!-- Email OTP -->
+                <!-- ====================================== -->
+
+                <div
+                        id="otpAttemptGroup"
+                        class="attempt-group hidden">
+
+                    <label
+                            for="maxAttempts"
+                            class="attempt-label">
+
+                        Email OTP
+
+                    </label>
+
+                    <input
+                            type="number"
+                            id="maxAttempts"
+                            name="maxAttempts"
+                            value="1000000"
+                            min="1"
+                            max="1000000"
+                            step="1">
+
+                    <div class="help-text">
+                        1～1000000回
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ========================================== -->
+            <!-- 説明 -->
+            <!-- ========================================== -->
+
+            <div
+                    id="description"
+                    class="notice hidden">
+            </div>
+
+
+            <!-- ========================================== -->
+            <!-- ボタン -->
+            <!-- ========================================== -->
+
+            <div class="button-area">
+
+                <button
+                        type="submit"
+                        id="attackButton"
+                        class="attack-button">
+
+                    攻撃開始
+
+                </button>
+
+                <a
+                        href="/results"
+                        class="result-button">
+
+                    実験結果
+
+                </a>
+
+            </div>
+
+        </form>
 
     </div>
 
 
     <!-- ================================================== -->
-    <!-- 認証方式 -->
+    <!-- ユーザー情報 -->
     <!-- ================================================== -->
 
-    <div class="form-group">
+    <div class="card">
 
-        <label for="authMethod">
+        <div class="user-info">
 
-            認証方式
-
-        </label>
-
-
-        <select
-            id="authMethod"
-            name="authMethod"
-            onchange="changeAuthentication()"
-            required>
-
-            <option value="one-stage">
-
-                一段階認証
-
-            </option>
-
-            <option value="two-stage">
-
-                二段階認証
-
-            </option>
-
-            <option value="three-stage">
-
-                三段階認証
-
-            </option>
-
-            <option value="one-factor-password">
-
-                一要素認証（Password）
-
-            </option>
-
-            <option value="one-factor-email-otp">
-
-                一要素認証（Email OTP）
-
-            </option>
-
-            <option value="two-factor-password-email-otp">
-
-                二要素認証（Password + Email OTP）
-
-            </option>
-
-        </select>
-
-    </div>
-
-
-    <!-- ================================================== -->
-    <!-- 認証方式説明 -->
-    <!-- ================================================== -->
-
-    <div
-        id="description"
-        class="description">
-
-        ID + Passwordによる
-        一段階認証です。
-
-    </div>
-
-
-    <!-- ================================================== -->
-    <!-- Email OTP最大試行回数 -->
-    <!-- ================================================== -->
-
-    <div
-        id="otpArea"
-        class="otp-area">
-
-        <label for="maxAttempts">
-
-            Email OTP
-            最大攻撃試行回数
-
-        </label>
-
-
-        <input
-            type="number"
-            id="maxAttempts"
-            name="maxAttempts"
-            value="10000"
-            min="1"
-            max="1000000">
-
-
-    </div>
-
-
-    <!-- ================================================== -->
-    <!-- 攻撃実行フォーム -->
-    <!-- ================================================== -->
-
-    <form
-        id="attackForm"
-        method="post"
-        action="/attack/password">
-
-
-        <!--
-            usernameはselectから取得する
-        -->
-        <input
-            type="hidden"
-            id="selectedUsername"
-            name="username">
-
-
-        <!--
-            認証方式
-        -->
-        <input
-            type="hidden"
-            id="selectedAuthMethod"
-            name="authMethod">
-
-
-        <!--
-            OTP最大試行回数
-        -->
-        <input
-            type="hidden"
-            id="selectedMaxAttempts"
-            name="maxAttempts">
-
-
-        <div class="button-area">
-
-            <button
-                type="submit"
-                class="attack-button">
-
-                攻撃を実行
-
-            </button>
-
-
-            <a
-                href="/results"
-                class="result-button">
-
-                実験結果を見る
-
-            </a>
+            選択したユーザーの認証情報は、
+            newauthlabのデータベースから取得して攻撃実験に使用します。
 
         </div>
-
-    </form>
-
-
-    <!-- ================================================== -->
-    <!-- 実験情報 -->
-    <!-- ================================================== -->
-
-    <div class="info">
-
-        <strong>実験について</strong>
-
-        <br>
-
-        newauthlabに登録されている
-        usernameを実験対象として選択できます。
-
-        <br>
-
-        認証方式ごとに総当たり攻撃を実行し、
-        攻撃試行回数・攻撃時間・認証突破結果を
-        実験結果として記録します。
 
     </div>
 
@@ -425,208 +529,484 @@
 
 <script>
 
-    /**
-     * 認証方式を変更したときの処理
-     */
-    function changeAuthentication() {
+    // =====================================================
+    // HTML要素取得
+    // =====================================================
 
-        const authMethod =
-            document.getElementById(
-                "authMethod").value;
+    const authMethod =
+        document.getElementById(
+            "authMethod"
+        );
+
+    const attackForm =
+        document.getElementById(
+            "attackForm"
+        );
+
+    const attemptArea =
+        document.getElementById(
+            "attemptArea"
+        );
+
+    const passwordAttemptGroup =
+        document.getElementById(
+            "passwordAttemptGroup"
+        );
+
+    const password2AttemptGroup =
+        document.getElementById(
+            "password2AttemptGroup"
+        );
+
+    const password3AttemptGroup =
+        document.getElementById(
+            "password3AttemptGroup"
+        );
+
+    const otpAttemptGroup =
+        document.getElementById(
+            "otpAttemptGroup"
+        );
+
+    const description =
+        document.getElementById(
+            "description"
+        );
 
 
-        const description =
-            document.getElementById(
-                "description");
+    // =====================================================
+    // 初期状態
+    // =====================================================
+
+    function resetAttemptArea() {
+
+        attemptArea.classList.add(
+            "hidden"
+        );
+
+        passwordAttemptGroup.classList.add(
+            "hidden"
+        );
+
+        password2AttemptGroup.classList.add(
+            "hidden"
+        );
+
+        password3AttemptGroup.classList.add(
+            "hidden"
+        );
+
+        otpAttemptGroup.classList.add(
+            "hidden"
+        );
+
+        description.classList.add(
+            "hidden"
+        );
+
+        description.textContent = "";
+
+    }
 
 
-        const operationCount =
-            document.getElementById(
-                "operationCount");
+    // =====================================================
+    // 認証方式変更
+    // =====================================================
+
+    function updateAttemptFields() {
+
+        const method =
+            authMethod.value;
+
+        resetAttemptArea();
 
 
-        const otpArea =
-            document.getElementById(
-                "otpArea");
+        // ================================================
+        // 認証方式未選択
+        // ================================================
 
-
-        const attackForm =
-            document.getElementById(
-                "attackForm");
-
-
-        /*
-         * 一段階認証
-         */
-        if (authMethod === "one-stage") {
-
-            description.innerHTML =
-                "ID + Passwordによる一段階認証です。";
-
-            otpArea.style.display =
-                "none";
-
-            attackForm.action =
-                "/attack/password";
-
+        if (!method) {
+            attackForm.action = "";
+            return;
         }
 
 
-        /*
-         * 二段階認証
-         */
-		 else if (authMethod === "two-stage") {
-		     description.textContent =
-		         "ID + Password → Password2 の二段階認証";
+        // ================================================
+        // 一段階認証
+        // ================================================
 
-		     otpArea.style.display = "none";
+        if (method === "one-stage") {
 
-		     attackForm.action = "/attack/multi-stage";
-		 }
+            attemptArea.classList.remove(
+                "hidden"
+            );
 
-        /*
-         * 三段階認証
-         */
-		 else if (authMethod === "three-stage") {
-		     description.textContent =
-		         "ID + Password → Password2 → Password3 の三段階認証";
+            passwordAttemptGroup.classList.remove(
+                "hidden"
+            );
 
-		     otpArea.style.display = "none";
+            description.classList.remove(
+                "hidden"
+            );
 
-		     attackForm.action = "/attack/multi-stage";
-		 }
+            description.textContent =
+                "Passwordの最大攻撃試行回数を設定します。";
+
+            attackForm.action =
+                "/attack/multi-stage";
+
+            return;
+        }
 
 
-        /*
-         * 一要素認証（Password）
-         */
-        else if (
-            authMethod ===
-            "one-factor-password") {
+        // ================================================
+        // 二段階認証
+        // ================================================
 
-            description.innerHTML =
-                "ID + Passwordによる一要素認証です。";
+        if (method === "two-stage") {
 
-            otpArea.style.display =
-                "none";
+            attemptArea.classList.remove(
+                "hidden"
+            );
+
+            passwordAttemptGroup.classList.remove(
+                "hidden"
+            );
+
+            password2AttemptGroup.classList.remove(
+                "hidden"
+            );
+
+            description.classList.remove(
+                "hidden"
+            );
+
+            description.textContent =
+                "PasswordとPassword2の最大攻撃試行回数をそれぞれ設定します。";
+
+            attackForm.action =
+                "/attack/multi-stage";
+
+            return;
+        }
+
+
+        // ================================================
+        // 三段階認証
+        // ================================================
+
+        if (method === "three-stage") {
+
+            attemptArea.classList.remove(
+                "hidden"
+            );
+
+            passwordAttemptGroup.classList.remove(
+                "hidden"
+            );
+
+            password2AttemptGroup.classList.remove(
+                "hidden"
+            );
+
+            password3AttemptGroup.classList.remove(
+                "hidden"
+            );
+
+            description.classList.remove(
+                "hidden"
+            );
+
+            description.textContent =
+                "Password、Password2、Password3の最大攻撃試行回数をそれぞれ設定します。";
+
+            attackForm.action =
+                "/attack/multi-stage";
+
+            return;
+        }
+
+
+        // ================================================
+        // 一要素認証 Password
+        // ================================================
+
+        if (method === "one-factor-password") {
+
+            attemptArea.classList.remove(
+                "hidden"
+            );
+
+            passwordAttemptGroup.classList.remove(
+                "hidden"
+            );
+
+            description.classList.remove(
+                "hidden"
+            );
+
+            description.textContent =
+                "Passwordの最大攻撃試行回数を設定します。";
 
             attackForm.action =
                 "/attack/factor";
 
+            return;
         }
 
 
-        /*
-         * 一要素認証（Email OTP）
-         */
-        else if (
-            authMethod ===
-            "one-factor-email-otp") {
+        // ================================================
+        // 一要素認証 Email OTP
+        // ================================================
 
-            description.innerHTML =
-                "ID + Email OTPによる一要素認証です。";
+        if (method === "one-factor-email-otp") {
 
-            otpArea.style.display =
-                "block";
+            attemptArea.classList.remove(
+                "hidden"
+            );
+
+            otpAttemptGroup.classList.remove(
+                "hidden"
+            );
+
+            description.classList.remove(
+                "hidden"
+            );
+
+            description.textContent =
+                "Email OTPの最大攻撃試行回数を設定します。";
 
             attackForm.action =
                 "/attack/factor";
 
+            return;
         }
 
 
-        /*
-         * 二要素認証
-         */
-        else if (
-            authMethod ===
-            "two-factor-password-email-otp") {
+        // ================================================
+        // 二要素認証
+        // Password + Email OTP
+        // ================================================
 
-            description.innerHTML =
-                "ID + Password → Email OTPによる二要素認証です。";
+        if (
+            method ===
+            "two-factor-password-email-otp"
+        ) {
 
-            otpArea.style.display =
-                "block";
+            attemptArea.classList.remove(
+                "hidden"
+            );
+
+            passwordAttemptGroup.classList.remove(
+                "hidden"
+            );
+
+            otpAttemptGroup.classList.remove(
+                "hidden"
+            );
+
+            description.classList.remove(
+                "hidden"
+            );
+
+            description.textContent =
+                "PasswordとEmail OTPの最大攻撃試行回数をそれぞれ設定します。";
 
             attackForm.action =
                 "/attack/factor";
 
+            return;
         }
 
     }
 
 
-    /**
-     * 攻撃実行前に
-     * selectの値をhidden inputへコピーする。
-     */
-    document.getElementById(
-        "attackForm").addEventListener(
+    // =====================================================
+    // 入力値チェック
+    // =====================================================
+
+    attackForm.addEventListener(
         "submit",
         function (event) {
 
-            const username =
+            const method =
+                authMethod.value;
+
+
+            // ============================================
+            // Password
+            // ============================================
+
+            const passwordValue =
                 document.getElementById(
-                    "username").value;
+                    "maxAttemptsPassword"
+                ).value;
 
+            if (
+                method === "one-stage"
+                ||
+                method === "two-stage"
+                ||
+                method === "three-stage"
+                ||
+                method === "one-factor-password"
+                ||
+                method ===
+                "two-factor-password-email-otp"
+            ) {
 
-            const authMethod =
-                document.getElementById(
-                    "authMethod").value;
+                const value =
+                    Number(passwordValue);
 
+                if (
+                    !Number.isInteger(value)
+                    ||
+                    value < 1
+                    ||
+                    value > 10000
+                ) {
 
-            const maxAttempts =
-                document.getElementById(
-                    "maxAttempts").value;
+                    event.preventDefault();
 
+                    alert(
+                        "Passwordの最大攻撃試行回数は1～10000の範囲で指定してください。"
+                    );
 
-            /*
-             * username未選択の場合
-             */
-            if (!username) {
-
-                event.preventDefault();
-
-                alert(
-                    "実験対象ユーザーを選択してください。");
-
-                return;
+                    return;
+                }
             }
 
 
-            /*
-             * username
-             */
-            document.getElementById(
-                "selectedUsername").value =
-                    username;
+            // ============================================
+            // Password2
+            // ============================================
+
+            const password2Value =
+                document.getElementById(
+                    "maxAttemptsPassword2"
+                ).value;
+
+            if (
+                method === "two-stage"
+                ||
+                method === "three-stage"
+            ) {
+
+                const value =
+                    Number(password2Value);
+
+                if (
+                    !Number.isInteger(value)
+                    ||
+                    value < 1
+                    ||
+                    value > 10000
+                ) {
+
+                    event.preventDefault();
+
+                    alert(
+                        "Password2の最大攻撃試行回数は1～10000の範囲で指定してください。"
+                    );
+
+                    return;
+                }
+            }
 
 
-            /*
-             * 認証方式
-             */
-            document.getElementById(
-                "selectedAuthMethod").value =
-                    authMethod;
+            // ============================================
+            // Password3
+            // ============================================
+
+            const password3Value =
+                document.getElementById(
+                    "maxAttemptsPassword3"
+                ).value;
+
+            if (
+                method === "three-stage"
+            ) {
+
+                const value =
+                    Number(password3Value);
+
+                if (
+                    !Number.isInteger(value)
+                    ||
+                    value < 1
+                    ||
+                    value > 10000
+                ) {
+
+                    event.preventDefault();
+
+                    alert(
+                        "Password3の最大攻撃試行回数は1～10000の範囲で指定してください。"
+                    );
+
+                    return;
+                }
+            }
 
 
-            /*
-             * OTP最大試行回数
-             */
-            document.getElementById(
-                "selectedMaxAttempts").value =
-                    maxAttempts;
+            // ============================================
+            // Email OTP
+            // ============================================
 
-        });
+            const otpValue =
+                document.getElementById(
+                    "maxAttempts"
+                ).value;
+
+            if (
+                method === "one-factor-email-otp"
+                ||
+                method ===
+                "two-factor-password-email-otp"
+            ) {
+
+                const value =
+                    Number(otpValue);
+
+                if (
+                    !Number.isInteger(value)
+                    ||
+                    value < 1
+                    ||
+                    value > 1000000
+                ) {
+
+                    event.preventDefault();
+
+                    alert(
+                        "Email OTPの最大攻撃試行回数は1～1000000の範囲で指定してください。"
+                    );
+
+                    return;
+                }
+            }
+
+        }
+    );
 
 
-    /*
-     * 初期状態を設定
-     */
-    changeAuthentication();
+    // =====================================================
+    // 認証方式変更時
+    // =====================================================
+
+    authMethod.addEventListener(
+        "change",
+        updateAttemptFields
+    );
+
+
+    // =====================================================
+    // 初期表示
+    // =====================================================
+
+    updateAttemptFields();
 
 </script>
-
 
 </body>
 

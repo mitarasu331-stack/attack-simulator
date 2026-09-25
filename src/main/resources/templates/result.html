@@ -1,107 +1,109 @@
 <!DOCTYPE html>
+
 <html lang="ja"
       xmlns:th="http://www.thymeleaf.org">
 
 <head>
 
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
 
-    <title>Attack Simulator - Result</title>
+<title>Attack Simulator - Result</title>
 
-    <style>
+<style>
 
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
-        }
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        background: #f4f4f4;
+    }
 
-        .container {
-            width: 420px;
-            max-width: calc(100% - 40px);
-            margin: 80px auto;
-            padding: 30px;
-            background: white;
-            border-radius: 10px;
-            box-shadow:
-                0 4px 12px
-                rgba(0, 0, 0, 0.15);
-            box-sizing: border-box;
-        }
+    .container {
+        width: 420px;
+        max-width: calc(100% - 40px);
+        margin: 80px auto;
+        padding: 30px;
+        background: white;
+        border-radius: 10px;
+        box-shadow:
+            0 4px 12px
+            rgba(0, 0, 0, 0.15);
+        box-sizing: border-box;
+    }
 
-        h1 {
-            text-align: center;
-            margin-bottom: 30px;
-        }
+    h1 {
+        text-align: center;
+        margin-bottom: 30px;
+    }
 
-        h2 {
-            font-size: 18px;
-            margin-top: 5px;
-            margin-bottom: 15px;
-        }
+    h2 {
+        font-size: 18px;
+        margin-top: 5px;
+        margin-bottom: 15px;
+    }
 
-        .result-box {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f7f7f7;
-            border-radius: 5px;
-        }
+    .result-box {
+        margin-top: 20px;
+        padding: 15px;
+        background: #f7f7f7;
+        border-radius: 5px;
+    }
 
-        .result-row {
-            margin: 10px 0;
-            line-height: 1.6;
-        }
+    .result-row {
+        margin: 10px 0;
+        line-height: 1.6;
+    }
 
-        .label {
-            font-weight: bold;
-        }
+    .label {
+        font-weight: bold;
+    }
 
-        .success {
-            margin-top: 20px;
-            padding: 12px;
-            background: #e8f5e9;
-            border-radius: 5px;
-            font-weight: bold;
-        }
+    .success {
+        margin-top: 20px;
+        padding: 12px;
+        background: #e8f5e9;
+        border-radius: 5px;
+        font-weight: bold;
+    }
 
-        .failure {
-            margin-top: 20px;
-            padding: 12px;
-            background: #ffebee;
-            border-radius: 5px;
-            font-weight: bold;
-        }
+    .failure {
+        margin-top: 20px;
+        padding: 12px;
+        background: #ffebee;
+        border-radius: 5px;
+        font-weight: bold;
+    }
 
-        .password-box {
-            margin-top: 20px;
-            padding: 15px;
-            background: #eeeeee;
-            border-radius: 5px;
-        }
+    .password-box {
+        margin-top: 20px;
+        padding: 15px;
+        background: #eeeeee;
+        border-radius: 5px;
+    }
 
-        .back-button {
-            display: block;
-            width: 100%;
-            box-sizing: border-box;
-            margin-top: 25px;
-            padding: 12px;
-            border-radius: 5px;
-            background: #333;
-            color: white;
-            text-align: center;
-            text-decoration: none;
-            font-size: 16px;
-        }
+    .back-button {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+        margin-top: 25px;
+        padding: 12px;
+        border-radius: 5px;
+        background: #333;
+        color: white;
+        text-align: center;
+        text-decoration: none;
+        font-size: 16px;
+    }
 
-        .back-button:hover {
-            background: #555;
-        }
+    .back-button:hover {
+        background: #555;
+    }
 
-    </style>
+</style>
+```
 
 </head>
 
@@ -109,238 +111,210 @@
 
 <div class="container">
 
-    <h2>攻撃シミュレーション結果</h2>
+<h2>攻撃シミュレーション結果</h2>
+
+<!-- =====================================================
+     攻撃方式・認証段階数・総試行回数
+     ===================================================== -->
+
+<div class="result-box">
 
     <!-- 攻撃方式 -->
+    <div class="result-row">
 
-    <div class="result-box">
+        <span class="label">
+            攻撃方式：
+        </span>
 
-        <div class="result-row">
+        <span th:switch="${authMethod}">
 
-            <span class="label">
-                攻撃方式：
+            <!-- 多段階認証 -->
+
+            <span th:case="'one-stage'">
+                一段階認証
             </span>
 
-            <span th:switch="${authMethod}">
-
-                <!-- 多段階認証 -->
-
-                <span th:case="'one-stage'">
-                    一段階認証
-                </span>
-
-                <span th:case="'two-stage'">
-                    二段階認証
-                </span>
-
-                <span th:case="'three-stage'">
-                    三段階認証
-                </span>
-
-
-                <!-- 一要素認証 -->
-
-                <span th:case="'one-factor-password'">
-                    一要素認証（Password）
-                </span>
-
-                <span th:case="'one-factor-email-otp'">
-                    一要素認証（Email OTP）
-                </span>
-
-
-                <!-- 二要素認証 -->
-
-                <span th:case="'two-factor-password-email-otp'">
-                    二要素認証（Password + Email OTP）
-                </span>
-
-
-                <!-- 旧方式 -->
-
-                <span th:case="'email-otp'">
-                    メールOTP総当たり
-                </span>
-
-
-                <!-- その他 -->
-
-                <span th:case="*">
-                    不明
-                </span>
-
+            <span th:case="'two-stage'">
+                二段階認証
             </span>
 
-        </div>
-
-
-        <!-- 認証段階数 -->
-
-        <div class="result-row"
-             th:if="${stageCount != null}">
-
-            <span class="label">
-                認証段階数：
+            <span th:case="'three-stage'">
+                三段階認証
             </span>
 
-            <span th:text="${stageCount}">
-                1
+            <!-- 一要素認証 -->
+
+            <span th:case="'one-factor-password'">
+                一要素認証（Password）
             </span>
 
-            <span>
-                段階
+            <span th:case="'one-factor-email-otp'">
+                一要素認証（Email OTP）
             </span>
 
-        </div>
+            <!-- 二要素認証 -->
 
-
-        <!-- 総試行回数 -->
-
-        <div class="result-row">
-
-            <span class="label">
-                総試行回数：
+            <span th:case="'two-factor-password-email-otp'">
+                二要素認証（Password + Email OTP）
             </span>
 
-            <span th:text="${attemptCount}">
-                0
+            <!-- その他 -->
+
+            <span th:case="*">
+                不明
             </span>
 
-            <span>
-                回
-            </span>
+        </span>
 
-        </div>
+    </div>
+
+    <!-- =================================================
+         総試行回数
+         ================================================= -->
+
+    <div class="result-row">
+
+        <span class="label">
+            総試行回数：
+        </span>
+
+        <span th:text="${attemptCount}">
+            0
+        </span>
+
+        <span>
+            回
+        </span>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     攻撃成功
+     ===================================================== -->
+
+<div class="success"
+     th:if="${success == true}">
+
+    攻撃結果：成功
+
+</div>
+
+
+<!-- =====================================================
+     攻撃失敗
+     ===================================================== -->
+
+<div class="failure"
+     th:if="${success == false}">
+
+    攻撃結果：失敗
+
+</div>
+
+
+<!-- =====================================================
+     突破した認証情報
+     
+     Password / Password2 / Password3 / OTP
+     ===================================================== -->
+
+<div class="password-box"
+     th:if="${success == true
+             and (password != null
+                  or password2 != null
+                  or password3 != null
+                  or otp != null)}">
+
+    <h2>突破した認証情報</h2>
+
+
+    <!-- =================================================
+         Password
+         ================================================= -->
+
+    <div class="result-row"
+         th:if="${password != null}">
+
+        <span class="label">
+            Password：
+        </span>
+
+        <span th:text="${password}">
+            9999
+        </span>
 
     </div>
 
 
-    <!-- 攻撃成功 -->
+    <!-- =================================================
+         Password2
+         ================================================= -->
 
-    <div class="success"
-         th:if="${success == true}">
+    <div class="result-row"
+         th:if="${password2 != null}">
 
-        攻撃結果：成功
+        <span class="label">
+            Password2：
+        </span>
 
-    </div>
-
-
-    <!-- 攻撃失敗 -->
-
-    <div class="failure"
-         th:if="${success == false}">
-
-        攻撃結果：失敗
+        <span th:text="${password2}">
+            9999
+        </span>
 
     </div>
 
 
-    <!-- パスワード関連の突破結果 -->
+    <!-- =================================================
+         Password3
+         ================================================= -->
 
-    <div class="password-box"
-         th:if="${success == true and password != null}">
+    <div class="result-row"
+         th:if="${password3 != null}">
 
-        <h2>突破した認証情報</h2>
+        <span class="label">
+            Password3：
+        </span>
 
-
-        <!-- Password -->
-
-        <div class="result-row"
-             th:if="${password != null}">
-
-            <span class="label">
-                Password：
-            </span>
-
-            <span th:text="${password}">
-                9999
-            </span>
-
-        </div>
-
-
-        <!-- Password2 -->
-
-        <div class="result-row"
-             th:if="${password2 != null}">
-
-            <span class="label">
-                Password2：
-            </span>
-
-            <span th:text="${password2}">
-                9999
-            </span>
-
-        </div>
-
-
-        <!-- Password3 -->
-
-        <div class="result-row"
-             th:if="${password3 != null}">
-
-            <span class="label">
-                Password3：
-            </span>
-
-            <span th:text="${password3}">
-                9999
-            </span>
-
-        </div>
-
-
-        <!-- OTP -->
-
-        <div class="result-row"
-             th:if="${otp != null}">
-
-            <span class="label">
-                OTP：
-            </span>
-
-            <span th:text="${otp}">
-                999999
-            </span>
-
-        </div>
+        <span th:text="${password3}">
+            9999
+        </span>
 
     </div>
 
 
-    <!-- OTPだけが突破された場合 -->
+    <!-- =================================================
+         Email OTP
+         ================================================= -->
 
-    <div class="password-box"
-         th:if="${success == true
-                 and password == null
-                 and otp != null}">
+    <div class="result-row"
+         th:if="${otp != null}">
 
-        <h2>突破した認証情報</h2>
+        <span class="label">
+            OTP：
+        </span>
 
-        <div class="result-row">
-
-            <span class="label">
-                OTP：
-            </span>
-
-            <span th:text="${otp}">
-                999999
-            </span>
-
-        </div>
+        <span th:text="${otp}">
+            999999
+        </span>
 
     </div>
 
+</div>
 
-    <!-- 戻る -->
 
-    <a href="/"
-       class="back-button">
+<!-- =====================================================
+     戻る
+     ===================================================== -->
 
-        攻撃シミュレーション画面に戻る
+<a href="/"
+   class="back-button">
 
-    </a>
+    攻撃シミュレーション画面に戻る
+
+</a>
 
 </div>
 

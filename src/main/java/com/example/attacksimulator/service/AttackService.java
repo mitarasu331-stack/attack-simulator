@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 import com.example.attacksimulator.attack.EmailOtpBruteForceAttack;
 import com.example.attacksimulator.attack.FactorAuthenticationAttack;
 import com.example.attacksimulator.attack.MultiStagePasswordBruteForceAttack;
-import com.example.attacksimulator.attack.MultiStagePasswordBruteForceAttack.AttackResult;
 import com.example.attacksimulator.attack.PasswordBruteForceAttack;
 import com.example.attacksimulator.client.NewAuthLabLoginClient;
 import com.example.attacksimulator.client.NewAuthLabLoginClient.LoginResult;
@@ -35,11 +34,16 @@ public class AttackService {
 
 	public AttackService(
 			PasswordBruteForceAttack passwordBruteForceAttack,
-			MultiStagePasswordBruteForceAttack multiStagePasswordBruteForceAttack,
-			EmailOtpBruteForceAttack emailOtpBruteForceAttack,
-			FactorAuthenticationAttack factorAuthenticationAttack,
-			NewAuthLabUserRepository newAuthLabUserRepository,
-			NewAuthLabLoginClient newAuthLabLoginClient) {
+			MultiStagePasswordBruteForceAttack
+			multiStagePasswordBruteForceAttack,
+			EmailOtpBruteForceAttack
+			emailOtpBruteForceAttack,
+			FactorAuthenticationAttack
+			factorAuthenticationAttack,
+			NewAuthLabUserRepository
+			newAuthLabUserRepository,
+			NewAuthLabLoginClient
+			newAuthLabLoginClient) {
 
 		this.passwordBruteForceAttack =
 				passwordBruteForceAttack;
@@ -61,10 +65,10 @@ public class AttackService {
 	}
 
 	// =========================================================
-	// 対象ユーザー取得
+	// ユーザー取得
 	// =========================================================
 
-	private NewAuthLabUser getUser(
+	public NewAuthLabUser getUser(
 			String username) {
 
 		return newAuthLabUserRepository
@@ -77,30 +81,68 @@ public class AttackService {
 
 	// =========================================================
 	// 一段階認証
-	// ID + Password
+	// Password
 	// =========================================================
 
-	public AttackResult executeOneStage(
+	/**
+	 * 既存互換版
+	 *
+	 * Password最大10000回
+	 */
+	public MultiStagePasswordBruteForceAttack.AttackResult
+	executeOneStage(
 			String username) {
+
+		return executeOneStage(
+				username,
+				10_000);
+	}
+
+	/**
+	 * Passwordの最大試行回数を指定
+	 */
+	public MultiStagePasswordBruteForceAttack.AttackResult
+	executeOneStage(
+			String username,
+			int maxAttemptsPassword) {
 
 		NewAuthLabUser user =
 				getUser(username);
 
 		return multiStagePasswordBruteForceAttack
 				.executeOneStage(
-						user.getPassword());
+						user.getPassword(),
+						maxAttemptsPassword);
 	}
 
 	// =========================================================
 	// 一段階認証
-	// 総当たり成功後にnewauthlabへ実ログイン
+	// 実ログイン付き
 	// =========================================================
 
-	public OneStageLoginResult executeOneStageWithLogin(
+	public OneStageLoginResult
+	executeOneStageWithLogin(
 			String username) {
 
-		AttackResult attackResult =
-				executeOneStage(username);
+		return executeOneStageWithLogin(
+				username,
+				10_000);
+	}
+
+	public OneStageLoginResult
+	executeOneStageWithLogin(
+			String username,
+			int maxAttemptsPassword) {
+
+		MultiStagePasswordBruteForceAttack.AttackResult
+		attackResult =
+		executeOneStage(
+				username,
+				maxAttemptsPassword);
+
+		// -----------------------------------------------------
+		// Password総当たり失敗
+		// -----------------------------------------------------
 
 		if (!attackResult.isSuccess()) {
 
@@ -110,14 +152,14 @@ public class AttackService {
 					null);
 		}
 
-		String password =
-				attackResult.getPassword();
+		// -----------------------------------------------------
+		// newauthlabへ実ログイン
+		// -----------------------------------------------------
 
 		LoginResult loginResult =
-				newAuthLabLoginClient
-				.loginOneStage(
+				newAuthLabLoginClient.loginOneStage(
 						username,
-						password);
+						attackResult.getPassword());
 
 		return new OneStageLoginResult(
 				attackResult,
@@ -130,8 +172,30 @@ public class AttackService {
 	// Password → Password2
 	// =========================================================
 
-	public AttackResult executeTwoStage(
+	/**
+	 * 既存互換版
+	 *
+	 * Password  最大10000回
+	 * Password2 最大10000回
+	 */
+	public MultiStagePasswordBruteForceAttack.AttackResult
+	executeTwoStage(
 			String username) {
+
+		return executeTwoStage(
+				username,
+				10_000,
+				10_000);
+	}
+
+	/**
+	 * Password / Password2の最大試行回数を個別指定
+	 */
+	public MultiStagePasswordBruteForceAttack.AttackResult
+	executeTwoStage(
+			String username,
+			int maxAttemptsPassword,
+			int maxAttemptsPassword2) {
 
 		NewAuthLabUser user =
 				getUser(username);
@@ -139,24 +203,43 @@ public class AttackService {
 		return multiStagePasswordBruteForceAttack
 				.executeTwoStage(
 						user.getPassword(),
-						user.getPassword2());
+						user.getPassword2(),
+						maxAttemptsPassword,
+						maxAttemptsPassword2);
 	}
 
 	// =========================================================
 	// 二段階認証
-	// 総当たり成功後にnewauthlabへ実ログイン
+	// 実ログイン付き
 	// =========================================================
 
-	public TwoStageLoginResult executeTwoStageWithLogin(
+	public TwoStageLoginResult
+	executeTwoStageWithLogin(
 			String username) {
 
-		AttackResult attackResult =
-				executeTwoStage(username);
+		return executeTwoStageWithLogin(
+				username,
+				10_000,
+				10_000);
+	}
 
-		/*
-		 * Password または Password2 の
-		 * 総当たりに失敗した場合
-		 */
+	public TwoStageLoginResult
+	executeTwoStageWithLogin(
+			String username,
+			int maxAttemptsPassword,
+			int maxAttemptsPassword2) {
+
+		MultiStagePasswordBruteForceAttack.AttackResult
+		attackResult =
+		executeTwoStage(
+				username,
+				maxAttemptsPassword,
+				maxAttemptsPassword2);
+
+		// -----------------------------------------------------
+		// 総当たり失敗
+		// -----------------------------------------------------
+
 		if (!attackResult.isSuccess()) {
 
 			return new TwoStageLoginResult(
@@ -165,25 +248,15 @@ public class AttackService {
 					null);
 		}
 
-		/*
-		 * 総当たりで発見した
-		 * Password / Password2
-		 */
-		String password =
-				attackResult.getPassword();
+		// -----------------------------------------------------
+		// newauthlabへ実ログイン
+		// -----------------------------------------------------
 
-		String password2 =
-				attackResult.getPassword2();
-
-		/*
-		 * newauthlabで実際の二段階ログイン
-		 */
 		LoginResult loginResult =
-				newAuthLabLoginClient
-				.loginTwoStage(
+				newAuthLabLoginClient.loginTwoStage(
 						username,
-						password,
-						password2);
+						attackResult.getPassword(),
+						attackResult.getPassword2());
 
 		return new TwoStageLoginResult(
 				attackResult,
@@ -196,8 +269,29 @@ public class AttackService {
 	// Password → Password2 → Password3
 	// =========================================================
 
-	public AttackResult executeThreeStage(
+	/**
+	 * 既存互換版
+	 */
+	public MultiStagePasswordBruteForceAttack.AttackResult
+	executeThreeStage(
 			String username) {
+
+		return executeThreeStage(
+				username,
+				10_000,
+				10_000,
+				10_000);
+	}
+
+	/**
+	 * Password / Password2 / Password3を個別指定
+	 */
+	public MultiStagePasswordBruteForceAttack.AttackResult
+	executeThreeStage(
+			String username,
+			int maxAttemptsPassword,
+			int maxAttemptsPassword2,
+			int maxAttemptsPassword3) {
 
 		NewAuthLabUser user =
 				getUser(username);
@@ -206,27 +300,45 @@ public class AttackService {
 				.executeThreeStage(
 						user.getPassword(),
 						user.getPassword2(),
-						user.getPassword3());
+						user.getPassword3(),
+						maxAttemptsPassword,
+						maxAttemptsPassword2,
+						maxAttemptsPassword3);
 	}
 
 	// =========================================================
 	// 三段階認証
-	// 総当たり成功後にnewauthlabへ実ログイン
+	// 実ログイン付き
 	// =========================================================
 
-	public ThreeStageLoginResult executeThreeStageWithLogin(
+	public ThreeStageLoginResult
+	executeThreeStageWithLogin(
 			String username) {
 
-		// -----------------------------------------------------
-		// 三段階の総当たりを実行
-		// -----------------------------------------------------
+		return executeThreeStageWithLogin(
+				username,
+				10_000,
+				10_000,
+				10_000);
+	}
 
-		AttackResult attackResult =
-				executeThreeStage(username);
+	public ThreeStageLoginResult
+	executeThreeStageWithLogin(
+			String username,
+			int maxAttemptsPassword,
+			int maxAttemptsPassword2,
+			int maxAttemptsPassword3) {
+
+		MultiStagePasswordBruteForceAttack.AttackResult
+		attackResult =
+		executeThreeStage(
+				username,
+				maxAttemptsPassword,
+				maxAttemptsPassword2,
+				maxAttemptsPassword3);
 
 		// -----------------------------------------------------
-		// Password / Password2 / Password3 の
-		// いずれかの突破に失敗した場合
+		// 総当たり失敗
 		// -----------------------------------------------------
 
 		if (!attackResult.isSuccess()) {
@@ -238,29 +350,15 @@ public class AttackService {
 		}
 
 		// -----------------------------------------------------
-		// 総当たりで発見した認証情報
-		// -----------------------------------------------------
-
-		String password =
-				attackResult.getPassword();
-
-		String password2 =
-				attackResult.getPassword2();
-
-		String password3 =
-				attackResult.getPassword3();
-
-		// -----------------------------------------------------
-		// newauthlabで実際の三段階ログイン
+		// newauthlabへ実ログイン
 		// -----------------------------------------------------
 
 		LoginResult loginResult =
-				newAuthLabLoginClient
-				.loginThreeStage(
+				newAuthLabLoginClient.loginThreeStage(
 						username,
-						password,
-						password2,
-						password3);
+						attackResult.getPassword(),
+						attackResult.getPassword2(),
+						attackResult.getPassword3());
 
 		return new ThreeStageLoginResult(
 				attackResult,
@@ -272,57 +370,124 @@ public class AttackService {
 	// Password総当たり
 	// =========================================================
 
+	/**
+	 * 既存互換版
+	 */
 	public PasswordBruteForceAttack.AttackResult
 	executePasswordBruteForce(
 			String username) {
+
+		return executePasswordBruteForce(
+				username,
+				10_000);
+	}
+
+	/**
+	 * Password最大試行回数を指定
+	 */
+	public PasswordBruteForceAttack.AttackResult
+	executePasswordBruteForce(
+			String username,
+			int maxAttempts) {
 
 		NewAuthLabUser user =
 				getUser(username);
 
 		return passwordBruteForceAttack
 				.execute(
-						user.getPassword());
+						user.getPassword(),
+						maxAttempts);
 	}
 
 	// =========================================================
-	// Email OTP総当たり
+	// 一要素認証
+	// Password
 	// =========================================================
 
-	public EmailOtpBruteForceAttack.AttackResult
-	executeEmailOtpBruteForce(
-			int maxAttempts) {
-
-		return emailOtpBruteForceAttack
-				.execute(maxAttempts);
-	}
-
-	// =========================================================
-	// 一要素認証 Password
-	// =========================================================
-
+	/**
+	 * 既存互換版
+	 */
 	public FactorAuthenticationAttack.FactorAttackResult
 	executeOneFactorPassword(
 			String username) {
+
+		return executeOneFactorPassword(
+				username,
+				10_000);
+	}
+
+	/**
+	 * Password最大試行回数を指定
+	 */
+	public FactorAuthenticationAttack.FactorAttackResult
+	executeOneFactorPassword(
+			String username,
+			int maxAttemptsPassword) {
 
 		NewAuthLabUser user =
 				getUser(username);
 
 		return factorAuthenticationAttack
 				.executeOneFactorPassword(
-						user.getPassword());
+						user.getPassword(),
+						maxAttemptsPassword);
 	}
 
 	// =========================================================
-	// 一要素認証 Email OTP
+	// 一要素認証
+	// Email OTP
 	// =========================================================
 
 	public FactorAuthenticationAttack.FactorAttackResult
 	executeOneFactorEmailOtp(
+			String username,
 			int maxAttempts) {
+
+		NewAuthLabUser user =
+				getUser(username);
+
+		if (user.getEmail() == null
+				|| user.getEmail().isBlank()) {
+
+			throw new IllegalArgumentException(
+					"指定されたユーザーにメールアドレスが登録されていません。");
+		}
 
 		return factorAuthenticationAttack
 				.executeOneFactorEmailOtp(
+						user.getEmail(),
 						maxAttempts);
+	}
+
+	// =========================================================
+	// 一要素認証
+	// Email OTP
+	// 実ログイン付き
+	// =========================================================
+
+	public OneFactorEmailOtpLoginResult
+	executeOneFactorEmailOtpWithLogin(
+			String username,
+			int maxAttempts) {
+
+		NewAuthLabUser user =
+				getUser(username);
+
+		if (user.getEmail() == null
+				|| user.getEmail().isBlank()) {
+
+			throw new IllegalArgumentException(
+					"指定されたユーザーにメールアドレスが登録されていません。");
+		}
+
+		EmailOtpBruteForceAttack.AttackResult
+		attackResult =
+		emailOtpBruteForceAttack.execute(
+				user.getEmail(),
+				maxAttempts);
+
+		return new OneFactorEmailOtpLoginResult(
+				attackResult);
 	}
 
 	// =========================================================
@@ -330,32 +495,84 @@ public class AttackService {
 	// Password → Email OTP
 	// =========================================================
 
+	/**
+	 * 既存互換版
+	 *
+	 * Password      最大10000回
+	 * Email OTP     最大1000000回
+	 */
+	public FactorAuthenticationAttack.FactorAttackResult
+	executeTwoFactorPasswordEmailOtp(
+			String username) {
+
+		return executeTwoFactorPasswordEmailOtp(
+				username,
+				10_000,
+				1_000_000);
+	}
+
+	/**
+	 * PasswordとEmail OTPの最大試行回数を個別指定
+	 *
+	 * Password
+	 *   ↓
+	 * Email OTP
+	 */
 	public FactorAuthenticationAttack.FactorAttackResult
 	executeTwoFactorPasswordEmailOtp(
 			String username,
-			int maxOtpAttempts) {
+			int maxAttemptsPassword,
+			int maxAttemptsOtp) {
 
 		NewAuthLabUser user =
 				getUser(username);
 
+		// =====================================================
+		// ユーザーのPasswordハッシュを取得
+		// =====================================================
+
+		String passwordHash =
+				user.getPassword();
+
+		if (passwordHash == null
+				|| passwordHash.isBlank()) {
+
+			throw new IllegalArgumentException(
+					"指定されたユーザーのPasswordが登録されていません。");
+		}
+
+		// =====================================================
+		// 二要素認証攻撃本体
+		//
+		// Password総当たり
+		// ↓
+		// Email OTP総当たり
+		// =====================================================
+
 		return factorAuthenticationAttack
 				.executeTwoFactorPasswordEmailOtp(
-						user.getPassword(),
-						maxOtpAttempts);
+						username,
+						passwordHash,
+						maxAttemptsPassword,
+						maxAttemptsOtp);
 	}
 
 	// =========================================================
-	// 一段階実ログイン結果
+	// 一段階ログイン結果
 	// =========================================================
 
 	public static class OneStageLoginResult {
 
-		private final AttackResult attackResult;
+		private final MultiStagePasswordBruteForceAttack
+		.AttackResult attackResult;
+
 		private final boolean loginSuccess;
+
 		private final LoginResult loginResult;
 
 		public OneStageLoginResult(
-				AttackResult attackResult,
+				MultiStagePasswordBruteForceAttack
+				.AttackResult attackResult,
 				boolean loginSuccess,
 				LoginResult loginResult) {
 
@@ -369,31 +586,54 @@ public class AttackService {
 					loginResult;
 		}
 
-		public AttackResult getAttackResult() {
+		public MultiStagePasswordBruteForceAttack.AttackResult
+		getAttackResult() {
+
 			return attackResult;
 		}
 
 		public boolean isLoginSuccess() {
+
 			return loginSuccess;
 		}
 
 		public LoginResult getLoginResult() {
+
 			return loginResult;
+		}
+
+		public boolean isSuccess() {
+
+			return attackResult.isSuccess();
+		}
+
+		public String getPassword() {
+
+			return attackResult.getPassword();
+		}
+
+		public int getAttemptCount() {
+
+			return attackResult.getTotalAttempts();
 		}
 	}
 
 	// =========================================================
-	// 二段階実ログイン結果
+	// 二段階ログイン結果
 	// =========================================================
 
 	public static class TwoStageLoginResult {
 
-		private final AttackResult attackResult;
+		private final MultiStagePasswordBruteForceAttack
+		.AttackResult attackResult;
+
 		private final boolean loginSuccess;
+
 		private final LoginResult loginResult;
 
 		public TwoStageLoginResult(
-				AttackResult attackResult,
+				MultiStagePasswordBruteForceAttack
+				.AttackResult attackResult,
 				boolean loginSuccess,
 				LoginResult loginResult) {
 
@@ -407,31 +647,59 @@ public class AttackService {
 					loginResult;
 		}
 
-		public AttackResult getAttackResult() {
+		public MultiStagePasswordBruteForceAttack.AttackResult
+		getAttackResult() {
+
 			return attackResult;
 		}
 
 		public boolean isLoginSuccess() {
+
 			return loginSuccess;
 		}
 
 		public LoginResult getLoginResult() {
+
 			return loginResult;
+		}
+
+		public boolean isSuccess() {
+
+			return attackResult.isSuccess();
+		}
+
+		public String getPassword() {
+
+			return attackResult.getPassword();
+		}
+
+		public String getPassword2() {
+
+			return attackResult.getPassword2();
+		}
+
+		public int getAttemptCount() {
+
+			return attackResult.getTotalAttempts();
 		}
 	}
 
 	// =========================================================
-	// 三段階実ログイン結果
+	// 三段階ログイン結果
 	// =========================================================
 
 	public static class ThreeStageLoginResult {
 
-		private final AttackResult attackResult;
+		private final MultiStagePasswordBruteForceAttack
+		.AttackResult attackResult;
+
 		private final boolean loginSuccess;
+
 		private final LoginResult loginResult;
 
 		public ThreeStageLoginResult(
-				AttackResult attackResult,
+				MultiStagePasswordBruteForceAttack
+				.AttackResult attackResult,
 				boolean loginSuccess,
 				LoginResult loginResult) {
 
@@ -445,16 +713,122 @@ public class AttackService {
 					loginResult;
 		}
 
-		public AttackResult getAttackResult() {
+		public MultiStagePasswordBruteForceAttack.AttackResult
+		getAttackResult() {
+
 			return attackResult;
 		}
 
 		public boolean isLoginSuccess() {
+
 			return loginSuccess;
 		}
 
 		public LoginResult getLoginResult() {
+
 			return loginResult;
+		}
+
+		public boolean isSuccess() {
+
+			return attackResult.isSuccess();
+		}
+
+		public String getPassword() {
+
+			return attackResult.getPassword();
+		}
+
+		public String getPassword2() {
+
+			return attackResult.getPassword2();
+		}
+
+		public String getPassword3() {
+
+			return attackResult.getPassword3();
+		}
+
+		public int getAttemptCount() {
+
+			return attackResult.getTotalAttempts();
+		}
+	}
+
+	// =========================================================
+	// 一要素 Email OTPログイン結果
+	// =========================================================
+
+	public static class OneFactorEmailOtpLoginResult {
+
+		private final EmailOtpBruteForceAttack
+		.AttackResult attackResult;
+
+		public OneFactorEmailOtpLoginResult(
+				EmailOtpBruteForceAttack
+				.AttackResult attackResult) {
+
+			this.attackResult =
+					attackResult;
+		}
+
+		public EmailOtpBruteForceAttack.AttackResult
+		getAttackResult() {
+
+			return attackResult;
+		}
+
+		public boolean isLoginSuccess() {
+
+			return attackResult.getLoginResult() != null
+					&& attackResult
+					.getLoginResult()
+					.isSuccess();
+		}
+
+		public LoginResult getLoginResult() {
+
+			return attackResult
+					.getLoginResult();
+		}
+
+		public boolean isSuccess() {
+
+			return attackResult.isSuccess();
+		}
+
+		public String getOtp() {
+
+			return attackResult.getOtp();
+		}
+
+		public int getAttemptCount() {
+
+			return attackResult.getAttemptCount();
+		}
+
+		public String getFinalUrl() {
+
+			if (attackResult.getLoginResult() == null) {
+
+				return null;
+			}
+
+			return attackResult
+					.getLoginResult()
+					.getFinalUrl();
+		}
+
+		public String getSessionCookie() {
+
+			if (attackResult.getLoginResult() == null) {
+
+				return null;
+			}
+
+			return attackResult
+					.getLoginResult()
+					.getSessionCookie();
 		}
 	}
 }

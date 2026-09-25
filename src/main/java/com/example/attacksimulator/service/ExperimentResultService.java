@@ -2,6 +2,9 @@ package com.example.attacksimulator.service;
 
 import java.util.List;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,47 +17,27 @@ public class ExperimentResultService {
 	private final ExperimentResultRepository
 	experimentResultRepository;
 
+	@PersistenceContext
+	private EntityManager entityManager;
+
 	public ExperimentResultService(
-			ExperimentResultRepository
-			experimentResultRepository) {
+			ExperimentResultRepository experimentResultRepository) {
 
 		this.experimentResultRepository =
 				experimentResultRepository;
 	}
 
-	// ========================================
-	// 保存
-	// ========================================
+	// =========================================================
+	// 実験結果登録
+	// =========================================================
 
 	/**
-	 * ExperimentResultオブジェクトをDBに保存
+	 * 旧形式との互換用
+	 *
+	 * maxAttemptCountをintで受け取った場合
 	 */
+	@Transactional
 	public ExperimentResult addResult(
-			ExperimentResult result) {
-
-		if (result.getExperimentNumber() <= 0) {
-
-			result.setExperimentNumber(
-					getNextExperimentNumber());
-		}
-
-		return experimentResultRepository.save(
-				result);
-	}
-
-	public ExperimentResult getLatestResult() {
-
-		return experimentResultRepository
-				.findTopByOrderByExperimentNumberDesc()
-				.orElse(null);
-	}
-
-	/**
-	 * 各項目を指定して実験結果を作成し、
-	 * DBに保存する
-	 */
-	public ExperimentResult addResult(
-			int experimentNumber,
 			String authMethod,
 			String authenticationConfiguration,
 			int maxAttemptCount,
@@ -63,14 +46,44 @@ public class ExperimentResultService {
 			String credential,
 			long attackTimeMs) {
 
+		return addResult(
+				null,
+				authMethod,
+				authenticationConfiguration,
+				String.valueOf(maxAttemptCount),
+				attemptCount,
+				success,
+				credential,
+				attackTimeMs);
+	}
+
+	/**
+	 * usernameあり
+	 *
+	 * maxAttemptCountは文字列
+	 *
+	 * 例：
+	 * 10000
+	 * 3000 → 5000
+	 * 3000 → 5000 → 2000
+	 */
+	@Transactional
+	public ExperimentResult addResult(
+			String username,
+			String authMethod,
+			String authenticationConfiguration,
+			String maxAttemptCount,
+			int attemptCount,
+			boolean success,
+			String credential,
+			long attackTimeMs) {
+
 		ExperimentResult result =
 				new ExperimentResult();
 
-		result.setExperimentNumber(
-				experimentNumber);
+		result.setUsername(username);
 
-		result.setAuthMethod(
-				authMethod);
+		result.setAuthMethod(authMethod);
 
 		result.setAuthenticationConfiguration(
 				authenticationConfiguration);
@@ -93,382 +106,423 @@ public class ExperimentResultService {
 		result.setExperimentDateTime(
 				java.time.LocalDateTime.now());
 
-		return experimentResultRepository.save(
-				result);
+		result.setId(null);
+
+		return experimentResultRepository.save(result);
 	}
 
 	/**
-	 * 次の実験番号を取得
+	 * usernameなしの文字列版
 	 */
+	@Transactional
+	public ExperimentResult addResult(
+			String authMethod,
+			String authenticationConfiguration,
+			String maxAttemptCount,
+			int attemptCount,
+			boolean success,
+			String credential,
+			long attackTimeMs) {
+
+		return addResult(
+				null,
+				authMethod,
+				authenticationConfiguration,
+				maxAttemptCount,
+				attemptCount,
+				success,
+				credential,
+				attackTimeMs);
+	}
+
+	// =========================================================
+	// 実験番号
+	// =========================================================
+
 	public int getNextExperimentNumber() {
 
-		List<ExperimentResult> results =
-				experimentResultRepository
-				.findAllByOrderByExperimentNumberAsc();
+		long count =
+				experimentResultRepository.count();
 
-		if (results.isEmpty()) {
-			return 1;
-		}
-
-		return results.get(results.size() - 1)
-				.getExperimentNumber() + 1;
+		return (int) count + 1;
 	}
 
-	// ========================================
-	// 取得
-	// ========================================
+	// =========================================================
+	// 結果取得
+	// =========================================================
 
-	/**
-	 * 全実験結果を取得
-	 *
-	 * 実験番号の昇順
-	 */
-	public List<ExperimentResult> getResults() {
-
-		return experimentResultRepository
-				.findAllByOrderByExperimentNumberAsc();
-	}
-
-	/**
-	 * AttackControllerとの互換用
-	 *
-	 * 全実験結果を取得
-	 */
 	public List<ExperimentResult> getAllResults() {
 
-		return getResults();
+		return experimentResultRepository
+				.findAllByOrderByIdAsc();
 	}
 
-	/**
-	 * 認証方式ごとの実験結果を取得
-	 */
-	public List<ExperimentResult>
-	getResultsByAuthMethod(
+	public ExperimentResult getLatestResult() {
+
+		return experimentResultRepository
+				.findTopByOrderByIdDesc()
+				.orElse(null);
+	}
+
+	public List<ExperimentResult> getResultsByAuthMethod(
 			String authMethod) {
 
 		return experimentResultRepository
-				.findByAuthMethodOrderByExperimentNumberAsc(
+				.findByAuthMethodOrderByIdAsc(
 						authMethod);
 	}
 
-	// ========================================
-	// 件数
-	// ========================================
+	// =========================================================
+	// 認証方式別集計
+	// =========================================================
 
-	/**
-	 * 実験結果の総数
-	 */
-	public int getResultCount() {
+	public int getExperimentCountByAuthMethod(
+			String authMethod) {
+
+		return experimentResultRepository
+				.findByAuthMethodOrderByIdAsc(
+						authMethod)
+				.size();
+	}
+
+	public int getSuccessCountByAuthMethod(
+			String authMethod) {
+
+		List<ExperimentResult> results =
+				experimentResultRepository
+				.findByAuthMethodOrderByIdAsc(
+						authMethod);
+
+		int count = 0;
+
+		for (ExperimentResult result : results) {
+
+			if (result.isSuccess()) {
+				count++;
+			}
+		}
+
+		return count;
+	}
+
+	public double getSuccessRateByAuthMethod(
+			String authMethod) {
+
+		List<ExperimentResult> results =
+				experimentResultRepository
+				.findByAuthMethodOrderByIdAsc(
+						authMethod);
+
+		if (results.isEmpty()) {
+			return 0.0;
+		}
+
+		int successCount = 0;
+
+		for (ExperimentResult result : results) {
+
+			if (result.isSuccess()) {
+				successCount++;
+			}
+		}
+
+		return (double) successCount
+				/ results.size()
+				* 100.0;
+	}
+
+	public double getAverageAttemptCountByAuthMethod(
+			String authMethod) {
+
+		List<ExperimentResult> results =
+				experimentResultRepository
+				.findByAuthMethodOrderByIdAsc(
+						authMethod);
+
+		if (results.isEmpty()) {
+			return 0.0;
+		}
+
+		long total = 0;
+
+		for (ExperimentResult result : results) {
+
+			total += result.getAttemptCount();
+		}
+
+		return (double) total
+				/ results.size();
+	}
+
+	public long getSuccessAttackTimeTotalByAuthMethod(
+			String authMethod) {
+
+		List<ExperimentResult> results =
+				experimentResultRepository
+				.findByAuthMethodOrderByIdAsc(
+						authMethod);
+
+		long total = 0;
+
+		for (ExperimentResult result : results) {
+
+			if (result.isSuccess()) {
+				total += result.getAttackTimeMs();
+			}
+		}
+
+		return total;
+	}
+
+	public double getAverageSuccessAttackTimeByAuthMethod(
+			String authMethod) {
+
+		List<ExperimentResult> results =
+				experimentResultRepository
+				.findByAuthMethodOrderByIdAsc(
+						authMethod);
+
+		long total = 0;
+
+		int successCount = 0;
+
+		for (ExperimentResult result : results) {
+
+			if (result.isSuccess()) {
+
+				total += result.getAttackTimeMs();
+
+				successCount++;
+			}
+		}
+
+		if (successCount == 0) {
+			return 0.0;
+		}
+
+		return (double) total
+				/ successCount;
+	}
+
+	// =========================================================
+	// 全体集計
+	// =========================================================
+
+	public int getTotalExperimentCount() {
 
 		return (int)
 				experimentResultRepository.count();
 	}
 
-	/**
-	 * 認証方式ごとの実験回数
-	 */
-	public int getExperimentCountByAuthMethod(
-			String authMethod) {
-
-		return getResultsByAuthMethod(
-				authMethod).size();
-	}
-
-	/**
-	 * 認証方式ごとの成功回数
-	 */
-	public int getSuccessCountByAuthMethod(
-			String authMethod) {
-
-		int successCount = 0;
-
-		for (ExperimentResult result :
-			getResultsByAuthMethod(authMethod)) {
-
-			if (result.isSuccess()) {
-				successCount++;
-			}
-		}
-
-		return successCount;
-	}
-
-	// ========================================
-	// 認証突破率
-	// ========================================
-
-	/**
-	 * 認証方式ごとの認証突破率
-	 */
-	public double getSuccessRateByAuthMethod(
-			String authMethod) {
-
-		int totalExperimentCount =
-				getExperimentCountByAuthMethod(
-						authMethod);
-
-		if (totalExperimentCount == 0) {
-			return 0.0;
-		}
-
-		int successCount =
-				getSuccessCountByAuthMethod(
-						authMethod);
-
-		return (double) successCount
-				/ totalExperimentCount
-				* 100.0;
-	}
-
-	// ========================================
-	// 攻撃試行回数
-	// ========================================
-
-	/**
-	 * 認証方式ごとの平均攻撃試行回数
-	 */
-	public double getAverageAttemptCountByAuthMethod(
-			String authMethod) {
+	public long getTotalAttemptCount() {
 
 		List<ExperimentResult> results =
-				getResultsByAuthMethod(
-						authMethod);
+				experimentResultRepository
+				.findAllByOrderByIdAsc();
 
-		if (results.isEmpty()) {
-			return 0.0;
-		}
-
-		long totalAttemptCount = 0;
+		long total = 0;
 
 		for (ExperimentResult result : results) {
 
-			totalAttemptCount +=
-					result.getAttemptCount();
+			total += result.getAttemptCount();
 		}
 
-		return (double) totalAttemptCount
-				/ results.size();
+		return total;
 	}
 
-	// ========================================
-	// 攻撃時間
-	// ========================================
-
-	/**
-	 * 認証方式ごとの
-	 * 成功時の攻撃時間の合計
-	 */
-	public long getSuccessAttackTimeTotalByAuthMethod(
-			String authMethod) {
-
-		long totalTime = 0;
-
-		for (ExperimentResult result :
-			getResultsByAuthMethod(authMethod)) {
-
-			if (result.isSuccess()) {
-
-				totalTime +=
-						result.getAttackTimeMs();
-			}
-		}
-
-		return totalTime;
-	}
-
-	/**
-	 * 認証方式ごとの
-	 * 平均攻撃成功時間
-	 */
-	public double getAverageSuccessAttackTimeByAuthMethod(
-			String authMethod) {
-
-		int successCount =
-				getSuccessCountByAuthMethod(
-						authMethod);
-
-		if (successCount == 0) {
-			return 0.0;
-		}
-
-		return (double)
-				getSuccessAttackTimeTotalByAuthMethod(
-						authMethod)
-				/ successCount;
-	}
-
-	// ========================================
-	// 全体集計
-	// ========================================
-
-	/**
-	 * 全実験回数
-	 */
-	public int getTotalExperimentCount() {
-
-		return getResultCount();
-	}
-
-	/**
-	 * 全成功回数
-	 */
-	public int getSuccessCount() {
-
-		int successCount = 0;
-
-		for (ExperimentResult result :
-			getResults()) {
-
-			if (result.isSuccess()) {
-				successCount++;
-			}
-		}
-
-		return successCount;
-	}
-
-	/**
-	 * 全体の認証突破率
-	 */
-	public double getSuccessRate() {
-
-		int totalExperimentCount =
-				getTotalExperimentCount();
-
-		if (totalExperimentCount == 0) {
-			return 0.0;
-		}
-
-		return (double) getSuccessCount()
-				/ totalExperimentCount
-				* 100.0;
-	}
-
-	/**
-	 * 全体の平均攻撃試行回数
-	 */
 	public double getAverageAttemptCount() {
 
-		List<ExperimentResult> results =
-				getResults();
+		int experimentCount =
+				getTotalExperimentCount();
 
-		if (results.isEmpty()) {
+		if (experimentCount == 0) {
 			return 0.0;
 		}
 
-		long totalAttemptCount = 0;
-
-		for (ExperimentResult result : results) {
-
-			totalAttemptCount +=
-					result.getAttemptCount();
-		}
+		long totalAttemptCount =
+				getTotalAttemptCount();
 
 		return (double) totalAttemptCount
-				/ results.size();
+				/ experimentCount;
 	}
 
-	/**
-	 * 全体の成功時の攻撃時間の合計
-	 */
-	public long getSuccessAttackTimeTotal() {
+	// =========================================================
+	// 選択した結果を削除
+	// =========================================================
 
-		long totalTime = 0;
-
-		for (ExperimentResult result :
-			getResults()) {
-
-			if (result.isSuccess()) {
-
-				totalTime +=
-						result.getAttackTimeMs();
-			}
-		}
-
-		return totalTime;
-	}
-
-	/**
-	 * 全体の平均攻撃成功時間
-	 */
-	public double getAverageSuccessAttackTime() {
-
-		int successCount =
-				getSuccessCount();
-
-		if (successCount == 0) {
-			return 0.0;
-		}
-
-		return (double)
-				getSuccessAttackTimeTotal()
-				/ successCount;
-	}
-
-	// ========================================
-	// 削除処理
-	// ========================================
-
-	/**
-	 * 指定したIDの実験結果を複数削除する
-	 */
-	@Transactional
-	public void deleteResultsByIds(
-			List<Long> ids) {
-
-		if (ids == null || ids.isEmpty()) {
-			return;
-		}
-
-		experimentResultRepository.deleteAllById(
-				ids);
-
-		/*
-		 * 削除後に実験番号を1から詰め直す
-		 */
-		renumberExperiments();
-	}
-
-	/**
-	 * AttackControllerとの互換用
-	 */
 	@Transactional
 	public void deleteResults(
 			List<Long> ids) {
 
-		deleteResultsByIds(ids);
+		if (ids == null
+				|| ids.isEmpty()) {
+
+			return;
+		}
+
+		experimentResultRepository
+		.deleteAllByIdInBatch(ids);
+
+		experimentResultRepository.flush();
+
+		// JPAの変更を確定させてから
+		// IDを振り直す
+		entityManager.flush();
+
+		resequenceIds();
 	}
 
-	/**
-	 * 全実験結果を削除する
-	 */
+	// =========================================================
+	// 全結果削除
+	// =========================================================
+
 	@Transactional
 	public void clearResults() {
 
-		experimentResultRepository.deleteAll();
+		experimentResultRepository
+		.deleteAllInBatch();
+
+		experimentResultRepository.flush();
+
+		entityManager.flush();
+
+		// AUTO_INCREMENTを1に戻す
+		entityManager
+		.createNativeQuery(
+				"ALTER TABLE experiment_results "
+						+ "AUTO_INCREMENT = 1")
+		.executeUpdate();
+
+		entityManager.clear();
 	}
 
+	// =========================================================
+	// ID振り直し
+	// =========================================================
+
 	/**
-	 * 実験番号を1から振り直す
+	 * 削除後のIDを
+	 *
+	 * 1
+	 * 2
+	 * 3
+	 * ...
+	 *
+	 * の連番に戻す。
+	 *
+	 * 例：
+	 *
+	 * 削除前
+	 * 1
+	 * 2
+	 * 3
+	 *
+	 * 2を削除
+	 *
+	 * 1
+	 * 3
+	 *
+	 * ↓
+	 *
+	 * 1
+	 * 2
 	 */
-	@Transactional
-	public void renumberExperiments() {
+	private void resequenceIds() {
 
 		List<ExperimentResult> results =
 				experimentResultRepository
-				.findAllByOrderByExperimentNumberAsc();
+				.findAllByOrderByIdAsc();
 
-		int experimentNumber = 1;
+		int count =
+				results.size();
+
+		// =====================================================
+		// データが0件の場合
+		// =====================================================
+
+		if (count == 0) {
+
+			entityManager
+			.createNativeQuery(
+					"ALTER TABLE experiment_results "
+							+ "AUTO_INCREMENT = 1")
+			.executeUpdate();
+
+			entityManager.clear();
+
+			return;
+		}
+
+		// =====================================================
+		// JPAの変更を反映
+		// =====================================================
+
+		entityManager.flush();
+
+		// =====================================================
+		// 現在のIDを一時的に負数へ変更
+		//
+		// 例：
+		// 1 → -1
+		// 3 → -3
+		//
+		// これにより1,2,3への変更時に
+		// 主キーが重複しないようにする。
+		// =====================================================
+
+		entityManager
+		.createNativeQuery(
+				"UPDATE experiment_results "
+						+ "SET id = -id "
+						+ "WHERE id > 0")
+		.executeUpdate();
+
+		// =====================================================
+		// 1,2,3,... に振り直す
+		// =====================================================
+
+		int newId = 1;
 
 		for (ExperimentResult result : results) {
 
-			result.setExperimentNumber(
-					experimentNumber);
+			Long oldId =
+					result.getId();
 
-			experimentNumber++;
+			if (oldId == null) {
+				continue;
+			}
+
+			entityManager
+			.createNativeQuery(
+					"UPDATE experiment_results "
+							+ "SET id = :newId "
+							+ "WHERE id = :oldId")
+			.setParameter(
+					"newId",
+					newId)
+			.setParameter(
+					"oldId",
+					-oldId)
+			.executeUpdate();
+
+			newId++;
 		}
 
-		experimentResultRepository.saveAll(
-				results);
+		// =====================================================
+		// AUTO_INCREMENTを次の番号へ
+		// =====================================================
+
+		entityManager
+		.createNativeQuery(
+				"ALTER TABLE experiment_results "
+						+ "AUTO_INCREMENT = "
+						+ (count + 1))
+		.executeUpdate();
+
+		// =====================================================
+		// JPAのキャッシュをクリア
+		// =====================================================
+
+		entityManager.clear();
 	}
 }

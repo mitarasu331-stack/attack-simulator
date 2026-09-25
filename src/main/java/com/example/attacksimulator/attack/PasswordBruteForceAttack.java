@@ -6,6 +6,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class PasswordBruteForceAttack {
 
+	private static final int PASSWORD_MIN = 0;
+	private static final int PASSWORD_MAX = 9999;
+
 	private final PasswordEncoder passwordEncoder;
 
 	public PasswordBruteForceAttack(
@@ -14,68 +17,60 @@ public class PasswordBruteForceAttack {
 		this.passwordEncoder = passwordEncoder;
 	}
 
-	public String generateCandidate(int number) {
+	/**
+	 * 既存処理との互換用
+	 * 最大10000回
+	 */
+	public AttackResult execute(String passwordHash) {
 
-		if (number < 0 || number > 9999) {
-
-			throw new IllegalArgumentException(
-					"4桁パスワードの範囲は0000～9999です。");
-		}
-
-		return String.format("%04d", number);
+		return execute(passwordHash, 10000);
 	}
 
 	/**
-	 * BCryptハッシュに対して
-	 * 4桁パスワードを総当たりする
-	 *
-	 * @param targetPasswordHash
-	 *        DBに保存されているBCryptハッシュ
+	 * 最大試行回数を指定して総当たり
 	 */
 	public AttackResult execute(
-			String targetPasswordHash) {
+			String passwordHash,
+			int maxAttempts) {
 
-		if (targetPasswordHash == null
-				|| targetPasswordHash.isBlank()) {
+		if (passwordHash == null
+				|| passwordHash.isBlank()) {
 
 			throw new IllegalArgumentException(
-					"対象パスワードのハッシュがありません。");
+					"パスワードハッシュが指定されていません。");
 		}
+
+		if (maxAttempts <= 0) {
+
+			throw new IllegalArgumentException(
+					"最大試行回数は1以上にしてください。");
+		}
+
+		// パスワードは0000～9999なので
+		// 最大でも10000回
+		int actualMaxAttempts =
+				Math.min(
+						maxAttempts,
+						PASSWORD_MAX - PASSWORD_MIN + 1);
 
 		int attemptCount = 0;
 
-		for (int i = 0; i <= 9999; i++) {
+		for (int i = PASSWORD_MIN;
+				i <= PASSWORD_MAX;
+				i++) {
+
+			if (attemptCount >= actualMaxAttempts) {
+				break;
+			}
 
 			String candidate =
-					generateCandidate(i);
+					String.format("%04d", i);
 
 			attemptCount++;
 
-			System.out.println(
-					"Attempt "
-							+ attemptCount
-							+ " : candidate="
-							+ candidate);
-
 			if (passwordEncoder.matches(
 					candidate,
-					targetPasswordHash)) {
-
-				System.out.println(
-						"----------------------------------------");
-
-				System.out.println(
-						"Password found!");
-
-				System.out.println(
-						"Password = " + candidate);
-
-				System.out.println(
-						"Attempts = "
-								+ attemptCount);
-
-				System.out.println(
-						"----------------------------------------");
+					passwordHash)) {
 
 				return new AttackResult(
 						true,
@@ -83,18 +78,6 @@ public class PasswordBruteForceAttack {
 						attemptCount);
 			}
 		}
-
-		System.out.println(
-				"----------------------------------------");
-
-		System.out.println(
-				"Password not found.");
-
-		System.out.println(
-				"Attempts = " + attemptCount);
-
-		System.out.println(
-				"----------------------------------------");
 
 		return new AttackResult(
 				false,
@@ -105,9 +88,7 @@ public class PasswordBruteForceAttack {
 	public static class AttackResult {
 
 		private final boolean success;
-
 		private final String password;
-
 		private final int attemptCount;
 
 		public AttackResult(
