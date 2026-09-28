@@ -4,226 +4,220 @@
 
 <head>
 
-    <meta charset="UTF-8">
-
-    <title>攻撃実験</title>
-
-    <style>
-
-        body {
-            font-family:
-                "Yu Gothic",
-                "Meiryo",
-                sans-serif;
-
-            background-color: #f5f7fa;
-
-            margin: 0;
-
-            padding: 30px;
-
-            color: #333;
-        }
-
-        .container {
-            width: 100%;
-
-            max-width: 700px;
-
-            margin: 0 auto;
-        }
-
-        h1 {
-            text-align: center;
-
-            margin-bottom: 30px;
-        }
-
-        .card {
-            background-color: white;
-
-            border-radius: 8px;
-
-            padding: 25px;
-
-            margin-bottom: 20px;
-
-            box-shadow:
-                0 2px 8px
-                rgba(0, 0, 0, 0.08);
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-
-            font-weight: bold;
-
-            margin-bottom: 8px;
-        }
-
-        select,
-        input[type="number"] {
-            width: 100%;
-
-            box-sizing: border-box;
-
-            padding: 12px;
-
-            font-size: 16px;
-
-            border: 1px solid #ccc;
-
-            border-radius: 5px;
-
-            background-color: white;
-        }
-
-        select:focus,
-        input[type="number"]:focus {
-            outline: none;
-
-            border-color: #0d6efd;
-        }
-
-        .attempt-area {
-            border: 1px solid #ddd;
-
-            border-radius: 6px;
-
-            padding: 18px;
-
-            background-color: #fafafa;
-
-            margin-top: 15px;
-        }
-
-        .attempt-title {
-            font-weight: bold;
-
-            font-size: 16px;
-
-            margin-bottom: 15px;
-        }
-
-        .attempt-group {
-            margin-bottom: 15px;
-        }
-
-        .attempt-group:last-child {
-            margin-bottom: 0;
-        }
-
-        .attempt-label {
-            display: block;
-
-            font-weight: normal;
-
-            margin-bottom: 6px;
-        }
-
-        .help-text {
-            color: #666;
-
-            font-size: 13px;
-
-            margin-top: 5px;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .button-area {
-            margin-top: 25px;
-
-            display: flex;
-
-            gap: 10px;
-
-            flex-wrap: wrap;
-        }
-
-        button,
-        .result-button {
-            border: none;
-
-            border-radius: 5px;
-
-            padding: 12px 20px;
-
-            font-size: 15px;
-
-            cursor: pointer;
-
-            text-decoration: none;
-
-            text-align: center;
-        }
-
-        .attack-button {
-            background-color: #dc3545;
-
-            color: white;
-        }
-
-        .attack-button:hover {
-            background-color: #bb2d3b;
-        }
-
-        .result-button {
-            background-color: #0d6efd;
-
-            color: white;
-        }
-
-        .result-button:hover {
-            background-color: #0b5ed7;
-        }
-
-        .user-info {
-            padding: 12px;
-
-            background-color: #f1f3f5;
-
-            border-radius: 5px;
-
-            color: #555;
-
-            font-size: 14px;
-        }
-
-        .notice {
-            margin-top: 15px;
-
-            padding: 12px;
-
-            background-color: #fff3cd;
-
-            border: 1px solid #ffe69c;
-
-            border-radius: 5px;
-
-            color: #664d03;
-
-            font-size: 14px;
-        }
-
-        @media (max-width: 600px) {
-
-            body {
-                padding: 15px;
-            }
-
-            .card {
-                padding: 18px;
-            }
-        }
-
-    </style>
+	<meta charset="UTF-8">
+
+	<meta name="viewport"
+	      content="width=device-width, initial-scale=1.0">
+
+	<title>攻撃シミュレーター</title>
+
+	<style>
+		* {
+			box-sizing: border-box;
+		}
+
+		body {
+			margin: 0;
+			padding: 30px 15px;
+			background: #f5f5f5;
+			font-family:
+				"Noto Sans JP",
+				"Yu Gothic",
+				"Meiryo",
+				sans-serif;
+			color: #333;
+		}
+
+		.container {
+			width: 100%;
+			max-width: 600px;
+			margin: 0 auto;
+		}
+
+		.card {
+			background: #ffffff;
+			border-radius: 12px;
+			padding: 30px;
+			box-shadow:
+				0 4px 15px rgba(0, 0, 0, 0.08);
+		}
+
+		h1 {
+			margin: 0 0 25px;
+			text-align: center;
+			font-size: 26px;
+		}
+
+		h2 {
+			margin: 0 0 20px;
+			font-size: 21px;
+		}
+
+		.section {
+			margin-top: 30px;
+			padding-top: 25px;
+			border-top: 1px solid #dddddd;
+		}
+
+		.form-group {
+			margin-bottom: 20px;
+		}
+
+		label {
+			display: block;
+			margin-bottom: 8px;
+			font-weight: bold;
+		}
+
+		select,
+		input[type="number"] {
+			width: 100%;
+			padding: 12px;
+			border: 1px solid #cccccc;
+			border-radius: 8px;
+			font-size: 16px;
+			background: #ffffff;
+		}
+
+		select:focus,
+		input[type="number"]:focus {
+			outline: none;
+			border-color: #666666;
+		}
+
+		/* =====================================================
+		   攻撃方式フォーム
+		   ===================================================== */
+
+		.attack-section {
+			display: none;
+		}
+
+		.attack-section.active {
+			display: block;
+		}
+
+		/* =====================================================
+		   認証方式による入力欄
+		   ===================================================== */
+
+		.attack-option {
+			display: none;
+		}
+
+		.attack-option.active {
+			display: block;
+		}
+
+		.info {
+			margin-top: 8px;
+			font-size: 13px;
+			color: #666666;
+			line-height: 1.6;
+		}
+
+		.warning {
+			margin-top: 10px;
+			padding: 10px 12px;
+			background: #fff8e1;
+			border: 1px solid #f0d98c;
+			border-radius: 8px;
+			font-size: 13px;
+			line-height: 1.6;
+			color: #6b5a00;
+		}
+
+		.dictionary-info {
+			margin-bottom: 20px;
+			padding: 15px;
+			background: #f7f7f7;
+			border: 1px solid #dddddd;
+			border-radius: 8px;
+			font-size: 13px;
+			line-height: 1.8;
+		}
+
+		.dictionary-info strong {
+			display: block;
+			margin-bottom: 8px;
+			font-size: 14px;
+		}
+
+		.dictionary-info-grid {
+			display: grid;
+			grid-template-columns:
+				repeat(2, minmax(0, 1fr));
+			gap: 4px 20px;
+		}
+
+		/* =====================================================
+		   ボタン
+		   ===================================================== */
+
+		.button {
+			width: 100%;
+			padding: 13px;
+			border: none;
+			border-radius: 8px;
+			background: #333333;
+			color: #ffffff;
+			font-size: 16px;
+			font-weight: bold;
+			cursor: pointer;
+		}
+
+		.button:hover {
+			background: #222222;
+		}
+
+		.result-button {
+			display: block;
+			margin-top: 25px;
+			padding: 13px;
+			text-align: center;
+			text-decoration: none;
+			border-radius: 8px;
+			border: 1px solid #999999;
+			background: #ffffff;
+			color: #333333;
+			font-weight: bold;
+		}
+
+		.result-button:hover {
+			background: #f0f0f0;
+		}
+
+		.hidden {
+			display: none;
+		}
+
+		/* =====================================================
+		   レスポンシブ
+		   ===================================================== */
+
+		@media (max-width: 500px) {
+
+			body {
+				padding: 20px 10px;
+			}
+
+			.card {
+				padding: 20px;
+			}
+
+			h1 {
+				font-size: 23px;
+			}
+
+			h2 {
+				font-size: 19px;
+			}
+
+			.dictionary-info-grid {
+				grid-template-columns: 1fr;
+			}
+		}
+	</style>
 
 </head>
 
@@ -231,780 +225,1829 @@
 
 <div class="container">
 
-    <h1>攻撃実験</h1>
+	<div class="card">
 
-    <!-- ================================================== -->
-    <!-- 攻撃対象設定 -->
-    <!-- ================================================== -->
+		<h1>
+			攻撃シミュレーター
+		</h1>
 
-    <div class="card">
 
-        <form
-                id="attackForm"
-                method="post">
+		<!-- =====================================================
+		     攻撃対象ユーザー
+		     ===================================================== -->
 
-            <!-- ========================================== -->
-            <!-- 対象ユーザー -->
-            <!-- ========================================== -->
+		<div class="form-group">
 
-            <div class="form-group">
+			<label for="targetUsername">
+				攻撃対象ユーザー
+			</label>
 
-                <label for="username">
-                    対象ユーザー
-                </label>
+			<select
+					id="targetUsername"
+					name="targetUsername"
+					required>
 
-                <select
-                        id="username"
-                        name="username"
-                        required>
+				<option value="">
+					ユーザーを選択してください
+				</option>
 
-                    <option value="">
-                        ユーザーを選択してください
-                    </option>
+				<option
+						th:each="username : ${usernames}"
+						th:value="${username}"
+						th:text="${username}">
+				</option>
 
-                    <option
-                            th:each="username : ${usernames}"
-                            th:value="${username}"
-                            th:text="${username}">
-                        username
-                    </option>
+			</select>
 
-                </select>
+		</div>
 
-                <div class="help-text">
-                    newauthlabに登録されているユーザーから選択します。
-                </div>
 
-            </div>
+		<!-- =====================================================
+		     攻撃方式
+		     ===================================================== -->
 
+		<div class="form-group">
 
-            <!-- ========================================== -->
-            <!-- 認証方式 -->
-            <!-- ========================================== -->
+			<label for="attackType">
+				攻撃方式
+			</label>
 
-            <div class="form-group">
+			<select
+					id="attackType">
 
-                <label for="authMethod">
-                    認証方式
-                </label>
+				<option value="brute-force">
+					総当たり
+				</option>
 
-                <select
-                        id="authMethod"
-                        name="authMethod"
-                        required>
+				<option value="random">
+					ランダム攻撃
+				</option>
 
-                    <option value="">
-                        認証方式を選択してください
-                    </option>
+				<option value="dictionary">
+					辞書攻撃
+				</option>
 
-                    <option value="one-stage">
-                        一段階認証（Password）
-                    </option>
+			</select>
 
-                    <option value="two-stage">
-                        二段階認証（Password→Password2）
-                    </option>
+		</div>
 
-                    <option value="three-stage">
-                        三段階認証（Password→Password2→Password3）
-                    </option>
 
-                    <option value="one-factor-password">
-                        一要素認証（Password）
-                    </option>
+		<!-- =====================================================
+		     1. 総当たり
+		     ===================================================== -->
 
-                    <option value="one-factor-email-otp">
-                        一要素認証（Email OTP）
-                    </option>
+		<div
+				id="bruteForceSection"
+				class="attack-section active section">
 
-                    <option value="two-factor-password-email-otp">
-                        二要素認証（Password + Email OTP）
-                    </option>
+			<h2>
+				総当たり
+			</h2>
 
-                </select>
+			<form
+					action="/attack/multi-stage"
+					method="post"
+					id="bruteForceForm">
 
-            </div>
+				<input
+						type="hidden"
+						name="username"
+						id="bruteForceUsername">
 
 
-            <!-- ========================================== -->
-            <!-- 最大攻撃試行回数 -->
-            <!-- ========================================== -->
+				<!-- =================================================
+				     認証方式
+				     ================================================= -->
 
-            <div
-                    id="attemptArea"
-                    class="attempt-area hidden">
+				<div class="form-group">
 
-                <div class="attempt-title">
-                    最大攻撃試行回数
-                </div>
+					<label for="bruteForceAuthMethod">
+						認証方式
+					</label>
 
+					<select
+							name="authMethod"
+							id="bruteForceAuthMethod">
 
-                <!-- ====================================== -->
-                <!-- Password -->
-                <!-- ====================================== -->
+						<!-- 多段階認証 -->
 
-                <div
-                        id="passwordAttemptGroup"
-                        class="attempt-group hidden">
+						<option value="one-stage">
+							一段階認証
+						</option>
 
-                    <label
-                            for="maxAttemptsPassword"
-                            class="attempt-label">
+						<option value="two-stage">
+							二段階認証
+						</option>
 
-                        Password
+						<option value="three-stage">
+							三段階認証
+						</option>
 
-                    </label>
 
-                    <input
-                            type="number"
-                            id="maxAttemptsPassword"
-                            name="maxAttemptsPassword"
-                            value="10000"
-                            min="1"
-                            max="10000"
-                            step="1">
+						<!-- 要素認証 -->
 
-                    <div class="help-text">
-                        1～10000回
-                    </div>
+						<option value="one-factor-password">
+							一要素認証（Password）
+						</option>
 
-                </div>
+						<option value="one-factor-email-otp">
+							一要素認証（Email OTP）
+						</option>
 
+						<option value="two-factor-password-email-otp">
+							二要素認証（Password + Email OTP）
+						</option>
 
-                <!-- ====================================== -->
-                <!-- Password2 -->
-                <!-- ====================================== -->
+					</select>
 
-                <div
-                        id="password2AttemptGroup"
-                        class="attempt-group hidden">
+				</div>
 
-                    <label
-                            for="maxAttemptsPassword2"
-                            class="attempt-label">
 
-                        Password2
+				<!-- =================================================
+				     Password
+				     ================================================= -->
 
-                    </label>
+				<div
+						id="bruteForcePasswordOption"
+						class="attack-option active">
 
-                    <input
-                            type="number"
-                            id="maxAttemptsPassword2"
-                            name="maxAttemptsPassword2"
-                            value="10000"
-                            min="1"
-                            max="10000"
-                            step="1">
+					<div class="form-group">
 
-                    <div class="help-text">
-                        1～10000回
-                    </div>
+						<label for="maxAttemptsPassword">
+							Password最大試行回数
+						</label>
 
-                </div>
+						<input
+								type="number"
+								id="maxAttemptsPassword"
+								name="maxAttemptsPassword"
+								min="1"
+								max="10000"
+								value="10000">
 
+						<div class="info">
+							0000～9999 の最大10,000通り
+						</div>
 
-                <!-- ====================================== -->
-                <!-- Password3 -->
-                <!-- ====================================== -->
+					</div>
 
-                <div
-                        id="password3AttemptGroup"
-                        class="attempt-group hidden">
+				</div>
 
-                    <label
-                            for="maxAttemptsPassword3"
-                            class="attempt-label">
 
-                        Password3
+				<!-- =================================================
+				     Password2
+				     ================================================= -->
 
-                    </label>
+				<div
+						id="bruteForcePassword2Option"
+						class="attack-option">
 
-                    <input
-                            type="number"
-                            id="maxAttemptsPassword3"
-                            name="maxAttemptsPassword3"
-                            value="10000"
-                            min="1"
-                            max="10000"
-                            step="1">
+					<div class="form-group">
 
-                    <div class="help-text">
-                        1～10000回
-                    </div>
+						<label for="maxAttemptsPassword2">
+							Password2最大試行回数
+						</label>
 
-                </div>
+						<input
+								type="number"
+								id="maxAttemptsPassword2"
+								name="maxAttemptsPassword2"
+								min="1"
+								max="10000"
+								value="10000">
 
+						<div class="info">
+							0000～9999 の最大10,000通り
+						</div>
 
-                <!-- ====================================== -->
-                <!-- Email OTP -->
-                <!-- ====================================== -->
+					</div>
 
-                <div
-                        id="otpAttemptGroup"
-                        class="attempt-group hidden">
+				</div>
 
-                    <label
-                            for="maxAttempts"
-                            class="attempt-label">
 
-                        Email OTP
+				<!-- =================================================
+				     Password3
+				     ================================================= -->
 
-                    </label>
+				<div
+						id="bruteForcePassword3Option"
+						class="attack-option">
 
-                    <input
-                            type="number"
-                            id="maxAttempts"
-                            name="maxAttempts"
-                            value="1000000"
-                            min="1"
-                            max="1000000"
-                            step="1">
+					<div class="form-group">
 
-                    <div class="help-text">
-                        1～1000000回
-                    </div>
+						<label for="maxAttemptsPassword3">
+							Password3最大試行回数
+						</label>
 
-                </div>
+						<input
+								type="number"
+								id="maxAttemptsPassword3"
+								name="maxAttemptsPassword3"
+								min="1"
+								max="10000"
+								value="10000">
 
-            </div>
+						<div class="info">
+							0000～9999 の最大10,000通り
+						</div>
 
+					</div>
 
-            <!-- ========================================== -->
-            <!-- 説明 -->
-            <!-- ========================================== -->
+				</div>
 
-            <div
-                    id="description"
-                    class="notice hidden">
-            </div>
 
+				<!-- =================================================
+				     Email OTP
+				     ================================================= -->
 
-            <!-- ========================================== -->
-            <!-- ボタン -->
-            <!-- ========================================== -->
+				<div
+						id="bruteForceOtpOption"
+						class="attack-option">
 
-            <div class="button-area">
+					<div class="form-group">
 
-                <button
-                        type="submit"
-                        id="attackButton"
-                        class="attack-button">
+						<label for="bruteForceMaxAttemptsOtp">
+							Email OTP最大試行回数
+						</label>
 
-                    攻撃開始
+						<input
+								type="number"
+								id="bruteForceMaxAttemptsOtp"
+								name="maxAttempts"
+								min="1"
+								max="1000000"
+								value="1000000">
 
-                </button>
+						<div class="info">
+							000000～999999 の最大1,000,000通り
+						</div>
 
-                <a
-                        href="/results"
-                        class="result-button">
+						<div class="warning">
+							Email OTPは最大1,000,000通りあるため、
+							全探索では非常に長い時間がかかる場合があります。
+						</div>
 
-                    実験結果
+					</div>
 
-                </a>
+				</div>
 
-            </div>
 
-        </form>
+				<button
+						type="submit"
+						class="button">
 
-    </div>
+					総当たり攻撃を開始
 
+				</button>
 
-    <!-- ================================================== -->
-    <!-- ユーザー情報 -->
-    <!-- ================================================== -->
+			</form>
 
-    <div class="card">
+		</div>
 
-        <div class="user-info">
 
-            選択したユーザーの認証情報は、
-            newauthlabのデータベースから取得して攻撃実験に使用します。
+		<!-- =====================================================
+		     2. ランダム攻撃
+		     ===================================================== -->
 
-        </div>
+		<div
+				id="randomSection"
+				class="attack-section section">
 
-    </div>
+			<h2>
+				ランダム攻撃
+			</h2>
+
+			<form
+					action="/attack/random-stage"
+					method="post"
+					id="randomAttackForm">
+
+				<input
+						type="hidden"
+						name="username"
+						id="randomUsername">
+
+
+				<!-- =================================================
+				     認証方式
+				     ================================================= -->
+
+				<div class="form-group">
+
+					<label for="randomAuthMethod">
+						認証方式
+					</label>
+
+					<select
+							id="randomAuthMethod">
+
+						<option value="one-stage-random">
+							一段階認証
+						</option>
+
+						<option value="two-stage-random">
+							二段階認証
+						</option>
+
+						<option value="three-stage-random">
+							三段階認証
+						</option>
+
+						<option value="one-factor-email-otp-random">
+							一要素認証（Email OTP）
+						</option>
+
+						<option value="two-factor-password-email-otp-random">
+							二要素認証（Password + Email OTP）
+						</option>
+
+					</select>
+
+				</div>
+
+
+				<!-- =================================================
+				     一段階ランダム
+				     ================================================= -->
+
+				<div
+						id="randomOneStageOption"
+						class="attack-option active">
+
+					<div class="form-group">
+
+						<label for="randomMaxAttemptsPassword">
+							Password最大試行回数
+						</label>
+
+						<input
+								type="number"
+								id="randomMaxAttemptsPassword"
+								name="maxAttemptsPassword"
+								min="1"
+								max="10000"
+								value="10000">
+
+						<div class="info">
+							0000～9999 の中から重複なしで
+							ランダムに試行します。
+						</div>
+
+					</div>
+
+				</div>
+
+
+				<!-- =================================================
+				     二段階ランダム
+				     ================================================= -->
+
+				<div
+						id="randomTwoStageOption"
+						class="attack-option">
+
+					<div class="form-group">
+
+						<label for="randomMaxAttemptsPassword2">
+							Password2最大試行回数
+						</label>
+
+						<input
+								type="number"
+								id="randomMaxAttemptsPassword2"
+								name="maxAttemptsPassword2"
+								min="1"
+								max="10000"
+								value="10000">
+
+						<div class="info">
+							Password認証成功後、
+							Password2をランダムに試行します。
+						</div>
+
+					</div>
+
+				</div>
+
+
+				<!-- =================================================
+				     三段階ランダム
+				     ================================================= -->
+
+				<div
+						id="randomThreeStageOption"
+						class="attack-option">
+
+					<div class="form-group">
+
+						<label for="randomMaxAttemptsPassword3">
+							Password3最大試行回数
+						</label>
+
+						<input
+								type="number"
+								id="randomMaxAttemptsPassword3"
+								name="maxAttemptsPassword3"
+								min="1"
+								max="10000"
+								value="10000">
+
+						<div class="info">
+							Password → Password2 の順に成功した場合、
+							Password3をランダムに試行します。
+						</div>
+
+					</div>
+
+				</div>
+
+
+				<!-- =================================================
+				     Email OTPランダム
+				     ================================================= -->
+
+				<div
+						id="randomEmailOtpOption"
+						class="attack-option">
+
+					<div class="form-group">
+
+						<label for="randomMaxAttemptsOtp">
+							Email OTP最大試行回数
+						</label>
+
+						<input
+								type="number"
+								id="randomMaxAttemptsOtp"
+								name="maxAttempts"
+								min="1"
+								max="1000000"
+								value="1000000">
+
+						<div class="info">
+							000000～999999 の中から重複なしで
+							ランダムにOTPを試行します。
+						</div>
+
+						<div class="warning">
+							最大1,000,000回のHTTP認証確認が
+							発生する可能性があります。
+							設定した最大試行回数によっては
+							非常に長時間かかります。
+						</div>
+
+					</div>
+
+				</div>
+
+
+				<!-- =================================================
+				     二要素認証ランダム
+				     Password + Email OTP
+				     ================================================= -->
+
+				<div
+						id="randomTwoFactorOption"
+						class="attack-option">
+
+					<div class="form-group">
+
+						<label for="randomTwoFactorPasswordAttempts">
+							Password最大試行回数
+						</label>
+
+						<input
+								type="number"
+								id="randomTwoFactorPasswordAttempts"
+								name="maxAttemptsPassword"
+								min="1"
+								max="10000"
+								value="10000">
+
+						<div class="info">
+							0000～9999 の中から重複なしで
+							Passwordをランダムに試行します。
+						</div>
+
+					</div>
+
+
+					<div class="form-group">
+
+						<label for="randomTwoFactorOtpAttempts">
+							Email OTP最大試行回数
+						</label>
+
+						<input
+								type="number"
+								id="randomTwoFactorOtpAttempts"
+								name="maxAttemptsOtp"
+								min="1"
+								max="1000000"
+								value="1000000">
+
+						<div class="info">
+							Passwordが成功した後、
+							000000～999999 の中から重複なしで
+							OTPをランダムに試行します。
+						</div>
+
+						<div class="warning">
+							Password攻撃成功後にEmail OTP攻撃へ移行します。
+							Password試行回数とOTP試行回数を合計して
+							総試行回数を計算します。
+						</div>
+
+					</div>
+
+				</div>
+
+
+				<button
+						type="submit"
+						class="button">
+
+					ランダム攻撃を開始
+
+				</button>
+
+			</form>
+
+		</div>
+
+
+		<!-- =====================================================
+		     3. 辞書攻撃
+		     ===================================================== -->
+
+		<div
+				id="dictionarySection"
+				class="attack-section section">
+
+			<h2>
+				辞書攻撃
+			</h2>
+
+			<form
+					action="/attack/dictionary-stage"
+					method="post"
+					id="dictionaryForm">
+
+				<input
+						type="hidden"
+						name="username"
+						id="dictionaryUsername">
+
+
+				<!-- =================================================
+				     認証方式
+				     ================================================= -->
+
+				<div class="form-group">
+
+					<label for="dictionaryAuthMethod">
+						認証方式
+					</label>
+
+					<select
+							name="authMethod"
+							id="dictionaryAuthMethod">
+
+						<option value="one-stage-dictionary">
+							一段階認証
+						</option>
+
+						<option value="two-stage-dictionary">
+							二段階認証
+						</option>
+
+						<option value="three-stage-dictionary">
+							三段階認証
+						</option>
+
+					</select>
+
+				</div>
+
+
+				<!-- =================================================
+				     Password
+				     ================================================= -->
+
+				<div class="form-group">
+
+					<label for="dictionaryMaxPassword">
+						Password 辞書使用件数
+					</label>
+
+					<input
+							type="number"
+							id="dictionaryMaxPassword"
+							name="maxAttemptsPassword"
+							min="1"
+							max="100"
+							value="100"
+							required>
+
+					<div class="info">
+						1～100件
+					</div>
+
+				</div>
+
+
+				<!-- =================================================
+				     Password2
+				     ================================================= -->
+
+				<div
+						id="dictionaryPassword2Group"
+						class="attack-option">
+
+					<div class="form-group">
+
+						<label for="dictionaryMaxPassword2">
+							Password2 辞書使用件数
+						</label>
+
+						<input
+								type="number"
+								id="dictionaryMaxPassword2"
+								name="maxAttemptsPassword2"
+								min="1"
+								max="100"
+								value="100">
+
+						<div class="info">
+							1～100件
+						</div>
+
+					</div>
+
+				</div>
+
+
+				<!-- =================================================
+				     Password3
+				     ================================================= -->
+
+				<div
+						id="dictionaryPassword3Group"
+						class="attack-option">
+
+					<div class="form-group">
+
+						<label for="dictionaryMaxPassword3">
+							Password3 辞書使用件数
+						</label>
+
+						<input
+								type="number"
+								id="dictionaryMaxPassword3"
+								name="maxAttemptsPassword3"
+								min="1"
+								max="100"
+								value="100">
+
+						<div class="info">
+							1～100件
+						</div>
+
+					</div>
+
+				</div>
+
+
+				<!-- =================================================
+				     辞書の説明
+				     ================================================= -->
+
+				<div class="dictionary-info">
+
+					<strong>
+						使用する辞書
+					</strong>
+
+					<div class="dictionary-info-grid">
+
+						<div>1位　1234</div>
+						<div>2位　1111</div>
+						<div>3位　6969</div>
+						<div>4位　1212</div>
+						<div>5位　0000</div>
+						<div>6位　1313</div>
+						<div>7位　1989</div>
+						<div>8位　1990</div>
+						<div>9位　1987</div>
+						<div>10位　2005</div>
+						<div>11位　7777</div>
+						<div>12位　1991</div>
+						<div>13位　2121</div>
+						<div>14位　1988</div>
+						<div>15位　2323</div>
+						<div>16位　2006</div>
+						<div>17位　2468</div>
+						<div>18位　1986</div>
+						<div>19位　1985</div>
+						<div>20位　2222</div>
+						<div>21位　5150</div>
+						<div>22位　4444</div>
+						<div>23位　2007</div>
+						<div>24位　1010</div>
+						<div>25位　1992</div>
+						<div>26位　1122</div>
+						<div>27位　8888</div>
+						<div>28位　2001</div>
+						<div>29位　1982</div>
+						<div>30位　1984</div>
+						<div>31位　1221</div>
+						<div>32位　1983</div>
+						<div>33位　3333</div>
+						<div>34位　5555</div>
+						<div>35位　2424</div>
+						<div>36位　2008</div>
+						<div>37位　2525</div>
+						<div>38位　1981</div>
+						<div>39位　5683</div>
+						<div>40位　1121</div>
+						<div>41位　9999</div>
+						<div>42位　1977</div>
+						<div>43位　2002</div>
+						<div>44位　1213</div>
+						<div>45位　2004</div>
+						<div>46位　2020</div>
+						<div>47位　2009</div>
+						<div>48位　2003</div>
+						<div>49位　2000</div>
+						<div>50位　1432</div>
+						<div>51位　1999</div>
+						<div>52位　1230</div>
+						<div>53位　1226</div>
+						<div>54位　1223</div>
+						<div>55位　1210</div>
+						<div>56位　1020</div>
+						<div>57位　2010</div>
+						<div>58位　1993</div>
+						<div>59位　1979</div>
+						<div>60位　1978</div>
+						<div>61位　1515</div>
+						<div>62位　1231</div>
+						<div>63位　2112</div>
+						<div>64位　1717</div>
+						<div>65位　1414</div>
+						<div>66位　1218</div>
+						<div>67位　1214</div>
+						<div>68位　1980</div>
+						<div>69位　1616</div>
+						<div>70位　1224</div>
+						<div>71位　1220</div>
+						<div>72位　1216</div>
+						<div>73位　1127</div>
+						<div>74位　1124</div>
+						<div>75位　1105</div>
+						<div>76位　1024</div>
+						<div>77位　1021</div>
+						<div>78位　1025</div>
+						<div>79位　5678</div>
+						<div>80位　1225</div>
+						<div>81位　1211</div>
+						<div>82位　1128</div>
+						<div>83位　1123</div>
+						<div>84位　0123</div>
+						<div>85位　1228</div>
+						<div>86位　1022</div>
+						<div>87位　1001</div>
+						<div>88位　7410</div>
+						<div>89位　5656</div>
+						<div>90位　1126</div>
+						<div>91位　4321</div>
+						<div>92位　3232</div>
+						<div>93位　2626</div>
+						<div>94位　1994</div>
+						<div>95位　1972</div>
+						<div>96位　1023</div>
+						<div>97位　6666</div>
+						<div>98位　2580</div>
+						<div>99位　1437</div>
+						<div>100位　1229</div>
+
+					</div>
+
+				</div>
+
+
+				<button
+						type="submit"
+						class="button">
+
+					辞書攻撃を開始
+
+				</button>
+
+			</form>
+
+		</div>
+
+
+		<!-- =====================================================
+		     実験結果確認
+		     ===================================================== -->
+
+		<a
+				href="/results"
+				class="result-button">
+
+			実験結果確認画面
+
+		</a>
+
+	</div>
 
 </div>
 
 
 <script>
 
-    // =====================================================
-    // HTML要素取得
-    // =====================================================
+	// =========================================================
+	// 共通
+	// =========================================================
 
-    const authMethod =
-        document.getElementById(
-            "authMethod"
-        );
+	const targetUsername =
+			document.getElementById(
+					"targetUsername"
+			);
 
-    const attackForm =
-        document.getElementById(
-            "attackForm"
-        );
+	const attackType =
+			document.getElementById(
+					"attackType"
+			);
 
-    const attemptArea =
-        document.getElementById(
-            "attemptArea"
-        );
 
-    const passwordAttemptGroup =
-        document.getElementById(
-            "passwordAttemptGroup"
-        );
+	// =========================================================
+	// 攻撃方式切り替え
+	// =========================================================
 
-    const password2AttemptGroup =
-        document.getElementById(
-            "password2AttemptGroup"
-        );
+	const bruteForceSection =
+			document.getElementById(
+					"bruteForceSection"
+			);
 
-    const password3AttemptGroup =
-        document.getElementById(
-            "password3AttemptGroup"
-        );
+	const randomSection =
+			document.getElementById(
+					"randomSection"
+			);
 
-    const otpAttemptGroup =
-        document.getElementById(
-            "otpAttemptGroup"
-        );
+	const dictionarySection =
+			document.getElementById(
+					"dictionarySection"
+			);
 
-    const description =
-        document.getElementById(
-            "description"
-        );
 
+	function updateAttackType() {
 
-    // =====================================================
-    // 初期状態
-    // =====================================================
+		const selectedType =
+				attackType.value;
 
-    function resetAttemptArea() {
+		bruteForceSection
+				.classList.remove("active");
 
-        attemptArea.classList.add(
-            "hidden"
-        );
+		randomSection
+				.classList.remove("active");
 
-        passwordAttemptGroup.classList.add(
-            "hidden"
-        );
+		dictionarySection
+				.classList.remove("active");
 
-        password2AttemptGroup.classList.add(
-            "hidden"
-        );
 
-        password3AttemptGroup.classList.add(
-            "hidden"
-        );
+		if (selectedType === "brute-force") {
 
-        otpAttemptGroup.classList.add(
-            "hidden"
-        );
+			bruteForceSection
+					.classList.add("active");
 
-        description.classList.add(
-            "hidden"
-        );
+			return;
+		}
 
-        description.textContent = "";
 
-    }
+		if (selectedType === "random") {
 
+			randomSection
+					.classList.add("active");
 
-    // =====================================================
-    // 認証方式変更
-    // =====================================================
+			return;
+		}
 
-    function updateAttemptFields() {
 
-        const method =
-            authMethod.value;
+		if (selectedType === "dictionary") {
 
-        resetAttemptArea();
+			dictionarySection
+					.classList.add("active");
+		}
+	}
 
 
-        // ================================================
-        // 認証方式未選択
-        // ================================================
+	if (attackType) {
 
-        if (!method) {
-            attackForm.action = "";
-            return;
-        }
+		attackType.addEventListener(
+				"change",
+				updateAttackType
+		);
 
+		updateAttackType();
+	}
 
-        // ================================================
-        // 一段階認証
-        // ================================================
 
-        if (method === "one-stage") {
+	// =========================================================
+	// 総当たり
+	// =========================================================
 
-            attemptArea.classList.remove(
-                "hidden"
-            );
+	const bruteForceForm =
+			document.getElementById(
+					"bruteForceForm"
+			);
 
-            passwordAttemptGroup.classList.remove(
-                "hidden"
-            );
+	const bruteForceUsername =
+			document.getElementById(
+					"bruteForceUsername"
+			);
 
-            description.classList.remove(
-                "hidden"
-            );
+	const bruteForceAuthMethod =
+			document.getElementById(
+					"bruteForceAuthMethod"
+			);
 
-            description.textContent =
-                "Passwordの最大攻撃試行回数を設定します。";
+	const bruteForcePasswordOption =
+			document.getElementById(
+					"bruteForcePasswordOption"
+			);
 
-            attackForm.action =
-                "/attack/multi-stage";
+	const bruteForcePassword2Option =
+			document.getElementById(
+					"bruteForcePassword2Option"
+			);
 
-            return;
-        }
+	const bruteForcePassword3Option =
+			document.getElementById(
+					"bruteForcePassword3Option"
+			);
 
+	const bruteForceOtpOption =
+			document.getElementById(
+					"bruteForceOtpOption"
+			);
 
-        // ================================================
-        // 二段階認証
-        // ================================================
+	const maxAttemptsPassword =
+			document.getElementById(
+					"maxAttemptsPassword"
+			);
 
-        if (method === "two-stage") {
+	const maxAttemptsPassword2 =
+			document.getElementById(
+					"maxAttemptsPassword2"
+			);
 
-            attemptArea.classList.remove(
-                "hidden"
-            );
+	const maxAttemptsPassword3 =
+			document.getElementById(
+					"maxAttemptsPassword3"
+			);
 
-            passwordAttemptGroup.classList.remove(
-                "hidden"
-            );
+	const bruteForceMaxAttemptsOtp =
+			document.getElementById(
+					"bruteForceMaxAttemptsOtp"
+			);
 
-            password2AttemptGroup.classList.remove(
-                "hidden"
-            );
 
-            description.classList.remove(
-                "hidden"
-            );
+	function updateBruteForceOptions() {
 
-            description.textContent =
-                "PasswordとPassword2の最大攻撃試行回数をそれぞれ設定します。";
+		const method =
+				bruteForceAuthMethod.value;
 
-            attackForm.action =
-                "/attack/multi-stage";
 
-            return;
-        }
+		// -----------------------------------------------------
+		// すべて非表示
+		// -----------------------------------------------------
 
+		bruteForcePasswordOption
+				.classList.remove("active");
 
-        // ================================================
-        // 三段階認証
-        // ================================================
+		bruteForcePassword2Option
+				.classList.remove("active");
 
-        if (method === "three-stage") {
+		bruteForcePassword3Option
+				.classList.remove("active");
 
-            attemptArea.classList.remove(
-                "hidden"
-            );
+		bruteForceOtpOption
+				.classList.remove("active");
 
-            passwordAttemptGroup.classList.remove(
-                "hidden"
-            );
 
-            password2AttemptGroup.classList.remove(
-                "hidden"
-            );
+		// -----------------------------------------------------
+		// required解除
+		// -----------------------------------------------------
 
-            password3AttemptGroup.classList.remove(
-                "hidden"
-            );
+		maxAttemptsPassword.required =
+				false;
 
-            description.classList.remove(
-                "hidden"
-            );
+		maxAttemptsPassword2.required =
+				false;
 
-            description.textContent =
-                "Password、Password2、Password3の最大攻撃試行回数をそれぞれ設定します。";
+		maxAttemptsPassword3.required =
+				false;
 
-            attackForm.action =
-                "/attack/multi-stage";
+		bruteForceMaxAttemptsOtp.required =
+				false;
 
-            return;
-        }
 
+		// -----------------------------------------------------
+		// すべて有効化
+		// -----------------------------------------------------
 
-        // ================================================
-        // 一要素認証 Password
-        // ================================================
+		maxAttemptsPassword.disabled =
+				false;
 
-        if (method === "one-factor-password") {
+		maxAttemptsPassword2.disabled =
+				false;
 
-            attemptArea.classList.remove(
-                "hidden"
-            );
+		maxAttemptsPassword3.disabled =
+				false;
 
-            passwordAttemptGroup.classList.remove(
-                "hidden"
-            );
+		bruteForceMaxAttemptsOtp.disabled =
+				false;
 
-            description.classList.remove(
-                "hidden"
-            );
 
-            description.textContent =
-                "Passwordの最大攻撃試行回数を設定します。";
+		// -----------------------------------------------------
+		// 一段階認証
+		// -----------------------------------------------------
 
-            attackForm.action =
-                "/attack/factor";
+		if (
+				method === "one-stage"
+				||
+				method === "one-factor-password"
+		) {
 
-            return;
-        }
+			bruteForcePasswordOption
+					.classList.add("active");
 
+			maxAttemptsPassword.required =
+					true;
 
-        // ================================================
-        // 一要素認証 Email OTP
-        // ================================================
+			maxAttemptsPassword2.disabled =
+					true;
 
-        if (method === "one-factor-email-otp") {
+			maxAttemptsPassword3.disabled =
+					true;
 
-            attemptArea.classList.remove(
-                "hidden"
-            );
+			bruteForceMaxAttemptsOtp.disabled =
+					true;
 
-            otpAttemptGroup.classList.remove(
-                "hidden"
-            );
+			return;
+		}
 
-            description.classList.remove(
-                "hidden"
-            );
 
-            description.textContent =
-                "Email OTPの最大攻撃試行回数を設定します。";
+		// -----------------------------------------------------
+		// 二段階認証
+		// -----------------------------------------------------
 
-            attackForm.action =
-                "/attack/factor";
+		if (method === "two-stage") {
 
-            return;
-        }
+			bruteForcePasswordOption
+					.classList.add("active");
 
+			bruteForcePassword2Option
+					.classList.add("active");
 
-        // ================================================
-        // 二要素認証
-        // Password + Email OTP
-        // ================================================
+			maxAttemptsPassword.required =
+					true;
 
-        if (
-            method ===
-            "two-factor-password-email-otp"
-        ) {
+			maxAttemptsPassword2.required =
+					true;
 
-            attemptArea.classList.remove(
-                "hidden"
-            );
+			maxAttemptsPassword3.disabled =
+					true;
 
-            passwordAttemptGroup.classList.remove(
-                "hidden"
-            );
+			bruteForceMaxAttemptsOtp.disabled =
+					true;
 
-            otpAttemptGroup.classList.remove(
-                "hidden"
-            );
+			return;
+		}
 
-            description.classList.remove(
-                "hidden"
-            );
 
-            description.textContent =
-                "PasswordとEmail OTPの最大攻撃試行回数をそれぞれ設定します。";
+		// -----------------------------------------------------
+		// 三段階認証
+		// -----------------------------------------------------
 
-            attackForm.action =
-                "/attack/factor";
+		if (method === "three-stage") {
 
-            return;
-        }
+			bruteForcePasswordOption
+					.classList.add("active");
 
-    }
+			bruteForcePassword2Option
+					.classList.add("active");
 
+			bruteForcePassword3Option
+					.classList.add("active");
 
-    // =====================================================
-    // 入力値チェック
-    // =====================================================
+			maxAttemptsPassword.required =
+					true;
 
-    attackForm.addEventListener(
-        "submit",
-        function (event) {
+			maxAttemptsPassword2.required =
+					true;
 
-            const method =
-                authMethod.value;
+			maxAttemptsPassword3.required =
+					true;
 
+			bruteForceMaxAttemptsOtp.disabled =
+					true;
 
-            // ============================================
-            // Password
-            // ============================================
+			return;
+		}
 
-            const passwordValue =
-                document.getElementById(
-                    "maxAttemptsPassword"
-                ).value;
 
-            if (
-                method === "one-stage"
-                ||
-                method === "two-stage"
-                ||
-                method === "three-stage"
-                ||
-                method === "one-factor-password"
-                ||
-                method ===
-                "two-factor-password-email-otp"
-            ) {
+		// -----------------------------------------------------
+		// 一要素 Email OTP
+		// -----------------------------------------------------
 
-                const value =
-                    Number(passwordValue);
+		if (
+				method ===
+				"one-factor-email-otp"
+		) {
 
-                if (
-                    !Number.isInteger(value)
-                    ||
-                    value < 1
-                    ||
-                    value > 10000
-                ) {
+			bruteForceOtpOption
+					.classList.add("active");
 
-                    event.preventDefault();
+			bruteForceMaxAttemptsOtp.required =
+					true;
 
-                    alert(
-                        "Passwordの最大攻撃試行回数は1～10000の範囲で指定してください。"
-                    );
+			maxAttemptsPassword.disabled =
+					true;
 
-                    return;
-                }
-            }
+			maxAttemptsPassword2.disabled =
+					true;
 
+			maxAttemptsPassword3.disabled =
+					true;
 
-            // ============================================
-            // Password2
-            // ============================================
+			return;
+		}
 
-            const password2Value =
-                document.getElementById(
-                    "maxAttemptsPassword2"
-                ).value;
 
-            if (
-                method === "two-stage"
-                ||
-                method === "three-stage"
-            ) {
+		// -----------------------------------------------------
+		// 二要素 Password + Email OTP
+		// -----------------------------------------------------
 
-                const value =
-                    Number(password2Value);
+		if (
+				method ===
+				"two-factor-password-email-otp"
+		) {
 
-                if (
-                    !Number.isInteger(value)
-                    ||
-                    value < 1
-                    ||
-                    value > 10000
-                ) {
+			bruteForcePasswordOption
+					.classList.add("active");
 
-                    event.preventDefault();
+			bruteForceOtpOption
+					.classList.add("active");
 
-                    alert(
-                        "Password2の最大攻撃試行回数は1～10000の範囲で指定してください。"
-                    );
+			maxAttemptsPassword.required =
+					true;
 
-                    return;
-                }
-            }
+			bruteForceMaxAttemptsOtp.required =
+					true;
 
+			maxAttemptsPassword2.disabled =
+					true;
 
-            // ============================================
-            // Password3
-            // ============================================
+			maxAttemptsPassword3.disabled =
+					true;
 
-            const password3Value =
-                document.getElementById(
-                    "maxAttemptsPassword3"
-                ).value;
+			return;
+		}
+	}
 
-            if (
-                method === "three-stage"
-            ) {
 
-                const value =
-                    Number(password3Value);
+	if (bruteForceAuthMethod) {
 
-                if (
-                    !Number.isInteger(value)
-                    ||
-                    value < 1
-                    ||
-                    value > 10000
-                ) {
+		bruteForceAuthMethod.addEventListener(
+				"change",
+				updateBruteForceOptions
+		);
 
-                    event.preventDefault();
+		updateBruteForceOptions();
+	}
 
-                    alert(
-                        "Password3の最大攻撃試行回数は1～10000の範囲で指定してください。"
-                    );
 
-                    return;
-                }
-            }
+	// =========================================================
+	// 総当たりフォーム送信
+	// =========================================================
 
+	if (bruteForceForm) {
 
-            // ============================================
-            // Email OTP
-            // ============================================
+		bruteForceForm.addEventListener(
+				"submit",
+				function (event) {
 
-            const otpValue =
-                document.getElementById(
-                    "maxAttempts"
-                ).value;
+					if (
+							!targetUsername.value
+							||
+							targetUsername.value.trim() === ""
+					) {
 
-            if (
-                method === "one-factor-email-otp"
-                ||
-                method ===
-                "two-factor-password-email-otp"
-            ) {
+						event.preventDefault();
 
-                const value =
-                    Number(otpValue);
+						alert(
+								"攻撃対象ユーザーを選択してください。"
+						);
 
-                if (
-                    !Number.isInteger(value)
-                    ||
-                    value < 1
-                    ||
-                    value > 1000000
-                ) {
+						return;
+					}
 
-                    event.preventDefault();
 
-                    alert(
-                        "Email OTPの最大攻撃試行回数は1～1000000の範囲で指定してください。"
-                    );
+					bruteForceUsername.value =
+							targetUsername.value;
 
-                    return;
-                }
-            }
 
-        }
-    );
+					const method =
+							bruteForceAuthMethod.value;
 
 
-    // =====================================================
-    // 認証方式変更時
-    // =====================================================
+					// -------------------------------------------------
+					// 多段階認証
+					// -------------------------------------------------
 
-    authMethod.addEventListener(
-        "change",
-        updateAttemptFields
-    );
+					if (
+							method === "one-stage"
+							||
+							method === "two-stage"
+							||
+							method === "three-stage"
+					) {
 
+						bruteForceForm.action =
+								"/attack/multi-stage";
 
-    // =====================================================
-    // 初期表示
-    // =====================================================
+						return;
+					}
 
-    updateAttemptFields();
+
+					// -------------------------------------------------
+					// 要素認証
+					// -------------------------------------------------
+
+					if (
+							method ===
+							"one-factor-password"
+							||
+							method ===
+							"one-factor-email-otp"
+							||
+							method ===
+							"two-factor-password-email-otp"
+					) {
+
+						bruteForceForm.action =
+								"/attack/factor";
+
+						return;
+					}
+
+
+					event.preventDefault();
+
+					alert(
+							"認証方式を選択してください。"
+					);
+				}
+		);
+	}
+
+
+	// =========================================================
+	// ランダム攻撃
+	// =========================================================
+
+	const randomAttackForm =
+			document.getElementById(
+					"randomAttackForm"
+			);
+
+	const randomUsername =
+			document.getElementById(
+					"randomUsername"
+			);
+
+	const randomAuthMethod =
+			document.getElementById(
+					"randomAuthMethod"
+			);
+
+	const randomOneStageOption =
+			document.getElementById(
+					"randomOneStageOption"
+			);
+
+	const randomTwoStageOption =
+			document.getElementById(
+					"randomTwoStageOption"
+			);
+
+	const randomThreeStageOption =
+			document.getElementById(
+					"randomThreeStageOption"
+			);
+
+	const randomEmailOtpOption =
+			document.getElementById(
+					"randomEmailOtpOption"
+			);
+
+	const randomTwoFactorOption =
+			document.getElementById(
+					"randomTwoFactorOption"
+			);
+
+	const randomMaxAttemptsPassword =
+			document.getElementById(
+					"randomMaxAttemptsPassword"
+			);
+
+	const randomMaxAttemptsPassword2 =
+			document.getElementById(
+					"randomMaxAttemptsPassword2"
+			);
+
+	const randomMaxAttemptsPassword3 =
+			document.getElementById(
+					"randomMaxAttemptsPassword3"
+			);
+
+	const randomMaxAttemptsOtp =
+			document.getElementById(
+					"randomMaxAttemptsOtp"
+			);
+
+	const randomTwoFactorPasswordAttempts =
+			document.getElementById(
+					"randomTwoFactorPasswordAttempts"
+			);
+
+	const randomTwoFactorOtpAttempts =
+			document.getElementById(
+					"randomTwoFactorOtpAttempts"
+			);
+
+
+	function updateRandomOptions() {
+
+		const method =
+				randomAuthMethod.value;
+
+
+		// =====================================================
+		// すべて非表示
+		// =====================================================
+
+		randomOneStageOption
+				.classList.remove("active");
+
+		randomTwoStageOption
+				.classList.remove("active");
+
+		randomThreeStageOption
+				.classList.remove("active");
+
+		randomEmailOtpOption
+				.classList.remove("active");
+
+		randomTwoFactorOption
+				.classList.remove("active");
+
+
+		// =====================================================
+		// すべて無効化
+		//
+		// 非表示の入力値がsubmitされないようにする
+		// =====================================================
+
+		randomMaxAttemptsPassword.disabled =
+				true;
+
+		randomMaxAttemptsPassword2.disabled =
+				true;
+
+		randomMaxAttemptsPassword3.disabled =
+				true;
+
+		randomMaxAttemptsOtp.disabled =
+				true;
+
+		randomTwoFactorPasswordAttempts.disabled =
+				true;
+
+		randomTwoFactorOtpAttempts.disabled =
+				true;
+
+
+		// =====================================================
+		// 一段階ランダム
+		// =====================================================
+
+		if (
+				method ===
+				"one-stage-random"
+		) {
+
+			randomOneStageOption
+					.classList.add("active");
+
+			randomMaxAttemptsPassword.disabled =
+					false;
+
+			return;
+		}
+
+
+		// =====================================================
+		// 二段階ランダム
+		// =====================================================
+
+		if (
+				method ===
+				"two-stage-random"
+		) {
+
+			randomOneStageOption
+					.classList.add("active");
+
+			randomTwoStageOption
+					.classList.add("active");
+
+			randomMaxAttemptsPassword.disabled =
+					false;
+
+			randomMaxAttemptsPassword2.disabled =
+					false;
+
+			return;
+		}
+
+
+		// =====================================================
+		// 三段階ランダム
+		// =====================================================
+
+		if (
+				method ===
+				"three-stage-random"
+		) {
+
+			randomOneStageOption
+					.classList.add("active");
+
+			randomTwoStageOption
+					.classList.add("active");
+
+			randomThreeStageOption
+					.classList.add("active");
+
+			randomMaxAttemptsPassword.disabled =
+					false;
+
+			randomMaxAttemptsPassword2.disabled =
+					false;
+
+			randomMaxAttemptsPassword3.disabled =
+					false;
+
+			return;
+		}
+
+
+		// =====================================================
+		// 一要素 Email OTPランダム
+		// =====================================================
+
+		if (
+				method ===
+				"one-factor-email-otp-random"
+		) {
+
+			randomEmailOtpOption
+					.classList.add("active");
+
+			randomMaxAttemptsOtp.disabled =
+					false;
+
+			return;
+		}
+
+
+		// =====================================================
+		// 二要素 Password + Email OTP ランダム
+		// =====================================================
+
+		if (
+				method ===
+				"two-factor-password-email-otp-random"
+		) {
+
+			randomTwoFactorOption
+					.classList.add("active");
+
+			randomTwoFactorPasswordAttempts.disabled =
+					false;
+
+			randomTwoFactorOtpAttempts.disabled =
+					false;
+		}
+
+	}
+
+
+	if (randomAuthMethod) {
+
+		randomAuthMethod.addEventListener(
+				"change",
+				updateRandomOptions
+		);
+
+		updateRandomOptions();
+	}
+
+
+	// =========================================================
+	// ランダム攻撃フォーム送信
+	// =========================================================
+
+	if (randomAttackForm) {
+
+		randomAttackForm.addEventListener(
+				"submit",
+				function (event) {
+
+					if (
+							!targetUsername.value
+							||
+							targetUsername.value.trim() === ""
+					) {
+
+						event.preventDefault();
+
+						alert(
+								"攻撃対象ユーザーを選択してください。"
+						);
+
+						return;
+					}
+
+
+					randomUsername.value =
+							targetUsername.value;
+
+
+					const method =
+							randomAuthMethod.value;
+
+
+					// =================================================
+					// 一段階
+					// =================================================
+
+					if (
+							method ===
+							"one-stage-random"
+					) {
+
+						randomAttackForm.action =
+								"/attack/random-stage";
+
+						return;
+					}
+
+
+					// =================================================
+					// 二段階
+					// =================================================
+
+					if (
+							method ===
+							"two-stage-random"
+					) {
+
+						randomAttackForm.action =
+								"/attack/random-two-stage";
+
+						return;
+					}
+
+
+					// =================================================
+					// 三段階
+					// =================================================
+
+					if (
+							method ===
+							"three-stage-random"
+					) {
+
+						randomAttackForm.action =
+								"/attack/random-three-stage";
+
+						return;
+					}
+
+
+					// =================================================
+					// 一要素 Email OTP
+					// =================================================
+
+					if (
+							method ===
+							"one-factor-email-otp-random"
+					) {
+
+						randomAttackForm.action =
+								"/attack/random-email-otp";
+
+						return;
+					}
+
+
+					// =================================================
+					// 二要素 Password + Email OTP
+					// =================================================
+
+					if (
+							method ===
+							"two-factor-password-email-otp-random"
+					) {
+
+						randomAttackForm.action =
+								"/attack/random-two-factor";
+
+						return;
+					}
+
+
+					// =================================================
+					// 不正な認証方式
+					// =================================================
+
+					event.preventDefault();
+
+					alert(
+							"認証方式を選択してください。"
+					);
+
+				}
+		);
+	}
+
+
+	// =========================================================
+	// 辞書攻撃
+	// =========================================================
+
+	const dictionaryForm =
+			document.getElementById(
+					"dictionaryForm"
+			);
+
+	const dictionaryUsername =
+			document.getElementById(
+					"dictionaryUsername"
+			);
+
+	const dictionaryAuthMethod =
+			document.getElementById(
+					"dictionaryAuthMethod"
+			);
+
+	const dictionaryPassword2Group =
+			document.getElementById(
+					"dictionaryPassword2Group"
+			);
+
+	const dictionaryPassword3Group =
+			document.getElementById(
+					"dictionaryPassword3Group"
+			);
+
+	const dictionaryMaxPassword2 =
+			document.getElementById(
+					"dictionaryMaxPassword2"
+			);
+
+	const dictionaryMaxPassword3 =
+			document.getElementById(
+					"dictionaryMaxPassword3"
+			);
+
+
+	function updateDictionaryFields() {
+
+		if (!dictionaryAuthMethod) {
+			return;
+		}
+
+
+		const selectedMethod =
+				dictionaryAuthMethod.value;
+
+
+		dictionaryPassword2Group
+				.classList.remove("active");
+
+		dictionaryPassword3Group
+				.classList.remove("active");
+
+
+		dictionaryMaxPassword2.required =
+				false;
+
+		dictionaryMaxPassword3.required =
+				false;
+
+
+		if (
+				selectedMethod ===
+				"one-stage-dictionary"
+		) {
+
+			return;
+		}
+
+
+		if (
+				selectedMethod ===
+				"two-stage-dictionary"
+		) {
+
+			dictionaryPassword2Group
+					.classList.add("active");
+
+			dictionaryMaxPassword2.required =
+					true;
+
+			return;
+		}
+
+
+		if (
+				selectedMethod ===
+				"three-stage-dictionary"
+		) {
+
+			dictionaryPassword2Group
+					.classList.add("active");
+
+			dictionaryPassword3Group
+					.classList.add("active");
+
+			dictionaryMaxPassword2.required =
+					true;
+
+			dictionaryMaxPassword3.required =
+					true;
+		}
+
+	}
+
+
+	if (dictionaryAuthMethod) {
+
+		dictionaryAuthMethod.addEventListener(
+				"change",
+				updateDictionaryFields
+		);
+
+		updateDictionaryFields();
+	}
+
+
+	if (dictionaryForm) {
+
+		dictionaryForm.addEventListener(
+				"submit",
+				function (event) {
+
+					if (
+							!targetUsername.value
+							||
+							targetUsername.value.trim() === ""
+					) {
+
+						event.preventDefault();
+
+						alert(
+								"攻撃対象ユーザーを選択してください。"
+						);
+
+						return;
+					}
+
+
+					dictionaryUsername.value =
+							targetUsername.value;
+
+				}
+		);
+
+	}
 
 </script>
 
