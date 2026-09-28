@@ -76,8 +76,15 @@ public class NewAuthLabLoginClient {
 
 	/**
 	 * Cookie管理
+	 *
+	 * Password認証 → OTP認証で
+	 * 同じセッションを使用する。
 	 */
 	private final java.net.CookieManager cookieManager;
+
+	// =========================================================
+	// コンストラクタ
+	// =========================================================
 
 	public NewAuthLabLoginClient() {
 
@@ -88,18 +95,22 @@ public class NewAuthLabLoginClient {
 
 		httpClient =
 				HttpClient.newBuilder()
-				.connectTimeout(Duration.ofSeconds(10))
+				.connectTimeout(
+						Duration.ofSeconds(60))
 				.followRedirects(
 						HttpClient.Redirect.NORMAL)
-				.cookieHandler(cookieManager)
+				.cookieHandler(
+						cookieManager)
 				.build();
 
 		noRedirectHttpClient =
 				HttpClient.newBuilder()
-				.connectTimeout(Duration.ofSeconds(10))
+				.connectTimeout(
+						Duration.ofSeconds(60))
 				.followRedirects(
 						HttpClient.Redirect.NEVER)
-				.cookieHandler(cookieManager)
+				.cookieHandler(
+						cookieManager)
 				.build();
 	}
 
@@ -120,8 +131,11 @@ public class NewAuthLabLoginClient {
 
 		HttpRequest request =
 				HttpRequest.newBuilder()
-				.uri(URI.create(ONE_STAGE_LOGIN_URL))
-				.timeout(Duration.ofSeconds(10))
+				.uri(
+						URI.create(
+								ONE_STAGE_LOGIN_URL))
+				.timeout(
+						Duration.ofSeconds(60))
 				.header(
 						"Content-Type",
 						"application/x-www-form-urlencoded")
@@ -145,9 +159,33 @@ public class NewAuthLabLoginClient {
 					response.body(),
 					getSessionCookie());
 
-		} catch (IOException | InterruptedException e) {
+		} catch (IOException e) {
+
+			System.out.println(
+					"一段階認証通信エラー");
+			System.out.println(
+					"エラー = "
+							+ e.getClass().getName());
+			System.out.println(
+					"内容 = "
+							+ e.getMessage());
+
+			return new LoginResult(
+					false,
+					500,
+					ONE_STAGE_LOGIN_URL,
+					e.getMessage(),
+					null);
+
+		} catch (InterruptedException e) {
 
 			Thread.currentThread().interrupt();
+
+			System.out.println(
+					"一段階認証通信が中断されました。");
+			System.out.println(
+					"内容 = "
+							+ e.getMessage());
 
 			return new LoginResult(
 					false,
@@ -177,8 +215,11 @@ public class NewAuthLabLoginClient {
 
 		HttpRequest request =
 				HttpRequest.newBuilder()
-				.uri(URI.create(TWO_STAGE_LOGIN_URL))
-				.timeout(Duration.ofSeconds(10))
+				.uri(
+						URI.create(
+								TWO_STAGE_LOGIN_URL))
+				.timeout(
+						Duration.ofSeconds(60))
 				.header(
 						"Content-Type",
 						"application/x-www-form-urlencoded")
@@ -202,9 +243,33 @@ public class NewAuthLabLoginClient {
 					response.body(),
 					getSessionCookie());
 
-		} catch (IOException | InterruptedException e) {
+		} catch (IOException e) {
+
+			System.out.println(
+					"二段階認証通信エラー");
+			System.out.println(
+					"エラー = "
+							+ e.getClass().getName());
+			System.out.println(
+					"内容 = "
+							+ e.getMessage());
+
+			return new LoginResult(
+					false,
+					500,
+					TWO_STAGE_LOGIN_URL,
+					e.getMessage(),
+					null);
+
+		} catch (InterruptedException e) {
 
 			Thread.currentThread().interrupt();
+
+			System.out.println(
+					"二段階認証通信が中断されました。");
+			System.out.println(
+					"内容 = "
+							+ e.getMessage());
 
 			return new LoginResult(
 					false,
@@ -236,8 +301,11 @@ public class NewAuthLabLoginClient {
 
 		HttpRequest request =
 				HttpRequest.newBuilder()
-				.uri(URI.create(THREE_STAGE_LOGIN_URL))
-				.timeout(Duration.ofSeconds(10))
+				.uri(
+						URI.create(
+								THREE_STAGE_LOGIN_URL))
+				.timeout(
+						Duration.ofSeconds(60))
 				.header(
 						"Content-Type",
 						"application/x-www-form-urlencoded")
@@ -261,9 +329,33 @@ public class NewAuthLabLoginClient {
 					response.body(),
 					getSessionCookie());
 
-		} catch (IOException | InterruptedException e) {
+		} catch (IOException e) {
+
+			System.out.println(
+					"三段階認証通信エラー");
+			System.out.println(
+					"エラー = "
+							+ e.getClass().getName());
+			System.out.println(
+					"内容 = "
+							+ e.getMessage());
+
+			return new LoginResult(
+					false,
+					500,
+					THREE_STAGE_LOGIN_URL,
+					e.getMessage(),
+					null);
+
+		} catch (InterruptedException e) {
 
 			Thread.currentThread().interrupt();
+
+			System.out.println(
+					"三段階認証通信が中断されました。");
+			System.out.println(
+					"内容 = "
+							+ e.getMessage());
 
 			return new LoginResult(
 					false,
@@ -290,8 +382,11 @@ public class NewAuthLabLoginClient {
 
 		HttpRequest request =
 				HttpRequest.newBuilder()
-				.uri(URI.create(SEND_OTP_URL))
-				.timeout(Duration.ofSeconds(10))
+				.uri(
+						URI.create(
+								SEND_OTP_URL))
+				.timeout(
+						Duration.ofSeconds(60))
 				.header(
 						"Content-Type",
 						"application/x-www-form-urlencoded")
@@ -313,13 +408,38 @@ public class NewAuthLabLoginClient {
 					response.statusCode(),
 					response.headers()
 					.firstValue("Location")
-					.orElse(response.uri().toString()),
+					.orElse(
+							response.uri().toString()),
 					response.body(),
 					getSessionCookie());
 
-		} catch (IOException | InterruptedException e) {
+		} catch (IOException e) {
+
+			System.out.println(
+					"Email OTP送信通信エラー");
+			System.out.println(
+					"エラー = "
+							+ e.getClass().getName());
+			System.out.println(
+					"内容 = "
+							+ e.getMessage());
+
+			return new LoginResult(
+					false,
+					500,
+					SEND_OTP_URL,
+					e.getMessage(),
+					null);
+
+		} catch (InterruptedException e) {
 
 			Thread.currentThread().interrupt();
+
+			System.out.println(
+					"Email OTP送信通信が中断されました。");
+			System.out.println(
+					"内容 = "
+							+ e.getMessage());
 
 			return new LoginResult(
 					false,
@@ -343,8 +463,11 @@ public class NewAuthLabLoginClient {
 
 		HttpRequest request =
 				HttpRequest.newBuilder()
-				.uri(URI.create(VERIFY_OTP_URL))
-				.timeout(Duration.ofSeconds(10))
+				.uri(
+						URI.create(
+								VERIFY_OTP_URL))
+				.timeout(
+						Duration.ofSeconds(60))
 				.header(
 						"Content-Type",
 						"application/x-www-form-urlencoded")
@@ -369,7 +492,11 @@ public class NewAuthLabLoginClient {
 
 			boolean success =
 					location.startsWith(
-							BASE_URL + "/attack-login?ticket=");
+							BASE_URL
+							+ "/attack-login?ticket=")
+					||
+					location.startsWith(
+							"/attack-login?ticket=");
 
 			return new LoginResult(
 					success,
@@ -378,9 +505,33 @@ public class NewAuthLabLoginClient {
 					response.body(),
 					getSessionCookie());
 
-		} catch (IOException | InterruptedException e) {
+		} catch (IOException e) {
+
+			System.out.println(
+					"Email OTP確認通信エラー");
+			System.out.println(
+					"エラー = "
+							+ e.getClass().getName());
+			System.out.println(
+					"内容 = "
+							+ e.getMessage());
+
+			return new LoginResult(
+					false,
+					500,
+					VERIFY_OTP_URL,
+					e.getMessage(),
+					null);
+
+		} catch (InterruptedException e) {
 
 			Thread.currentThread().interrupt();
+
+			System.out.println(
+					"Email OTP確認通信が中断されました。");
+			System.out.println(
+					"内容 = "
+							+ e.getMessage());
 
 			return new LoginResult(
 					false,
@@ -405,6 +556,7 @@ public class NewAuthLabLoginClient {
 				sendEmailOtp(email);
 
 		if (!sendResult.isRequestSuccess()) {
+
 			return sendResult;
 		}
 
@@ -415,13 +567,16 @@ public class NewAuthLabLoginClient {
 								maxOtpAttempts,
 								1_000_000));
 
-		int attemptCount = 0;
+		int attemptCount =
+				0;
 
 		for (int i = 0;
 				i < 1_000_000;
 				i++) {
 
-			if (attemptCount >= actualMaxAttempts) {
+			if (attemptCount
+					>= actualMaxAttempts) {
+
 				break;
 			}
 
@@ -471,11 +626,18 @@ public class NewAuthLabLoginClient {
 
 		clearCookies();
 
-		System.out.println("========================================");
-		System.out.println("二要素認証開始");
-		System.out.println("username = " + username);
-		System.out.println("OTP最大試行回数 = " + maxOtpAttempts);
-		System.out.println("========================================");
+		System.out.println(
+				"========================================");
+		System.out.println(
+				"二要素認証開始");
+		System.out.println(
+				"username = "
+						+ username);
+		System.out.println(
+				"OTP最大試行回数 = "
+						+ maxOtpAttempts);
+		System.out.println(
+				"========================================");
 
 		// -----------------------------------------------------
 		// Password認証
@@ -490,7 +652,8 @@ public class NewAuthLabLoginClient {
 				.uri(
 						URI.create(
 								TWO_FACTOR_ATTACK_PASSWORD_URL))
-				.timeout(Duration.ofSeconds(10))
+				.timeout(
+						Duration.ofSeconds(60))
 				.header(
 						"Content-Type",
 						"application/x-www-form-urlencoded")
@@ -522,6 +685,9 @@ public class NewAuthLabLoginClient {
 			if (passwordResponse.statusCode() < 200
 					|| passwordResponse.statusCode() >= 300) {
 
+				System.out.println(
+						"二要素Password認証失敗");
+
 				return new LoginResult(
 						false,
 						passwordResponse.statusCode(),
@@ -532,8 +698,15 @@ public class NewAuthLabLoginClient {
 						getSessionCookie());
 			}
 
+			// -------------------------------------------------
+			// OTP送信確認
+			// -------------------------------------------------
+
 			if (!"OTP_SENT".equals(
 					passwordResponse.body().trim())) {
+
+				System.out.println(
+						"OTP_SENTが返されませんでした。");
 
 				return new LoginResult(
 						false,
@@ -556,7 +729,8 @@ public class NewAuthLabLoginClient {
 									maxOtpAttempts,
 									1_000_000));
 
-			int otpAttemptCount = 0;
+			int otpAttemptCount =
+					0;
 
 			for (int i = 0;
 					i < 1_000_000;
@@ -576,14 +750,18 @@ public class NewAuthLabLoginClient {
 				otpAttemptCount++;
 
 				LoginResult verifyResult =
-						verifyTwoFactorOtp(candidate);
+						verifyTwoFactorOtp(
+								candidate);
 
 				if (verifyResult.isSuccess()) {
 
 					System.out.println(
+							"========================================");
+					System.out.println(
 							"二要素OTP突破成功");
 					System.out.println(
-							"OTP = " + candidate);
+							"OTP = "
+									+ candidate);
 					System.out.println(
 							"OTP試行回数 = "
 									+ otpAttemptCount);
@@ -605,6 +783,16 @@ public class NewAuthLabLoginClient {
 			// OTP最大試行回数到達
 			// -------------------------------------------------
 
+			System.out.println(
+					"OTP総当たり終了");
+			System.out.println(
+					"OTP試行回数 = "
+							+ otpAttemptCount);
+			System.out.println(
+					"OTP突破 = false");
+			System.out.println(
+					"========================================");
+
 			return new LoginResult(
 					false,
 					200,
@@ -614,9 +802,43 @@ public class NewAuthLabLoginClient {
 					otpAttemptCount,
 					getSessionCookie());
 
-		} catch (IOException | InterruptedException e) {
+		} catch (IOException e) {
+
+			System.out.println(
+					"========================================");
+			System.out.println(
+					"二要素Password通信エラー");
+			System.out.println(
+					"エラー = "
+							+ e.getClass().getName());
+			System.out.println(
+					"内容 = "
+							+ e.getMessage());
+			System.out.println(
+					"========================================");
+
+			return new LoginResult(
+					false,
+					500,
+					TWO_FACTOR_ATTACK_PASSWORD_URL,
+					e.getMessage(),
+					null,
+					0,
+					getSessionCookie());
+
+		} catch (InterruptedException e) {
 
 			Thread.currentThread().interrupt();
+
+			System.out.println(
+					"========================================");
+			System.out.println(
+					"二要素Password通信が中断されました。");
+			System.out.println(
+					"内容 = "
+							+ e.getMessage());
+			System.out.println(
+					"========================================");
 
 			return new LoginResult(
 					false,
@@ -644,7 +866,8 @@ public class NewAuthLabLoginClient {
 				.uri(
 						URI.create(
 								TWO_FACTOR_ATTACK_VERIFY_OTP_URL))
-				.timeout(Duration.ofSeconds(10))
+				.timeout(
+						Duration.ofSeconds(60))
 				.header(
 						"Content-Type",
 						"application/x-www-form-urlencoded")
@@ -686,9 +909,39 @@ public class NewAuthLabLoginClient {
 							response.body(),
 							getSessionCookie());
 
-		} catch (IOException | InterruptedException e) {
+		} catch (IOException e) {
+
+			System.out.println(
+					"OTP確認通信エラー");
+			System.out.println(
+					"OTP = "
+							+ otp);
+			System.out.println(
+					"エラー = "
+							+ e.getClass().getName());
+			System.out.println(
+					"内容 = "
+							+ e.getMessage());
+
+			return new LoginResult(
+					false,
+					500,
+					TWO_FACTOR_ATTACK_VERIFY_OTP_URL,
+					e.getMessage(),
+					null);
+
+		} catch (InterruptedException e) {
 
 			Thread.currentThread().interrupt();
+
+			System.out.println(
+					"OTP確認通信が中断されました。");
+			System.out.println(
+					"OTP = "
+							+ otp);
+			System.out.println(
+					"内容 = "
+							+ e.getMessage());
 
 			return new LoginResult(
 					false,
@@ -708,10 +961,12 @@ public class NewAuthLabLoginClient {
 		try {
 
 			List<java.net.HttpCookie> cookies =
-					cookieManager.getCookieStore()
+					cookieManager
+					.getCookieStore()
 					.getCookies();
 
-			for (java.net.HttpCookie cookie : cookies) {
+			for (java.net.HttpCookie cookie
+					: cookies) {
 
 				if ("JSESSIONID".equals(
 						cookie.getName())) {
@@ -722,7 +977,11 @@ public class NewAuthLabLoginClient {
 				}
 			}
 
-		} catch (Exception ignored) {
+		} catch (Exception e) {
+
+			System.out.println(
+					"Cookie取得エラー = "
+							+ e.getMessage());
 		}
 
 		return null;
@@ -734,7 +993,8 @@ public class NewAuthLabLoginClient {
 
 	public void clearCookies() {
 
-		cookieManager.getCookieStore()
+		cookieManager
+		.getCookieStore()
 		.removeAll();
 	}
 
@@ -746,6 +1006,7 @@ public class NewAuthLabLoginClient {
 			String value) {
 
 		if (value == null) {
+
 			return "";
 		}
 
@@ -761,11 +1022,15 @@ public class NewAuthLabLoginClient {
 	public static class LoginResult {
 
 		private final boolean success;
+
 		private final int statusCode;
+
 		private final String finalUrl;
+
 		private final String responseBody;
 
 		private final String otp;
+
 		private final int attemptCount;
 
 		private final String sessionCookie;
@@ -831,35 +1096,43 @@ public class NewAuthLabLoginClient {
 		// -----------------------------------------------------
 
 		public boolean isSuccess() {
+
 			return success;
 		}
 
 		public boolean isRequestSuccess() {
+
 			return statusCode >= 200
 					&& statusCode < 400;
 		}
 
 		public int getStatusCode() {
+
 			return statusCode;
 		}
 
 		public String getFinalUrl() {
+
 			return finalUrl;
 		}
 
 		public String getResponseBody() {
+
 			return responseBody;
 		}
 
 		public String getOtp() {
+
 			return otp;
 		}
 
 		public int getAttemptCount() {
+
 			return attemptCount;
 		}
 
 		public String getSessionCookie() {
+
 			return sessionCookie;
 		}
 	}
