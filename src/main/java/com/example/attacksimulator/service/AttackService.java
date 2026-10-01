@@ -625,6 +625,45 @@ public class AttackService {
 						user.getPassword(),
 						maxAttemptsPassword);
 	}
+	
+	// =========================================================
+	// 一要素認証
+	// Password
+	// ランダム攻撃
+	// =========================================================
+
+	public FactorAuthenticationAttack.FactorAttackResult
+	executeOneFactorRandomPassword(
+	        String username) {
+
+	    return executeOneFactorRandomPassword(
+	            username,
+	            10_000);
+	}
+
+	public FactorAuthenticationAttack.FactorAttackResult
+	executeOneFactorRandomPassword(
+	        String username,
+	        int maxAttemptsPassword) {
+
+	    NewAuthLabUser user =
+	            getUser(username);
+
+	    String passwordHash =
+	            user.getPassword();
+
+	    if (passwordHash == null
+	            || passwordHash.isBlank()) {
+
+	        throw new IllegalArgumentException(
+	                "指定されたユーザーのPasswordが登録されていません。");
+	    }
+
+	    return factorAuthenticationAttack
+	            .executeOneFactorRandomPassword(
+	                    passwordHash,
+	                    maxAttemptsPassword);
+	}
 
 	// =========================================================
 	// 一要素認証
@@ -648,9 +687,10 @@ public class AttackService {
 		}
 
 		return factorAuthenticationAttack
-				.executeOneFactorEmailOtp(
-						user.getEmail(),
-						maxAttempts);
+			    .executeOneFactorEmailOtp(
+			            username,
+			            user.getEmail(),
+			            maxAttempts);
 	}
 
 	// =========================================================
@@ -678,6 +718,7 @@ public class AttackService {
 		attackResult =
 		emailOtpBruteForceAttack
 		.execute(
+				username,
 				user.getEmail(),
 				maxAttempts);
 
@@ -721,6 +762,7 @@ public class AttackService {
 
 		LoginResult sendResult =
 				newAuthLabLoginClient.sendEmailOtp(
+						username,
 						user.getEmail());
 
 		if (!sendResult.isRequestSuccess()) {

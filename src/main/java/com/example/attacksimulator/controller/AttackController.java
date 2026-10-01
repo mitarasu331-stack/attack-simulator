@@ -1476,6 +1476,137 @@ public class AttackController {
 
 				return "redirect:/result";
 			}
+			
+			// =================================================
+			// 一要素 Password
+			// ランダム攻撃
+			// =================================================
+
+			if ("one-factor-random-password"
+			        .equals(authMethod)) {
+
+			    maxAttemptsPassword =
+			            clampPasswordAttempts(
+			                    maxAttemptsPassword);
+
+			    FactorAuthenticationAttack.FactorAttackResult
+			    result =
+			            attackService
+			                    .executeOneFactorRandomPassword(
+			                            username,
+			                            maxAttemptsPassword);
+
+			    long attackTimeMs =
+			            (System.nanoTime() - startTime)
+			                    / 1_000_000;
+
+			    String maxAttemptCount =
+			            String.valueOf(
+			                    maxAttemptsPassword);
+
+			    String credential =
+			            createFactorCredential(
+			                    result);
+
+			    boolean realLoginSuccess =
+			            false;
+
+			    // =================================================
+			    // 実際のNewAuthLabログイン
+			    // =================================================
+
+			    if (result.isSuccess()) {
+
+			        NewAuthLabLoginClient.LoginResult
+			        loginResult =
+			                newAuthLabLoginClient
+			                        .loginOneStage(
+			                                username,
+			                                result.getPassword());
+
+			        realLoginSuccess =
+			                loginResult.isSuccess();
+
+			        if (realLoginSuccess) {
+
+			            model.addAttribute(
+			                    "username",
+			                    username);
+
+			            model.addAttribute(
+			                    "password",
+			                    result.getPassword());
+
+			            return "login-redirect";
+			        }
+			    }
+
+			    // =================================================
+			    // 実験結果保存
+			    // =================================================
+
+			    experimentResultService.addResult(
+			            username,
+			            result.getAuthMethod(),
+			            result.getAuthenticationConfiguration(),
+			            maxAttemptCount,
+			            result.getAttemptCount(),
+			            result.isSuccess(),
+			            credential,
+			            attackTimeMs);
+
+			    // =================================================
+			    // 結果画面
+			    // =================================================
+
+			    redirectAttributes.addFlashAttribute(
+			            "authMethod",
+			            authMethod);
+
+			    redirectAttributes.addFlashAttribute(
+			            "attemptCount",
+			            result.getAttemptCount());
+
+			    redirectAttributes.addFlashAttribute(
+			            "success",
+			            result.isSuccess());
+
+			    redirectAttributes.addFlashAttribute(
+			            "password",
+			            result.getPassword());
+
+			    redirectAttributes.addFlashAttribute(
+			            "otp",
+			            null);
+
+			    redirectAttributes.addFlashAttribute(
+			            "password2",
+			            null);
+
+			    redirectAttributes.addFlashAttribute(
+			            "password3",
+			            null);
+
+			    redirectAttributes.addFlashAttribute(
+			            "realLoginSuccess",
+			            realLoginSuccess);
+
+			    redirectAttributes.addFlashAttribute(
+			            "maxAttemptCount",
+			            maxAttemptCount);
+
+			    redirectAttributes.addFlashAttribute(
+			            "attackTimeMs",
+			            attackTimeMs);
+
+			    redirectAttributes.addFlashAttribute(
+			            "message",
+			            result.isSuccess()
+			                    ? "一要素Password（ランダム）の認証突破に成功しました。"
+			                    : "一要素Password（ランダム）の認証突破に失敗しました。");
+
+			    return "redirect:/result";
+			}
 
 			// =================================================
 			// 一要素 Email OTP
