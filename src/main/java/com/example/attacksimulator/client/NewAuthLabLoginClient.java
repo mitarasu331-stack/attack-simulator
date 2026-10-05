@@ -54,7 +54,7 @@ public class NewAuthLabLoginClient {
 			BASE_URL + "/login/two-factor/attack/password";
 
 	private static final String TWO_FACTOR_ATTACK_VERIFY_OTP_URL =
-			BASE_URL + "/login/two-factor/attack/verify-otp";
+	        BASE_URL + "/login/two-factor/verify-otp";
 
 	// =========================================================
 	// HTTP Client
@@ -1336,121 +1336,140 @@ public class NewAuthLabLoginClient {
 	 * EmailOtpBruteForceAttack側で行う。
 	 */
 	public LoginResult verifyTwoFactorOtp(
-			String otp) {
+	        String otp) {
 
-		String body =
-				"otp=" + encode(otp);
+	    String body =
+	            "otp=" + encode(otp);
 
-		HttpRequest request =
-				HttpRequest.newBuilder()
-				.uri(
-						URI.create(
-								TWO_FACTOR_ATTACK_VERIFY_OTP_URL))
-				.timeout(
-						Duration.ofSeconds(60))
-				.header(
-						"Content-Type",
-						"application/x-www-form-urlencoded")
-				.POST(
-						HttpRequest.BodyPublishers
-						.ofString(body))
-				.build();
+	    HttpRequest request =
+	            HttpRequest.newBuilder()
+	            .uri(
+	                    URI.create(
+	                            TWO_FACTOR_ATTACK_VERIFY_OTP_URL))
+	            .timeout(
+	                    Duration.ofSeconds(60))
+	            .header(
+	                    "Content-Type",
+	                    "application/x-www-form-urlencoded")
+	            .POST(
+	                    HttpRequest.BodyPublishers
+	                    .ofString(body))
+	            .build();
 
-		try {
+	    try {
 
-			HttpResponse<String> response =
-					noRedirectHttpClient.send(
-							request,
-							HttpResponse.BodyHandlers
-							.ofString(
-									StandardCharsets.UTF_8));
+	        HttpResponse<String> response =
+	                noRedirectHttpClient.send(
+	                        request,
+	                        HttpResponse.BodyHandlers
+	                        .ofString(
+	                                StandardCharsets.UTF_8));
 
-			String location =
-					response.headers()
-					.firstValue("Location")
-					.orElse(
-							response.uri()
-							.toString());
+	        int statusCode =
+	                response.statusCode();
 
-			boolean success =
-					response.statusCode() >= 300
-					&& response.statusCode() < 400
-					&& (
-							location.startsWith(
-									BASE_URL
-									+ "/attack-login?ticket=")
-							||
-							location.startsWith(
-									"/attack-login?ticket=")
-							);
+	        String location =
+	                response.headers()
+	                .firstValue("Location")
+	                .orElse(
+	                        response.uri().toString());
 
-			if (success) {
+	        String responseBody =
+	                response.body() == null
+	                ? ""
+	                : response.body().trim();
 
-				System.out.println(
-						"二要素OTP成功");
+	        // =====================================================
+	        // 成功判定
+	        // =====================================================
 
-				System.out.println(
-						"OTP = "
-								+ otp);
+	        boolean success =
+	                "LOGIN_SUCCESS".equals(responseBody);
 
-				System.out.println(
-						"Location = "
-								+ location);
-			}
+	        // =====================================================
+	        // 成功時ログ
+	        // =====================================================
 
-			return new LoginResult(
-					success,
-					response.statusCode(),
-					location,
-					response.body(),
-					getSessionCookie());
+	        if (success) {
 
-		} catch (IOException e) {
+	            System.out.println(
+	                    "二要素OTP認証成功");
 
-			System.out.println(
-					"OTP確認通信エラー");
+	            System.out.println(
+	                    "正解OTP = "
+	                            + otp);
 
-			System.out.println(
-					"OTP = "
-							+ otp);
+	            System.out.println(
+	                    "HTTP Status = "
+	                            + statusCode);
 
-			System.out.println(
-					"エラー = "
-							+ e.getClass().getName());
+	            System.out.println(
+	                    "Response Body = "
+	                            + responseBody);
 
-			System.out.println(
-					"内容 = "
-							+ e.getMessage());
+	            System.out.println(
+	                    "========================================");
+	        }
 
-			return new LoginResult(
-					false,
-					500,
-					TWO_FACTOR_ATTACK_VERIFY_OTP_URL,
-					e.getMessage(),
-					null);
+	        return new LoginResult(
+	                success,
+	                statusCode,
+	                location,
+	                responseBody,
+	                otp,
+	                0,
+	                getSessionCookie());
 
-		} catch (InterruptedException e) {
+	    } catch (IOException e) {
 
-			Thread.currentThread().interrupt();
+	        System.out.println(
+	                "OTP確認通信エラー");
 
-			System.out.println(
-					"OTP確認通信が中断されました。");
+	        System.out.println(
+	                "OTP = "
+	                        + otp);
 
-			System.out.println(
-					"OTP = "
-							+ otp);
+	        System.out.println(
+	                "エラー = "
+	                        + e.getClass().getName());
 
-			System.out.println(
-					"内容 = "
-							+ e.getMessage());
+	        System.out.println(
+	                "内容 = "
+	                        + e.getMessage());
 
-			return new LoginResult(
-					false,
-					500,
-					TWO_FACTOR_ATTACK_VERIFY_OTP_URL,
-					e.getMessage(),
-					null);
-		}
+	        return new LoginResult(
+	                false,
+	                500,
+	                TWO_FACTOR_ATTACK_VERIFY_OTP_URL,
+	                e.getMessage(),
+	                null,
+	                0,
+	                getSessionCookie());
+
+	    } catch (InterruptedException e) {
+
+	        Thread.currentThread().interrupt();
+
+	        System.out.println(
+	                "二要素OTP確認通信が中断されました。");
+
+	        System.out.println(
+	                "OTP = "
+	                        + otp);
+
+	        System.out.println(
+	                "内容 = "
+	                        + e.getMessage());
+
+	        return new LoginResult(
+	                false,
+	                500,
+	                TWO_FACTOR_ATTACK_VERIFY_OTP_URL,
+	                e.getMessage(),
+	                null,
+	                0,
+	                getSessionCookie());
+	    }
 	}
 
 	// =========================================================
