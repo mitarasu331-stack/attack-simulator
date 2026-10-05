@@ -303,15 +303,14 @@ public class NewAuthLabLoginClient {
 			// 1段階目で失敗した場合
 			// =====================================================
 
-			if (firstResponse.statusCode() < 300
-					|| firstResponse.statusCode() >= 400) {
+			if (firstResponse.statusCode() >= 400) {
 
-				return new LoginResult(
-						false,
-						firstResponse.statusCode(),
-						firstResponse.uri().toString(),
-						firstResponse.body(),
-						getSessionCookie());
+			    return new LoginResult(
+			            false,
+			            firstResponse.statusCode(),
+			            firstResponse.uri().toString(),
+			            firstResponse.body(),
+			            getSessionCookie());
 			}
 
 			// =====================================================

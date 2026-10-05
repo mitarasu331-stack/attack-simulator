@@ -899,6 +899,12 @@ public class AttackService {
 
 			return attackResult.getTotalAttempts();
 		}
+		
+		public long getVirtualWaitTimeMillis() {
+
+			return attackResult
+					.getVirtualWaitTimeMillis();
+		}
 	}
 
 	// =========================================================
@@ -960,6 +966,12 @@ public class AttackService {
 		public int getAttemptCount() {
 
 			return attackResult.getAttemptCount();
+		}
+		
+		public long getVirtualWaitTimeMillis() {
+
+			return attackResult
+					.getVirtualWaitTimeMillis();
 		}
 
 		public String getFinalUrl() {
@@ -1126,6 +1138,10 @@ public class AttackService {
 		public int getAttemptCount() {
 
 			return attackResult.getAttemptCount();
+		}
+		
+		public long getVirtualWaitTimeMillis() {
+		    return attackResult.getVirtualWaitTimeMillis();
 		}
 
 		public String getFinalUrl() {

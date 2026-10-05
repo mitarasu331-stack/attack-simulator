@@ -23,6 +23,23 @@ public class RandomPasswordAttack {
 	private static final int TOTAL_PASSWORD_COUNT =
 			10_000;
 
+	/**
+	 * 1000回ごとの仮想待機時間
+	 *
+	 * 実際には待機しない。
+	 * 実験上の攻撃時間にだけ加算する。
+	 *
+	 * 60秒 = 60000ms
+	 */
+	private static final long VIRTUAL_WAIT_TIME_MILLIS =
+			60_000L;
+
+	/**
+	 * 仮想待機が発生する間隔
+	 */
+	private static final int WAIT_INTERVAL =
+			1_000;
+
 	// =========================================================
 	// PasswordEncoder
 	// =========================================================
@@ -262,6 +279,31 @@ public class RandomPasswordAttack {
 		public int getAttemptCount() {
 
 			return attemptCount;
+		}
+
+		/**
+		 * 仮想待機時間を取得する。
+		 *
+		 * 1000回ごとに1分。
+		 *
+		 * 例：
+		 *  999回  → 0分
+		 * 1000回  → 1分
+		 * 1999回  → 1分
+		 * 2000回  → 2分
+		 * 2500回  → 2分
+		 * 9999回  → 9分
+		 * 10000回 → 10分
+		 *
+		 * ※最後の試行後に待機するかどうかを
+		 *   攻撃時間計算側で調整する場合は、
+		 *   その仕様に合わせて変更可能。
+		 */
+		public long getVirtualWaitTimeMillis() {
+
+			return (long)
+					(attemptCount / WAIT_INTERVAL)
+					* VIRTUAL_WAIT_TIME_MILLIS;
 		}
 	}
 }

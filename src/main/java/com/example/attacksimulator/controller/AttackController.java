@@ -471,7 +471,9 @@ public class AttackController {
 	// 一段階認証
 	// ランダム攻撃
 	// =========================================================
+
 	@PostMapping("/attack/random-stage")
+
 	public String attackRandomStage(
 
 			@RequestParam("username") String username,
@@ -483,184 +485,365 @@ public class AttackController {
 			int maxAttemptsPassword,
 
 			RedirectAttributes redirectAttributes,
+
 			Model model) {
 
 		long startTime =
+
 				System.nanoTime();
 
 		final String authMethod =
+
 				"one-stage-random";
 
 		try {
 
 			maxAttemptsPassword =
+
 					clampPasswordAttempts(
+
 							maxAttemptsPassword);
 
 			// =================================================
 			// 攻撃開始ログ
 			// =================================================
+
 			System.out.println(
+
 					"===== 一段階認証 ランダム攻撃開始 =====");
 
 			System.out.println(
+
 					"username = "
+
 							+ username);
 
 			System.out.println(
+
 					"最大試行回数 = "
+
 							+ maxAttemptsPassword);
 
 			System.out.println(
+
 					"========================================");
 
+
 			AttackService.RandomOneStageLoginResult
+
 			randomResult =
+
 			attackService
+
 			.executeRandomOneStageWithLogin(
+
 					username,
+
 					maxAttemptsPassword);
 
-			long attackTimeMs =
+
+			// =================================================
+			// 実際にかかった処理時間
+			//
+			// Thread.sleep()などによる待機時間は含まれない
+			// =================================================
+
+			long actualAttackTimeMs =
+
 					(System.nanoTime() - startTime)
+
 					/ 1_000_000;
 
+
+			// =================================================
+			// 仮想待機時間
+			//
+			// 実際には一切待機しない。
+			// 1000回ごとに1分を攻撃時間へ加算する。
+			// =================================================
+
+			long virtualWaitTimeMs =
+
+					randomResult
+							.getVirtualWaitTimeMillis();
+
+
+			// =================================================
+			// 実験上の攻撃時間
+			//
+			// 実処理時間
+			// ＋
+			// 仮想待機時間
+			// =================================================
+
+			long attackTimeMs =
+
+					actualAttackTimeMs
+
+							+ virtualWaitTimeMs;
+
+
 			boolean attackSuccess =
+
 					randomResult.isSuccess();
 
+
 			boolean realLoginSuccess =
+
 					randomResult.isLoginSuccess();
 
+
 			String password =
+
 					randomResult.getPassword();
 
+
 			int attemptCount =
+
 					randomResult.getAttemptCount();
+
 
 			// =================================================
 			// 最終結果ログ
 			// =================================================
+
 			System.out.println(
+
 					"===== 一段階ランダム攻撃結果 =====");
 
 			System.out.println(
+
 					"username = "
+
 							+ username);
 
 			System.out.println(
+
 					"password = "
+
 							+ password);
 
 			System.out.println(
+
 					"最大試行回数 = "
+
 							+ maxAttemptsPassword);
 
 			System.out.println(
+
 					"実攻撃試行回数 = "
+
 							+ attemptCount);
 
 			System.out.println(
+
 					"ランダム攻撃成功 = "
+
 							+ attackSuccess);
 
 			System.out.println(
+
 					"実ログイン成功 = "
+
 							+ realLoginSuccess);
 
 			System.out.println(
+
 					"Final URL = "
+
 							+ randomResult.getFinalUrl());
 
 			System.out.println(
-					"攻撃時間 = "
-							+ attackTimeMs
+
+					"実処理時間 = "
+
+							+ actualAttackTimeMs
+
 							+ " ms");
 
 			System.out.println(
+
+					"仮想待機時間 = "
+
+							+ virtualWaitTimeMs
+
+							+ " ms");
+
+			System.out.println(
+
+					"攻撃時間 = "
+
+							+ attackTimeMs
+
+							+ " ms");
+
+			System.out.println(
+
 					"========================================");
 
+
+			// =================================================
+			// 実験結果保存
+			//
+			// 保存する攻撃時間は
+			//
+			// 実処理時間 + 仮想待機時間
+			// =================================================
+
 			experimentResultService.addResult(
+
 					username,
+
 					authMethod,
+
 					"ID + Password",
+
 					String.valueOf(
+
 							maxAttemptsPassword),
+
 					attemptCount,
+
 					attackSuccess,
+
 					password,
+
 					attackTimeMs);
 
+
+			// =================================================
+			// 攻撃成功
+			// =================================================
+
 			if (attackSuccess
+
 					&& realLoginSuccess) {
 
 				model.addAttribute(
+
 						"username",
+
 						username);
 
 				model.addAttribute(
+
 						"password",
+
 						password);
 
 				return "login-redirect";
 			}
 
+
+			// =================================================
+			// 結果画面へ渡す
+			// =================================================
+
 			redirectAttributes.addFlashAttribute(
+
 					"authMethod",
+
 					authMethod);
 
+
 			redirectAttributes.addFlashAttribute(
+
 					"attemptCount",
+
 					attemptCount);
 
+
 			redirectAttributes.addFlashAttribute(
+
 					"success",
+
 					attackSuccess);
 
+
 			redirectAttributes.addFlashAttribute(
+
 					"password",
+
 					password);
 
+
 			redirectAttributes.addFlashAttribute(
+
 					"password2",
+
 					null);
 
+
 			redirectAttributes.addFlashAttribute(
+
 					"password3",
+
 					null);
 
+
 			redirectAttributes.addFlashAttribute(
+
 					"otp",
+
 					null);
 
+
 			redirectAttributes.addFlashAttribute(
+
 					"realLoginSuccess",
+
 					realLoginSuccess);
 
+
 			redirectAttributes.addFlashAttribute(
+
 					"maxAttemptCount",
+
 					String.valueOf(
+
 							maxAttemptsPassword));
 
+
+			// =================================================
+			// 結果画面に渡す攻撃時間
+			//
+			// 仮想待機時間込み
+			// =================================================
+
 			redirectAttributes.addFlashAttribute(
+
 					"attackTimeMs",
+
 					attackTimeMs);
 
+
 			redirectAttributes.addFlashAttribute(
+
 					"message",
+
 					attackSuccess
+
 					? "一段階ランダム攻撃の突破に成功しました。"
+
 							: "一段階ランダム攻撃の突破に失敗しました。");
 
+
 			return "redirect:/result";
+
 
 		} catch (Exception e) {
 
 			e.printStackTrace();
 
+
 			redirectAttributes.addFlashAttribute(
+
 					"error",
+
 					"ランダム攻撃中にエラーが発生しました: "
+
 							+ e.getMessage());
+
 
 			return "redirect:/result";
 		}
@@ -671,6 +854,7 @@ public class AttackController {
 	// 二段階認証
 	// ランダム攻撃
 	// =========================================================
+
 	@PostMapping("/attack/random-two-stage")
 	public String attackRandomTwoStage(
 
@@ -715,6 +899,7 @@ public class AttackController {
 			// =================================================
 			// 攻撃開始ログ
 			// =================================================
+
 			System.out.println(
 					"===== 二段階認証 ランダム攻撃開始 =====");
 
@@ -731,15 +916,39 @@ public class AttackController {
 
 			AttackService.RandomTwoStageLoginResult
 			randomResult =
-			attackService
-			.executeRandomTwoStageWithLogin(
-					username,
-					maxAttemptsPassword,
-					maxAttemptsPassword2);
+					attackService
+					.executeRandomTwoStageWithLogin(
+							username,
+							maxAttemptsPassword,
+							maxAttemptsPassword2);
 
-			long attackTimeMs =
+			// =================================================
+			// 実際にかかった攻撃処理時間
+			// =================================================
+
+			long actualAttackTimeMs =
 					(System.nanoTime() - startTime)
 					/ 1_000_000;
+
+			// =================================================
+			// 実際には待っていない仮想待機時間
+			// =================================================
+
+			long virtualWaitTimeMs =
+					randomResult
+					.getVirtualWaitTimeMillis();
+
+			// =================================================
+			// 最終的な攻撃時間
+			//
+			// 実際の処理時間
+			// ＋
+			// 仮想待機時間
+			// =================================================
+
+			long attackTimeMs =
+					actualAttackTimeMs
+					+ virtualWaitTimeMs;
 
 			boolean attackSuccess =
 					randomResult.isSuccess();
@@ -782,6 +991,7 @@ public class AttackController {
 			// =================================================
 			// 最終結果ログ
 			// =================================================
+
 			System.out.println(
 					"===== 二段階ランダム攻撃結果 =====");
 
@@ -808,6 +1018,16 @@ public class AttackController {
 			System.out.println(
 					"実ログイン成功 = "
 							+ realLoginSuccess);
+
+			System.out.println(
+					"実際の攻撃処理時間 = "
+							+ actualAttackTimeMs
+							+ " ms");
+
+			System.out.println(
+					"仮想待機時間 = "
+							+ virtualWaitTimeMs
+							+ " ms");
 
 			System.out.println(
 					"攻撃時間 = "
@@ -887,7 +1107,7 @@ public class AttackController {
 					"message",
 					attackSuccess
 					? "二段階認証（ランダム）の突破に成功しました。"
-							: "二段階認証（ランダム）の突破に失敗しました。");
+					: "二段階認証（ランダム）の突破に失敗しました。");
 
 			return "redirect:/result";
 

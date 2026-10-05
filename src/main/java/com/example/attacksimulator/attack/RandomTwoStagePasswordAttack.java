@@ -14,6 +14,9 @@ public class RandomTwoStagePasswordAttack {
 	private static final int MIN_PASSWORD = 0;
 	private static final int MAX_PASSWORD = 9999;
 
+	// 1000回失敗するごとに、本来待つ時間として60秒を加算
+	private static final long WAIT_TIME_MILLIS = 60_000L;
+
 	private final PasswordEncoder passwordEncoder;
 	private final SecureRandom secureRandom = new SecureRandom();
 
@@ -31,6 +34,9 @@ public class RandomTwoStagePasswordAttack {
 	 *
 	 * 各段階で 0000 ～ 9999 をランダムな順番で攻撃する。
 	 * 同一段階内では同じ値を二度攻撃しない。
+	 *
+	 * 1000回失敗するごとに、実際には待機せず
+	 * 待機した時間を virtualWaitTimeMillis に加算する。
 	 */
 	public AttackResult execute(
 			String passwordHash,
@@ -47,6 +53,12 @@ public class RandomTwoStagePasswordAttack {
 
 		maxAttemptsPassword2 =
 				clampAttempts(maxAttemptsPassword2);
+
+		// =====================================================
+		// 仮想待機時間
+		// =====================================================
+
+		long virtualWaitTimeMillis = 0L;
 
 		// =====================================================
 		// Stage 1 : Password
@@ -89,6 +101,32 @@ public class RandomTwoStagePasswordAttack {
 
 				break;
 			}
+
+			// -------------------------------------------------
+			// 1000回失敗するごとに
+			// 実際には待たず、60秒を加算
+			// -------------------------------------------------
+
+			if (passwordAttemptCount % 1000 == 0
+					&& passwordAttemptCount
+							< maxAttemptsPassword) {
+
+				virtualWaitTimeMillis +=
+						WAIT_TIME_MILLIS;
+
+				System.out.println(
+						"ランダムPassword "
+								+ passwordAttemptCount
+								+ "回失敗"
+								+ " → 仮想待機時間 "
+								+ WAIT_TIME_MILLIS
+								+ " ms を加算");
+
+				System.out.println(
+						"累積仮想待機時間 = "
+								+ virtualWaitTimeMillis
+								+ " ms");
+			}
 		}
 
 		// =====================================================
@@ -107,7 +145,8 @@ public class RandomTwoStagePasswordAttack {
 					null,
 					passwordAttemptCount,
 					0,
-					totalAttemptCount);
+					totalAttemptCount,
+					virtualWaitTimeMillis);
 		}
 
 		// =====================================================
@@ -151,6 +190,32 @@ public class RandomTwoStagePasswordAttack {
 
 				break;
 			}
+
+			// -------------------------------------------------
+			// 1000回失敗するごとに
+			// 実際には待たず、60秒を加算
+			// -------------------------------------------------
+
+			if (password2AttemptCount % 1000 == 0
+					&& password2AttemptCount
+							< maxAttemptsPassword2) {
+
+				virtualWaitTimeMillis +=
+						WAIT_TIME_MILLIS;
+
+				System.out.println(
+						"ランダムPassword2 "
+								+ password2AttemptCount
+								+ "回失敗"
+								+ " → 仮想待機時間 "
+								+ WAIT_TIME_MILLIS
+								+ " ms を加算");
+
+				System.out.println(
+						"累積仮想待機時間 = "
+								+ virtualWaitTimeMillis
+								+ " ms");
+			}
 		}
 
 		// =====================================================
@@ -171,7 +236,8 @@ public class RandomTwoStagePasswordAttack {
 				password2,
 				passwordAttemptCount,
 				password2AttemptCount,
-				totalAttemptCount);
+				totalAttemptCount,
+				virtualWaitTimeMillis);
 	}
 
 	/**
@@ -236,13 +302,17 @@ public class RandomTwoStagePasswordAttack {
 
 		private final int attemptCount;
 
+		// 実際には待機していない仮想待機時間
+		private final long virtualWaitTimeMillis;
+
 		public AttackResult(
 				boolean success,
 				String password,
 				String password2,
 				int passwordAttemptCount,
 				int password2AttemptCount,
-				int attemptCount) {
+				int attemptCount,
+				long virtualWaitTimeMillis) {
 
 			this.success =
 					success;
@@ -261,6 +331,9 @@ public class RandomTwoStagePasswordAttack {
 
 			this.attemptCount =
 					attemptCount;
+
+			this.virtualWaitTimeMillis =
+					virtualWaitTimeMillis;
 		}
 
 		public boolean isSuccess() {
@@ -291,6 +364,15 @@ public class RandomTwoStagePasswordAttack {
 		public int getAttemptCount() {
 
 			return attemptCount;
+		}
+
+		/**
+		 * 実際には待っていないが、
+		 * 攻撃時間として加算する待機時間
+		 */
+		public long getVirtualWaitTimeMillis() {
+
+			return virtualWaitTimeMillis;
 		}
 	}
 }

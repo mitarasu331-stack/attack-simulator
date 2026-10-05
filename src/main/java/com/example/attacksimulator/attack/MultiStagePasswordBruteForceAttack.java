@@ -10,6 +10,17 @@ public class MultiStagePasswordBruteForceAttack {
 	private static final int PASSWORD_MAX = 9999;
 	private static final int PASSWORD_MAX_ATTEMPTS = 10000;
 
+	/**
+	 * 1000回ごとの待機時間
+	 *
+	 * 実際には待機せず、
+	 * 攻撃時間に仮想的に加算する。
+	 *
+	 * 60秒 = 60000ms
+	 */
+	private static final long WAIT_TIME_MILLIS =
+			60_000L;
+
 	private final PasswordEncoder passwordEncoder;
 
 	public MultiStagePasswordBruteForceAttack(
@@ -51,7 +62,8 @@ public class MultiStagePasswordBruteForceAttack {
 				null,
 				null,
 				stageResult.getAttemptCount(),
-				1);
+				1,
+				stageResult.getVirtualWaitTimeMillis());
 	}
 
 	// =========================================================
@@ -94,6 +106,9 @@ public class MultiStagePasswordBruteForceAttack {
 		int totalAttempts =
 				passwordResult.getAttemptCount();
 
+		long totalVirtualWaitTimeMillis =
+				passwordResult.getVirtualWaitTimeMillis();
+
 		if (!passwordResult.isSuccess()) {
 
 			return new AttackResult(
@@ -102,7 +117,8 @@ public class MultiStagePasswordBruteForceAttack {
 					null,
 					null,
 					totalAttempts,
-					2);
+					2,
+					totalVirtualWaitTimeMillis);
 		}
 
 		BruteForceStageResult password2Result =
@@ -114,13 +130,17 @@ public class MultiStagePasswordBruteForceAttack {
 		totalAttempts +=
 				password2Result.getAttemptCount();
 
+		totalVirtualWaitTimeMillis +=
+				password2Result.getVirtualWaitTimeMillis();
+
 		return new AttackResult(
 				password2Result.isSuccess(),
 				passwordResult.getPassword(),
 				password2Result.getPassword(),
 				null,
 				totalAttempts,
-				2);
+				2,
+				totalVirtualWaitTimeMillis);
 	}
 
 	// =========================================================
@@ -172,6 +192,9 @@ public class MultiStagePasswordBruteForceAttack {
 		int totalAttempts =
 				passwordResult.getAttemptCount();
 
+		long totalVirtualWaitTimeMillis =
+				passwordResult.getVirtualWaitTimeMillis();
+
 		if (!passwordResult.isSuccess()) {
 
 			return new AttackResult(
@@ -180,7 +203,8 @@ public class MultiStagePasswordBruteForceAttack {
 					null,
 					null,
 					totalAttempts,
-					3);
+					3,
+					totalVirtualWaitTimeMillis);
 		}
 
 		BruteForceStageResult password2Result =
@@ -192,6 +216,9 @@ public class MultiStagePasswordBruteForceAttack {
 		totalAttempts +=
 				password2Result.getAttemptCount();
 
+		totalVirtualWaitTimeMillis +=
+				password2Result.getVirtualWaitTimeMillis();
+
 		if (!password2Result.isSuccess()) {
 
 			return new AttackResult(
@@ -200,7 +227,8 @@ public class MultiStagePasswordBruteForceAttack {
 					null,
 					null,
 					totalAttempts,
-					3);
+					3,
+					totalVirtualWaitTimeMillis);
 		}
 
 		BruteForceStageResult password3Result =
@@ -212,13 +240,17 @@ public class MultiStagePasswordBruteForceAttack {
 		totalAttempts +=
 				password3Result.getAttemptCount();
 
+		totalVirtualWaitTimeMillis +=
+				password3Result.getVirtualWaitTimeMillis();
+
 		return new AttackResult(
 				password3Result.isSuccess(),
 				passwordResult.getPassword(),
 				password2Result.getPassword(),
 				password3Result.getPassword(),
 				totalAttempts,
-				3);
+				3,
+				totalVirtualWaitTimeMillis);
 	}
 
 	// =========================================================
@@ -232,6 +264,8 @@ public class MultiStagePasswordBruteForceAttack {
 
 		int attemptCount = 0;
 
+		long virtualWaitTimeMillis = 0L;
+
 		for (int i = PASSWORD_MIN;
 				i <= PASSWORD_MAX
 						&& attemptCount < maxAttempts;
@@ -242,7 +276,10 @@ public class MultiStagePasswordBruteForceAttack {
 
 			attemptCount++;
 
+			// -------------------------------------------------
 			// 候補パスワードを1件ずつ表示
+			// -------------------------------------------------
+
 			System.out.println(
 					stageName
 							+ " 総当たり攻撃 試行 "
@@ -252,6 +289,10 @@ public class MultiStagePasswordBruteForceAttack {
 							+ " : "
 							+ candidate);
 
+			// -------------------------------------------------
+			// BCrypt照合
+			// -------------------------------------------------
+
 			if (passwordEncoder.matches(
 					candidate,
 					passwordHash)) {
@@ -259,14 +300,52 @@ public class MultiStagePasswordBruteForceAttack {
 				return new BruteForceStageResult(
 						true,
 						candidate,
-						attemptCount);
+						attemptCount,
+						virtualWaitTimeMillis);
+			}
+
+			// =================================================
+			// 1000回ごとに仮想待機時間を加算
+			// =================================================
+
+			if (attemptCount % 1000 == 0
+					&& attemptCount < maxAttempts) {
+
+				virtualWaitTimeMillis +=
+						WAIT_TIME_MILLIS;
+
+				System.out.println(
+						"----------------------------------------");
+
+				System.out.println(
+						stageName
+								+ " が1000回失敗したため"
+								+ "仮想待機時間を1分加算します。");
+
+				System.out.println(
+						"現在の試行回数 = "
+								+ attemptCount);
+
+				System.out.println(
+						"今回の仮想待機時間 = "
+								+ WAIT_TIME_MILLIS
+								+ " ms");
+
+				System.out.println(
+						"累積仮想待機時間 = "
+								+ virtualWaitTimeMillis
+								+ " ms");
+
+				System.out.println(
+						"----------------------------------------");
 			}
 		}
 
 		return new BruteForceStageResult(
 				false,
 				null,
-				attemptCount);
+				attemptCount,
+				virtualWaitTimeMillis);
 	}
 
 	// =========================================================
@@ -326,14 +405,19 @@ public class MultiStagePasswordBruteForceAttack {
 
 		private final int attemptCount;
 
+		private final long virtualWaitTimeMillis;
+
 		public BruteForceStageResult(
 				boolean success,
 				String password,
-				int attemptCount) {
+				int attemptCount,
+				long virtualWaitTimeMillis) {
 
 			this.success = success;
 			this.password = password;
 			this.attemptCount = attemptCount;
+			this.virtualWaitTimeMillis =
+					virtualWaitTimeMillis;
 		}
 
 		public boolean isSuccess() {
@@ -346,6 +430,10 @@ public class MultiStagePasswordBruteForceAttack {
 
 		public int getAttemptCount() {
 			return attemptCount;
+		}
+
+		public long getVirtualWaitTimeMillis() {
+			return virtualWaitTimeMillis;
 		}
 	}
 
@@ -367,13 +455,16 @@ public class MultiStagePasswordBruteForceAttack {
 
 		private final int stageCount;
 
+		private final long virtualWaitTimeMillis;
+
 		public AttackResult(
 				boolean success,
 				String password,
 				String password2,
 				String password3,
 				int totalAttempts,
-				int stageCount) {
+				int stageCount,
+				long virtualWaitTimeMillis) {
 
 			this.success = success;
 			this.password = password;
@@ -381,6 +472,8 @@ public class MultiStagePasswordBruteForceAttack {
 			this.password3 = password3;
 			this.totalAttempts = totalAttempts;
 			this.stageCount = stageCount;
+			this.virtualWaitTimeMillis =
+					virtualWaitTimeMillis;
 		}
 
 		public boolean isSuccess() {
@@ -405,6 +498,10 @@ public class MultiStagePasswordBruteForceAttack {
 
 		public int getStageCount() {
 			return stageCount;
+		}
+
+		public long getVirtualWaitTimeMillis() {
+			return virtualWaitTimeMillis;
 		}
 	}
 }

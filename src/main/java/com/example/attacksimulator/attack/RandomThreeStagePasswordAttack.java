@@ -15,6 +15,14 @@ public class RandomThreeStagePasswordAttack {
 
 	private static final int MAX_PASSWORD = 9999;
 
+	/**
+	 * 1000回ごとの待機時間
+	 *
+	 * 60秒 = 60000ms
+	 */
+	private static final long WAIT_TIME_MILLIS =
+			60_000L;
+
 	private final PasswordEncoder passwordEncoder;
 
 	private final SecureRandom secureRandom =
@@ -92,6 +100,10 @@ public class RandomThreeStagePasswordAttack {
 							+ " : "
 							+ candidate);
 
+			// -------------------------------------------------
+			// BCrypt照合
+			// -------------------------------------------------
+
 			if (passwordEncoder.matches(
 					candidate,
 					passwordHash)) {
@@ -100,6 +112,15 @@ public class RandomThreeStagePasswordAttack {
 
 				break;
 			}
+
+			// -------------------------------------------------
+			// 1000回ごとに1分待機
+			// -------------------------------------------------
+
+			waitEvery1000Attempts(
+					passwordAttemptCount,
+					maxAttemptsPassword,
+					"Password");
 		}
 
 		// =====================================================
@@ -154,6 +175,10 @@ public class RandomThreeStagePasswordAttack {
 							+ " : "
 							+ candidate);
 
+			// -------------------------------------------------
+			// BCrypt照合
+			// -------------------------------------------------
+
 			if (passwordEncoder.matches(
 					candidate,
 					password2Hash)) {
@@ -162,6 +187,15 @@ public class RandomThreeStagePasswordAttack {
 
 				break;
 			}
+
+			// -------------------------------------------------
+			// 1000回ごとに1分待機
+			// -------------------------------------------------
+
+			waitEvery1000Attempts(
+					password2AttemptCount,
+					maxAttemptsPassword2,
+					"Password2");
 		}
 
 		// =====================================================
@@ -220,6 +254,10 @@ public class RandomThreeStagePasswordAttack {
 							+ " : "
 							+ candidate);
 
+			// -------------------------------------------------
+			// BCrypt照合
+			// -------------------------------------------------
+
 			if (passwordEncoder.matches(
 					candidate,
 					password3Hash)) {
@@ -228,6 +266,15 @@ public class RandomThreeStagePasswordAttack {
 
 				break;
 			}
+
+			// -------------------------------------------------
+			// 1000回ごとに1分待機
+			// -------------------------------------------------
+
+			waitEvery1000Attempts(
+					password3AttemptCount,
+					maxAttemptsPassword3,
+					"Password3");
 		}
 
 		// =====================================================
@@ -253,6 +300,63 @@ public class RandomThreeStagePasswordAttack {
 				password2AttemptCount,
 				password3AttemptCount,
 				totalAttemptCount);
+	}
+
+	// =========================================================
+	// 1000回ごとの待機
+	// =========================================================
+
+	private void waitEvery1000Attempts(
+			int attemptCount,
+			int maxAttempts,
+			String stageName) {
+
+		// -----------------------------------------------------
+		// 1000回ごと
+		//
+		// ただし、最後の試行後には待機しない
+		// -----------------------------------------------------
+
+		if (attemptCount % 1000 != 0
+				|| attemptCount >= maxAttempts) {
+
+			return;
+		}
+
+		System.out.println(
+				"----------------------------------------");
+
+		System.out.println(
+				"ランダム"
+						+ stageName
+						+ " が1000回試行されたため1分待機します。");
+
+		System.out.println(
+				"現在の試行回数 = "
+						+ attemptCount);
+
+		System.out.println(
+				"待機時間 = 60000 ms");
+
+		System.out.println(
+				"----------------------------------------");
+
+		try {
+
+			Thread.sleep(
+					WAIT_TIME_MILLIS);
+
+		} catch (InterruptedException e) {
+
+			// スレッドの割り込み状態を復元
+			Thread.currentThread().interrupt();
+
+			throw new IllegalStateException(
+					"ランダム"
+							+ stageName
+							+ "攻撃中の待機が中断されました。",
+					e);
+		}
 	}
 
 	// =========================================================

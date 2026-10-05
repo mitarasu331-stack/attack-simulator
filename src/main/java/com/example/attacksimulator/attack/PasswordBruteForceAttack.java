@@ -28,6 +28,8 @@ public class PasswordBruteForceAttack {
 
 	/**
 	 * 最大試行回数を指定して総当たり
+	 *
+	 * 待機時間なしで連続して試行する。
 	 */
 	public AttackResult execute(
 			String passwordHash,
@@ -77,6 +79,7 @@ public class PasswordBruteForceAttack {
 							+ " : "
 							+ candidate);
 
+			// パスワード一致確認
 			if (passwordEncoder.matches(
 					candidate,
 					passwordHash)) {
