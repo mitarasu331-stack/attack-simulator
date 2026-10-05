@@ -16,7 +16,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.attacksimulator.attack.FactorAuthenticationAttack;
 import com.example.attacksimulator.attack.MultiStagePasswordBruteForceAttack;
-import com.example.attacksimulator.attack.RandomTwoFactorPasswordEmailOtpAttack;
 import com.example.attacksimulator.client.NewAuthLabLoginClient;
 import com.example.attacksimulator.model.ExperimentResult;
 import com.example.attacksimulator.service.AttackService;
@@ -118,6 +117,68 @@ public class AttackController {
 			maxAttemptsPassword3 =
 					clampPasswordAttempts(
 							maxAttemptsPassword3);
+
+			// =================================================
+			// 攻撃開始ログ
+			// =================================================
+
+			String attackStartTitle;
+
+			if ("one-stage".equals(authMethod)) {
+
+				attackStartTitle =
+						"===== 一段階認証 総当たり攻撃開始 =====";
+
+			} else if ("two-stage".equals(authMethod)) {
+
+				attackStartTitle =
+						"===== 二段階認証 総当たり攻撃開始 =====";
+
+			} else if ("three-stage".equals(authMethod)) {
+
+				attackStartTitle =
+						"===== 三段階認証 総当たり攻撃開始 =====";
+
+			} else {
+
+				attackStartTitle =
+						"===== 総当たり攻撃開始 =====";
+			}
+
+			System.out.println(
+					attackStartTitle);
+
+			System.out.println(
+					"username = "
+							+ username);
+
+			if ("one-stage".equals(authMethod)) {
+
+				System.out.println(
+						"最大試行回数 = "
+								+ maxAttemptsPassword);
+
+			} else if ("two-stage".equals(authMethod)) {
+
+				System.out.println(
+						"最大試行回数 = "
+								+ maxAttemptsPassword
+								+ " → "
+								+ maxAttemptsPassword2);
+
+			} else if ("three-stage".equals(authMethod)) {
+
+				System.out.println(
+						"最大試行回数 = "
+								+ maxAttemptsPassword
+								+ " → "
+								+ maxAttemptsPassword2
+								+ " → "
+								+ maxAttemptsPassword3);
+			}
+
+			System.out.println(
+					"========================================");
 
 			MultiStagePasswordBruteForceAttack.AttackResult result;
 
@@ -235,6 +296,59 @@ public class AttackController {
 					result.isSuccess(),
 					credential,
 					attackTimeMs);
+
+			// =================================================
+			// 最終結果ログ
+			// =================================================
+
+			String resultTitle;
+
+			if ("one-stage".equals(authMethod)) {
+
+				resultTitle = "===== 一段階認証 総当たり攻撃結果 =====";
+
+			} else if ("two-stage".equals(authMethod)) {
+
+				resultTitle = "===== 二段階認証 総当たり攻撃結果 =====";
+
+			} else {
+
+				resultTitle = "===== 三段階認証 総当たり攻撃結果 =====";
+			}
+
+			System.out.println(resultTitle);
+
+			System.out.println(
+					"username = "
+							+ username);
+
+			System.out.println(
+					"password = "
+							+ credential);
+
+			System.out.println(
+					"最大試行回数 = "
+							+ maxAttemptCount);
+
+			System.out.println(
+					"実攻撃試行回数 = "
+							+ result.getTotalAttempts());
+
+			System.out.println(
+					"総当たり攻撃成功 = "
+							+ result.isSuccess());
+
+			System.out.println(
+					"実ログイン成功 = "
+							+ realLoginSuccess);
+
+			System.out.println(
+					"攻撃時間 = "
+							+ attackTimeMs
+							+ " ms");
+
+			System.out.println(
+					"========================================");
 
 			if ("one-stage".equals(authMethod)
 					&& result.isSuccess()
@@ -357,9 +471,9 @@ public class AttackController {
 	// 一段階認証
 	// ランダム攻撃
 	// =========================================================
-
 	@PostMapping("/attack/random-stage")
 	public String attackRandomStage(
+
 			@RequestParam("username") String username,
 
 			@RequestParam(
@@ -383,11 +497,11 @@ public class AttackController {
 					clampPasswordAttempts(
 							maxAttemptsPassword);
 
+			// =================================================
+			// 攻撃開始ログ
+			// =================================================
 			System.out.println(
-					"========================================");
-
-			System.out.println(
-					"一段階ランダム攻撃開始");
+					"===== 一段階認証 ランダム攻撃開始 =====");
 
 			System.out.println(
 					"username = "
@@ -423,9 +537,9 @@ public class AttackController {
 			int attemptCount =
 					randomResult.getAttemptCount();
 
-			System.out.println(
-					"========================================");
-
+			// =================================================
+			// 最終結果ログ
+			// =================================================
 			System.out.println(
 					"===== 一段階ランダム攻撃結果 =====");
 
@@ -552,13 +666,14 @@ public class AttackController {
 		}
 	}
 
+
 	// =========================================================
 	// 二段階認証
 	// ランダム攻撃
 	// =========================================================
-
 	@PostMapping("/attack/random-two-stage")
 	public String attackRandomTwoStage(
+
 			@RequestParam("username") String username,
 
 			@RequestParam(
@@ -596,6 +711,23 @@ public class AttackController {
 					maxAttemptsPassword
 					+ " → "
 					+ maxAttemptsPassword2;
+
+			// =================================================
+			// 攻撃開始ログ
+			// =================================================
+			System.out.println(
+					"===== 二段階認証 ランダム攻撃開始 =====");
+
+			System.out.println(
+					"username = "
+							+ username);
+
+			System.out.println(
+					"最大試行回数 = "
+							+ maxAttemptCount);
+
+			System.out.println(
+					"========================================");
 
 			AttackService.RandomTwoStageLoginResult
 			randomResult =
@@ -646,6 +778,44 @@ public class AttackController {
 					attackSuccess,
 					credential,
 					attackTimeMs);
+
+			// =================================================
+			// 最終結果ログ
+			// =================================================
+			System.out.println(
+					"===== 二段階ランダム攻撃結果 =====");
+
+			System.out.println(
+					"username = "
+							+ username);
+
+			System.out.println(
+					"password = "
+							+ credential);
+
+			System.out.println(
+					"最大試行回数 = "
+							+ maxAttemptCount);
+
+			System.out.println(
+					"実攻撃試行回数 = "
+							+ attemptCount);
+
+			System.out.println(
+					"ランダム攻撃成功 = "
+							+ attackSuccess);
+
+			System.out.println(
+					"実ログイン成功 = "
+							+ realLoginSuccess);
+
+			System.out.println(
+					"攻撃時間 = "
+							+ attackTimeMs
+							+ " ms");
+
+			System.out.println(
+					"========================================");
 
 			if (attackSuccess
 					&& realLoginSuccess) {
@@ -734,13 +904,14 @@ public class AttackController {
 		}
 	}
 
+
 	// =========================================================
 	// 三段階認証
 	// ランダム攻撃
 	// =========================================================
-
 	@PostMapping("/attack/random-three-stage")
 	public String attackRandomThreeStage(
+
 			@RequestParam("username") String username,
 
 			@RequestParam(
@@ -790,6 +961,23 @@ public class AttackController {
 					+ maxAttemptsPassword2
 					+ " → "
 					+ maxAttemptsPassword3;
+
+			// =================================================
+			// 攻撃開始ログ
+			// =================================================
+			System.out.println(
+					"===== 三段階認証 ランダム攻撃開始 =====");
+
+			System.out.println(
+					"username = "
+							+ username);
+
+			System.out.println(
+					"最大試行回数 = "
+							+ maxAttemptCount);
+
+			System.out.println(
+					"========================================");
 
 			AttackService.RandomThreeStageLoginResult
 			randomResult =
@@ -849,6 +1037,44 @@ public class AttackController {
 					attackSuccess,
 					credential,
 					attackTimeMs);
+
+			// =================================================
+			// 最終結果ログ
+			// =================================================
+			System.out.println(
+					"===== 三段階ランダム攻撃結果 =====");
+
+			System.out.println(
+					"username = "
+							+ username);
+
+			System.out.println(
+					"password = "
+							+ credential);
+
+			System.out.println(
+					"最大試行回数 = "
+							+ maxAttemptCount);
+
+			System.out.println(
+					"実攻撃試行回数 = "
+							+ attemptCount);
+
+			System.out.println(
+					"ランダム攻撃成功 = "
+							+ attackSuccess);
+
+			System.out.println(
+					"実ログイン成功 = "
+							+ realLoginSuccess);
+
+			System.out.println(
+					"攻撃時間 = "
+							+ attackTimeMs
+							+ " ms");
+
+			System.out.println(
+					"========================================");
 
 			if (attackSuccess
 					&& realLoginSuccess) {
@@ -950,9 +1176,9 @@ public class AttackController {
 	// Email OTP
 	// ランダム攻撃
 	// =========================================================
-
 	@PostMapping("/attack/random-email-otp")
 	public String attackRandomEmailOtp(
+
 			@RequestParam("username") String username,
 
 			@RequestParam(
@@ -975,12 +1201,27 @@ public class AttackController {
 					clampOtpAttempts(
 							maxAttempts);
 
-			AttackService.RandomEmailOtpLoginResult
-			randomResult =
-			attackService
-			.executeRandomOneFactorEmailOtp(
-					username,
-					maxAttempts);
+			// =====================================================
+			// 攻撃開始ログ
+			// =====================================================
+			System.out.println(
+					"===== 一要素 Email OTP ランダム攻撃開始 =====");
+
+			System.out.println(
+					"username = "
+							+ username);
+
+			System.out.println(
+					"最大試行回数 = "
+							+ maxAttempts);
+
+			System.out.println(
+					"========================================");
+
+			FactorAuthenticationAttack.FactorAttackResult randomResult =
+					attackService.executeRandomOneFactorEmailOtp(
+							username,
+							maxAttempts);
 
 			long attackTimeMs =
 					(System.nanoTime() - startTime)
@@ -998,20 +1239,25 @@ public class AttackController {
 			int attemptCount =
 					randomResult.getAttemptCount();
 
+			String finalUrl =
+					randomResult.getFinalUrl();
+
+			// =====================================================
+			// 実験結果保存
+			// =====================================================
 			experimentResultService.addResult(
 					username,
 					authMethod,
 					"ID + Email OTP",
-					String.valueOf(
-							maxAttempts),
+					String.valueOf(maxAttempts),
 					attemptCount,
 					attackSuccess,
 					otp,
 					attackTimeMs);
 
-			System.out.println(
-					"========================================");
-
+			// =====================================================
+			// 最終結果ログ
+			// =====================================================
 			System.out.println(
 					"===== 一要素 Email OTP ランダム攻撃結果 =====");
 
@@ -1020,7 +1266,7 @@ public class AttackController {
 							+ username);
 
 			System.out.println(
-					"OTP = "
+					"otp = "
 							+ otp);
 
 			System.out.println(
@@ -1041,7 +1287,7 @@ public class AttackController {
 
 			System.out.println(
 					"Final URL = "
-							+ randomResult.getFinalUrl());
+							+ finalUrl);
 
 			System.out.println(
 					"攻撃時間 = "
@@ -1051,15 +1297,20 @@ public class AttackController {
 			System.out.println(
 					"========================================");
 
+			// =====================================================
+			// 実際のログイン成功
+			// =====================================================
 			if (attackSuccess
 					&& realLoginSuccess
-					&& randomResult.getFinalUrl() != null
-					&& !randomResult.getFinalUrl().isBlank()) {
+					&& finalUrl != null
+					&& !finalUrl.isBlank()) {
 
-				return "redirect:"
-						+ randomResult.getFinalUrl();
+				return "redirect:" + finalUrl;
 			}
 
+			// =====================================================
+			// 結果画面
+			// =====================================================
 			redirectAttributes.addFlashAttribute(
 					"authMethod",
 					authMethod);
@@ -1094,8 +1345,7 @@ public class AttackController {
 
 			redirectAttributes.addFlashAttribute(
 					"maxAttemptCount",
-					String.valueOf(
-							maxAttempts));
+					String.valueOf(maxAttempts));
 
 			redirectAttributes.addFlashAttribute(
 					"attackTimeMs",
@@ -1122,23 +1372,29 @@ public class AttackController {
 		}
 	}
 
+
 	// =========================================================
 	// 二要素認証
 	// Password → Email OTP
 	// ランダム攻撃
 	// =========================================================
-
 	@PostMapping("/attack/random-two-factor")
 	public String attackRandomTwoFactor(
+
 			@RequestParam("username") String username,
+
 			@RequestParam(
 					value = "maxAttemptsPassword",
 					required = false,
-					defaultValue = "10000") int maxAttemptsPassword,
+					defaultValue = "10000")
+			int maxAttemptsPassword,
+
 			@RequestParam(
 					value = "maxAttemptsOtp",
 					required = false,
-					defaultValue = "1000000") int maxAttemptsOtp,
+					defaultValue = "1000000")
+			int maxAttemptsOtp,
+
 			RedirectAttributes redirectAttributes) {
 
 		long startTime =
@@ -1146,115 +1402,102 @@ public class AttackController {
 
 		try {
 
-			// -----------------------------------------------------
-			// Password最大試行回数
-			// 1 ～ 10,000
-			// -----------------------------------------------------
-
+			// =====================================================
+			// 最大試行回数
+			// =====================================================
 			maxAttemptsPassword =
-					Math.max(
-							1,
-							Math.min(
-									maxAttemptsPassword,
-									10_000));
-
-			// -----------------------------------------------------
-			// OTP最大試行回数
-			// 1 ～ 1,000,000
-			// -----------------------------------------------------
+					clampPasswordAttempts(
+							maxAttemptsPassword);
 
 			maxAttemptsOtp =
-					Math.max(
-							1,
-							Math.min(
-									maxAttemptsOtp,
-									1_000_000));
+					clampOtpAttempts(
+							maxAttemptsOtp);
 
-			// -----------------------------------------------------
+			String maxAttemptCount =
+					maxAttemptsPassword
+					+ " → "
+					+ maxAttemptsOtp;
+
+			// =====================================================
+			// 攻撃開始ログ
+			// =====================================================
+			System.out.println(
+					"===== 二要素認証 ランダム攻撃開始 =====");
+
+			System.out.println(
+					"username = "
+							+ username);
+
+			System.out.println(
+					"最大試行回数 = "
+							+ maxAttemptCount);
+
+			System.out.println(
+					"========================================");
+
+			// =====================================================
 			// 二要素ランダム攻撃実行
-			// -----------------------------------------------------
-
-			RandomTwoFactorPasswordEmailOtpAttack.AttackResult
-			result =
-			attackService
-			.executeRandomTwoFactorPasswordEmailOtp(
-					username,
-					maxAttemptsPassword,
-					maxAttemptsOtp);
-
-			// -----------------------------------------------------
-			// 攻撃時間
-			// -----------------------------------------------------
+			// =====================================================
+			FactorAuthenticationAttack.FactorAttackResult result =
+					attackService
+					.executeRandomTwoFactorPasswordEmailOtp(
+							username,
+							maxAttemptsPassword,
+							maxAttemptsOtp);
 
 			long attackTimeMs =
 					(System.nanoTime() - startTime)
 					/ 1_000_000;
 
-			// -----------------------------------------------------
+			// =====================================================
 			// 結果
-			// -----------------------------------------------------
-
+			// =====================================================
 			boolean attackSuccess =
 					result.isSuccess();
 
-			int passwordAttemptCount =
-					result.getPasswordAttemptCount();
+			boolean realLoginSuccess =
+					result.isLoginSuccess();
 
-			int otpAttemptCount =
-					result.getOtpAttemptCount();
+			String password =
+					result.getPassword();
+
+			String otp =
+					result.getOtp();
 
 			int totalAttemptCount =
 					result.getAttemptCount();
 
-			// -----------------------------------------------------
-			// 認証方式
-			// -----------------------------------------------------
+			String finalUrl =
+					result.getFinalUrl();
 
+			// =====================================================
+			// 認証方式
+			// =====================================================
 			String authMethod =
 					"two-factor-password-email-otp-random";
 
 			String configuration =
-					"ID + Password + Email OTP";
+					"ID + Random Password → Random Email OTP";
 
-			// -----------------------------------------------------
-			// 最大試行回数
-			// -----------------------------------------------------
-
-			String maxAttemptCount =
-					maxAttemptsPassword
-					+ " + "
-					+ maxAttemptsOtp;
-
-			// -----------------------------------------------------
+			// =====================================================
 			// 成功した認証情報
-			// -----------------------------------------------------
-
+			// =====================================================
 			String credential = null;
 
-			if (attackSuccess) {
+			if (password != null
+					&& !password.isBlank()
+					&& otp != null
+					&& !otp.isBlank()) {
 
-				String password =
-						result.getPassword();
-
-				String otp =
-						result.getOtp();
-
-				if (password != null
-						&& !password.isBlank()
-						&& otp != null
-						&& !otp.isBlank()) {
-
-					credential =
-							password
-							+ " → "
-							+ otp;
-				}
+				credential =
+						password
+						+ " → "
+						+ otp;
 			}
 
-			// -----------------------------------------------------
+			// =====================================================
 			// 実験結果保存
-			// -----------------------------------------------------
-
+			// =====================================================
 			experimentResultService.addResult(
 					username,
 					authMethod,
@@ -1265,43 +1508,39 @@ public class AttackController {
 					credential,
 					attackTimeMs);
 
-			// -----------------------------------------------------
-			// コンソール表示
-			// -----------------------------------------------------
-
+			// =====================================================
+			// 最終結果ログ
+			// =====================================================
 			System.out.println(
-					"========================================");
-
-			System.out.println(
-					"二要素認証（ランダム）");
+					"===== 二要素認証ランダム攻撃結果 =====");
 
 			System.out.println(
 					"username = "
 							+ username);
 
 			System.out.println(
-					"Password最大試行回数 = "
-							+ maxAttemptsPassword);
+					"password = "
+							+ credential);
 
 			System.out.println(
-					"OTP最大試行回数 = "
-							+ maxAttemptsOtp);
+					"最大試行回数 = "
+							+ maxAttemptCount);
 
 			System.out.println(
-					"Password試行回数 = "
-							+ passwordAttemptCount);
-
-			System.out.println(
-					"OTP試行回数 = "
-							+ otpAttemptCount);
-
-			System.out.println(
-					"総試行回数 = "
+					"実攻撃試行回数 = "
 							+ totalAttemptCount);
 
 			System.out.println(
-					"突破成功 = "
+					"ランダム攻撃成功 = "
 							+ attackSuccess);
+
+			System.out.println(
+					"実ログイン成功 = "
+							+ realLoginSuccess);
+
+			System.out.println(
+					"Final URL = "
+							+ finalUrl);
 
 			System.out.println(
 					"攻撃時間 = "
@@ -1311,9 +1550,65 @@ public class AttackController {
 			System.out.println(
 					"========================================");
 
-			// -----------------------------------------------------
-			// 結果画面へ
-			// -----------------------------------------------------
+			// =====================================================
+			// 実際のログイン成功
+			// =====================================================
+			if (attackSuccess
+					&& realLoginSuccess
+					&& finalUrl != null
+					&& !finalUrl.isBlank()) {
+
+				return "redirect:" + finalUrl;
+			}
+
+			// =====================================================
+			// 結果画面
+			// =====================================================
+			redirectAttributes.addFlashAttribute(
+					"authMethod",
+					authMethod);
+
+			redirectAttributes.addFlashAttribute(
+					"attemptCount",
+					totalAttemptCount);
+
+			redirectAttributes.addFlashAttribute(
+					"success",
+					attackSuccess);
+
+			redirectAttributes.addFlashAttribute(
+					"password",
+					password);
+
+			redirectAttributes.addFlashAttribute(
+					"password2",
+					null);
+
+			redirectAttributes.addFlashAttribute(
+					"password3",
+					null);
+
+			redirectAttributes.addFlashAttribute(
+					"otp",
+					otp);
+
+			redirectAttributes.addFlashAttribute(
+					"realLoginSuccess",
+					realLoginSuccess);
+
+			redirectAttributes.addFlashAttribute(
+					"maxAttemptCount",
+					maxAttemptCount);
+
+			redirectAttributes.addFlashAttribute(
+					"attackTimeMs",
+					attackTimeMs);
+
+			redirectAttributes.addFlashAttribute(
+					"message",
+					attackSuccess
+					? "二要素認証（ランダム）の突破に成功しました。"
+							: "二要素認証（ランダム）の突破に失敗しました。");
 
 			return "redirect:/result";
 
@@ -1330,13 +1625,15 @@ public class AttackController {
 		}
 	}
 
+
 	// =========================================================
 	// 要素認証攻撃
 	// =========================================================
-
 	@PostMapping("/attack/factor")
 	public String attackFactor(
+
 			@RequestParam("username") String username,
+
 			@RequestParam("authMethod") String authMethod,
 
 			@RequestParam(
@@ -1359,23 +1656,37 @@ public class AttackController {
 
 		try {
 
-			// =================================================
+			// =====================================================
 			// 一要素 Password
-			// =================================================
-
-			if ("one-factor-password"
-					.equals(authMethod)) {
+			// 総当たり攻撃
+			// =====================================================
+			if ("one-factor-password".equals(authMethod)) {
 
 				maxAttemptsPassword =
 						clampPasswordAttempts(
 								maxAttemptsPassword);
 
-				FactorAuthenticationAttack.FactorAttackResult
-				result =
-				attackService
-				.executeOneFactorPassword(
-						username,
-						maxAttemptsPassword);
+				// =================================================
+				// 攻撃開始ログ
+				// =================================================
+				System.out.println(
+						"===== 一要素 Password 総当たり攻撃開始 =====");
+
+				System.out.println(
+						"username = "
+								+ username);
+
+				System.out.println(
+						"最大試行回数 = "
+								+ maxAttemptsPassword);
+
+				System.out.println(
+						"========================================");
+
+				FactorAuthenticationAttack.FactorAttackResult passwordResult =
+						attackService.executeOneFactorPassword(
+								username,
+								maxAttemptsPassword);
 
 				long attackTimeMs =
 						(System.nanoTime() - startTime)
@@ -1387,62 +1698,124 @@ public class AttackController {
 
 				String credential =
 						createFactorCredential(
-								result);
+								passwordResult);
+
+				boolean attackSuccess =
+						passwordResult.isSuccess();
 
 				boolean realLoginSuccess =
 						false;
 
-				if (result.isSuccess()) {
+				String finalUrl = null;
 
-					NewAuthLabLoginClient.LoginResult
-					loginResult =
-					newAuthLabLoginClient
-					.loginOneStage(
-							username,
-							result.getPassword());
+				// =================================================
+				// 実際のNewAuthLabログイン
+				// =================================================
+				if (attackSuccess) {
+
+					NewAuthLabLoginClient.LoginResult loginResult =
+							newAuthLabLoginClient.loginOneStage(
+									username,
+									passwordResult.getPassword());
 
 					realLoginSuccess =
 							loginResult.isSuccess();
 
-					if (realLoginSuccess) {
-
-						model.addAttribute(
-								"username",
-								username);
-
-						model.addAttribute(
-								"password",
-								result.getPassword());
-
-						return "login-redirect";
-					}
+					finalUrl =
+							loginResult.getFinalUrl();
 				}
 
+				// =================================================
+				// 実験結果保存
+				// =================================================
 				experimentResultService.addResult(
 						username,
-						result.getAuthMethod(),
-						result.getAuthenticationConfiguration(),
+						passwordResult.getAuthMethod(),
+						passwordResult
+						.getAuthenticationConfiguration(),
 						maxAttemptCount,
-						result.getAttemptCount(),
-						result.isSuccess(),
+						passwordResult.getAttemptCount(),
+						attackSuccess,
 						credential,
 						attackTimeMs);
 
+				// =================================================
+				// 最終結果ログ
+				// =================================================
+				System.out.println(
+						"===== 一要素 Password 総当たり攻撃結果 =====");
+
+				System.out.println(
+						"username = "
+								+ username);
+
+				System.out.println(
+						"password = "
+								+ passwordResult.getPassword());
+
+				System.out.println(
+						"最大試行回数 = "
+								+ maxAttemptCount);
+
+				System.out.println(
+						"実攻撃試行回数 = "
+								+ passwordResult.getAttemptCount());
+
+				System.out.println(
+						"総当たり攻撃成功 = "
+								+ attackSuccess);
+
+				System.out.println(
+						"実ログイン成功 = "
+								+ realLoginSuccess);
+
+				System.out.println(
+						"Final URL = "
+								+ finalUrl);
+
+				System.out.println(
+						"攻撃時間 = "
+								+ attackTimeMs
+								+ " ms");
+
+				System.out.println(
+						"========================================");
+
+				// =================================================
+				// ログイン成功
+				// =================================================
+				if (attackSuccess
+						&& realLoginSuccess) {
+
+					model.addAttribute(
+							"username",
+							username);
+
+					model.addAttribute(
+							"password",
+							passwordResult.getPassword());
+
+					return "login-redirect";
+				}
+
+				// =================================================
+				// 結果画面
+				// =================================================
 				redirectAttributes.addFlashAttribute(
 						"authMethod",
 						authMethod);
 
 				redirectAttributes.addFlashAttribute(
 						"attemptCount",
-						result.getAttemptCount());
+						passwordResult.getAttemptCount());
 
 				redirectAttributes.addFlashAttribute(
 						"success",
-						result.isSuccess());
+						attackSuccess);
 
 				redirectAttributes.addFlashAttribute(
 						"password",
-						result.getPassword());
+						passwordResult.getPassword());
 
 				redirectAttributes.addFlashAttribute(
 						"otp",
@@ -1470,148 +1843,218 @@ public class AttackController {
 
 				redirectAttributes.addFlashAttribute(
 						"message",
-						result.isSuccess()
+						attackSuccess
 						? "認証突破に成功しました。"
 								: "認証突破に失敗しました。");
 
 				return "redirect:/result";
 			}
-			
-			// =================================================
+
+
+			// =====================================================
 			// 一要素 Password
 			// ランダム攻撃
-			// =================================================
+			// =====================================================
+			if ("one-factor-password-random"
+					.equals(authMethod)) {
 
-			if ("one-factor-random-password"
-			        .equals(authMethod)) {
+				maxAttemptsPassword =
+						clampPasswordAttempts(
+								maxAttemptsPassword);
 
-			    maxAttemptsPassword =
-			            clampPasswordAttempts(
-			                    maxAttemptsPassword);
+				// =================================================
+				// 攻撃開始ログ
+				// =================================================
+				System.out.println(
+						"===== 一要素 Password ランダム攻撃開始 =====");
 
-			    FactorAuthenticationAttack.FactorAttackResult
-			    result =
-			            attackService
-			                    .executeOneFactorRandomPassword(
-			                            username,
-			                            maxAttemptsPassword);
+				System.out.println(
+						"username = "
+								+ username);
 
-			    long attackTimeMs =
-			            (System.nanoTime() - startTime)
-			                    / 1_000_000;
+				System.out.println(
+						"最大試行回数 = "
+								+ maxAttemptsPassword);
 
-			    String maxAttemptCount =
-			            String.valueOf(
-			                    maxAttemptsPassword);
+				System.out.println(
+						"========================================");
 
-			    String credential =
-			            createFactorCredential(
-			                    result);
+				FactorAuthenticationAttack.FactorAttackResult randomPasswordResult =
+						attackService
+						.executeOneFactorRandomPassword(
+								username,
+								maxAttemptsPassword);
 
-			    boolean realLoginSuccess =
-			            false;
+				long attackTimeMs =
+						(System.nanoTime() - startTime)
+						/ 1_000_000;
 
-			    // =================================================
-			    // 実際のNewAuthLabログイン
-			    // =================================================
+				String maxAttemptCount =
+						String.valueOf(
+								maxAttemptsPassword);
 
-			    if (result.isSuccess()) {
+				String credential =
+						createFactorCredential(
+								randomPasswordResult);
 
-			        NewAuthLabLoginClient.LoginResult
-			        loginResult =
-			                newAuthLabLoginClient
-			                        .loginOneStage(
-			                                username,
-			                                result.getPassword());
+				boolean attackSuccess =
+						randomPasswordResult.isSuccess();
 
-			        realLoginSuccess =
-			                loginResult.isSuccess();
+				boolean realLoginSuccess =
+						false;
 
-			        if (realLoginSuccess) {
+				String finalUrl = null;
 
-			            model.addAttribute(
-			                    "username",
-			                    username);
+				// =================================================
+				// 実際のNewAuthLabログイン
+				// =================================================
+				if (attackSuccess) {
 
-			            model.addAttribute(
-			                    "password",
-			                    result.getPassword());
+					NewAuthLabLoginClient.LoginResult loginResult =
+							newAuthLabLoginClient.loginOneStage(
+									username,
+									randomPasswordResult.getPassword());
 
-			            return "login-redirect";
-			        }
-			    }
+					realLoginSuccess =
+							loginResult.isSuccess();
 
-			    // =================================================
-			    // 実験結果保存
-			    // =================================================
+					finalUrl =
+							loginResult.getFinalUrl();
+				}
 
-			    experimentResultService.addResult(
-			            username,
-			            result.getAuthMethod(),
-			            result.getAuthenticationConfiguration(),
-			            maxAttemptCount,
-			            result.getAttemptCount(),
-			            result.isSuccess(),
-			            credential,
-			            attackTimeMs);
+				// =================================================
+				// 実験結果保存
+				// =================================================
+				experimentResultService.addResult(
+						username,
+						randomPasswordResult.getAuthMethod(),
+						randomPasswordResult
+						.getAuthenticationConfiguration(),
+						maxAttemptCount,
+						randomPasswordResult.getAttemptCount(),
+						attackSuccess,
+						credential,
+						attackTimeMs);
 
-			    // =================================================
-			    // 結果画面
-			    // =================================================
+				// =================================================
+				// 最終結果ログ
+				// =================================================
+				System.out.println(
+						"===== 一要素 Password ランダム攻撃結果 =====");
 
-			    redirectAttributes.addFlashAttribute(
-			            "authMethod",
-			            authMethod);
+				System.out.println(
+						"username = "
+								+ username);
 
-			    redirectAttributes.addFlashAttribute(
-			            "attemptCount",
-			            result.getAttemptCount());
+				System.out.println(
+						"password = "
+								+ randomPasswordResult.getPassword());
 
-			    redirectAttributes.addFlashAttribute(
-			            "success",
-			            result.isSuccess());
+				System.out.println(
+						"最大試行回数 = "
+								+ maxAttemptCount);
 
-			    redirectAttributes.addFlashAttribute(
-			            "password",
-			            result.getPassword());
+				System.out.println(
+						"実攻撃試行回数 = "
+								+ randomPasswordResult.getAttemptCount());
 
-			    redirectAttributes.addFlashAttribute(
-			            "otp",
-			            null);
+				System.out.println(
+						"ランダム攻撃成功 = "
+								+ attackSuccess);
 
-			    redirectAttributes.addFlashAttribute(
-			            "password2",
-			            null);
+				System.out.println(
+						"実ログイン成功 = "
+								+ realLoginSuccess);
 
-			    redirectAttributes.addFlashAttribute(
-			            "password3",
-			            null);
+				System.out.println(
+						"Final URL = "
+								+ finalUrl);
 
-			    redirectAttributes.addFlashAttribute(
-			            "realLoginSuccess",
-			            realLoginSuccess);
+				System.out.println(
+						"攻撃時間 = "
+								+ attackTimeMs
+								+ " ms");
 
-			    redirectAttributes.addFlashAttribute(
-			            "maxAttemptCount",
-			            maxAttemptCount);
+				System.out.println(
+						"========================================");
 
-			    redirectAttributes.addFlashAttribute(
-			            "attackTimeMs",
-			            attackTimeMs);
+				// =================================================
+				// ログイン成功
+				// =================================================
+				if (attackSuccess
+						&& realLoginSuccess) {
 
-			    redirectAttributes.addFlashAttribute(
-			            "message",
-			            result.isSuccess()
-			                    ? "一要素Password（ランダム）の認証突破に成功しました。"
-			                    : "一要素Password（ランダム）の認証突破に失敗しました。");
+					model.addAttribute(
+							"username",
+							username);
 
-			    return "redirect:/result";
+					model.addAttribute(
+							"password",
+							randomPasswordResult
+							.getPassword());
+
+					return "login-redirect";
+				}
+
+				// =================================================
+				// 結果画面
+				// =================================================
+				redirectAttributes.addFlashAttribute(
+						"authMethod",
+						authMethod);
+
+				redirectAttributes.addFlashAttribute(
+						"attemptCount",
+						randomPasswordResult
+						.getAttemptCount());
+
+				redirectAttributes.addFlashAttribute(
+						"success",
+						attackSuccess);
+
+				redirectAttributes.addFlashAttribute(
+						"password",
+						randomPasswordResult
+						.getPassword());
+
+				redirectAttributes.addFlashAttribute(
+						"otp",
+						null);
+
+				redirectAttributes.addFlashAttribute(
+						"password2",
+						null);
+
+				redirectAttributes.addFlashAttribute(
+						"password3",
+						null);
+
+				redirectAttributes.addFlashAttribute(
+						"realLoginSuccess",
+						realLoginSuccess);
+
+				redirectAttributes.addFlashAttribute(
+						"maxAttemptCount",
+						maxAttemptCount);
+
+				redirectAttributes.addFlashAttribute(
+						"attackTimeMs",
+						attackTimeMs);
+
+				redirectAttributes.addFlashAttribute(
+						"message",
+						attackSuccess
+						? "一要素Password（ランダム）の認証突破に成功しました。"
+								: "一要素Password（ランダム）の認証突破に失敗しました。");
+
+				return "redirect:/result";
 			}
 
-			// =================================================
-			// 一要素 Email OTP
-			// =================================================
 
+			// =====================================================
+			// 一要素 Email OTP
+			// 総当たり攻撃
+			// =====================================================
 			if ("one-factor-email-otp"
 					.equals(authMethod)) {
 
@@ -1619,12 +2062,28 @@ public class AttackController {
 						clampOtpAttempts(
 								maxAttempts);
 
-				AttackService.OneFactorEmailOtpLoginResult
-				emailOtpResult =
-				attackService
-				.executeOneFactorEmailOtpWithLogin(
-						username,
-						maxAttempts);
+				// =================================================
+				// 攻撃開始ログ
+				// =================================================
+				System.out.println(
+						"===== 一要素 Email OTP 総当たり攻撃開始 =====");
+
+				System.out.println(
+						"username = "
+								+ username);
+
+				System.out.println(
+						"最大試行回数 = "
+								+ maxAttempts);
+
+				System.out.println(
+						"========================================");
+
+				FactorAuthenticationAttack.FactorAttackResult emailOtpResult =
+						attackService
+						.executeOneFactorEmailOtpWithLogin(
+								username,
+								maxAttempts);
 
 				long attackTimeMs =
 						(System.nanoTime() - startTime)
@@ -1637,32 +2096,85 @@ public class AttackController {
 				String credential =
 						emailOtpResult.getOtp();
 
+				boolean attackSuccess =
+						emailOtpResult.isSuccess();
+
+				boolean realLoginSuccess =
+						emailOtpResult.isLoginSuccess();
+
+				String finalUrl =
+						emailOtpResult.getFinalUrl();
+
+				// =================================================
+				// 実験結果保存
+				// =================================================
 				experimentResultService.addResult(
 						username,
-						"one-factor-email-otp",
-						"ID + Email OTP",
+						emailOtpResult.getAuthMethod(),
+						emailOtpResult
+						.getAuthenticationConfiguration(),
 						maxAttemptCount,
 						emailOtpResult.getAttemptCount(),
-						emailOtpResult.isSuccess(),
+						attackSuccess,
 						credential,
 						attackTimeMs);
 
-				if (emailOtpResult.isSuccess()
-						&& emailOtpResult.isLoginSuccess()
-						&& emailOtpResult.getLoginResult() != null) {
+				// =================================================
+				// 最終結果ログ
+				// =================================================
+				System.out.println(
+						"===== 一要素 Email OTP 総当たり攻撃結果 =====");
 
-					String finalUrl =
-							emailOtpResult
-							.getLoginResult()
-							.getFinalUrl();
+				System.out.println(
+						"username = "
+								+ username);
 
-					if (finalUrl != null
-							&& !finalUrl.isBlank()) {
+				System.out.println(
+						"otp = "
+								+ emailOtpResult.getOtp());
 
-						return "redirect:" + finalUrl;
-					}
+				System.out.println(
+						"最大試行回数 = "
+								+ maxAttemptCount);
+
+				System.out.println(
+						"実攻撃試行回数 = "
+								+ emailOtpResult.getAttemptCount());
+
+				System.out.println(
+						"総当たり攻撃成功 = "
+								+ attackSuccess);
+
+				System.out.println(
+						"実ログイン成功 = "
+								+ realLoginSuccess);
+
+				System.out.println(
+						"Final URL = "
+								+ finalUrl);
+
+				System.out.println(
+						"攻撃時間 = "
+								+ attackTimeMs
+								+ " ms");
+
+				System.out.println(
+						"========================================");
+
+				// =================================================
+				// ログイン成功
+				// =================================================
+				if (attackSuccess
+						&& realLoginSuccess
+						&& finalUrl != null
+						&& !finalUrl.isBlank()) {
+
+					return "redirect:" + finalUrl;
 				}
 
+				// =================================================
+				// 結果画面
+				// =================================================
 				redirectAttributes.addFlashAttribute(
 						"authMethod",
 						authMethod);
@@ -1673,7 +2185,7 @@ public class AttackController {
 
 				redirectAttributes.addFlashAttribute(
 						"success",
-						emailOtpResult.isSuccess());
+						attackSuccess);
 
 				redirectAttributes.addFlashAttribute(
 						"password",
@@ -1693,7 +2205,7 @@ public class AttackController {
 
 				redirectAttributes.addFlashAttribute(
 						"realLoginSuccess",
-						emailOtpResult.isLoginSuccess());
+						realLoginSuccess);
 
 				redirectAttributes.addFlashAttribute(
 						"maxAttemptCount",
@@ -1705,18 +2217,19 @@ public class AttackController {
 
 				redirectAttributes.addFlashAttribute(
 						"message",
-						emailOtpResult.isSuccess()
+						attackSuccess
 						? "Email OTPの認証突破に成功しました。"
 								: "Email OTPの認証突破に失敗しました。");
 
 				return "redirect:/result";
 			}
 
-			// =================================================
+
+			// =====================================================
 			// 二要素認証
 			// Password → Email OTP
-			// =================================================
-
+			// 総当たり攻撃
+			// =====================================================
 			if ("two-factor-password-email-otp"
 					.equals(authMethod)) {
 
@@ -1728,13 +2241,31 @@ public class AttackController {
 						clampOtpAttempts(
 								maxAttempts);
 
-				FactorAuthenticationAttack.FactorAttackResult
-				result =
-				attackService
-				.executeTwoFactorPasswordEmailOtp(
-						username,
-						maxAttemptsPassword,
-						maxAttempts);
+				// =================================================
+				// 攻撃開始ログ
+				// =================================================
+				System.out.println(
+						"===== 二要素認証 総当たり攻撃開始 =====");
+
+				System.out.println(
+						"username = "
+								+ username);
+
+				System.out.println(
+						"最大試行回数 = "
+								+ maxAttemptsPassword
+								+ " → "
+								+ maxAttempts);
+
+				System.out.println(
+						"========================================");
+
+				FactorAuthenticationAttack.FactorAttackResult twoFactorResult =
+						attackService
+						.executeTwoFactorPasswordEmailOtp(
+								username,
+								maxAttemptsPassword,
+								maxAttempts);
 
 				long attackTimeMs =
 						(System.nanoTime() - startTime)
@@ -1747,49 +2278,106 @@ public class AttackController {
 
 				String credential =
 						createFactorCredential(
-								result);
+								twoFactorResult);
+
+				boolean attackSuccess =
+						twoFactorResult.isSuccess();
 
 				boolean realLoginSuccess =
-						result.isLoginSuccess();
+						twoFactorResult.isLoginSuccess();
 
+				String finalUrl =
+						twoFactorResult.getFinalUrl();
+
+				// =================================================
+				// 実験結果保存
+				// =================================================
 				experimentResultService.addResult(
 						username,
-						result.getAuthMethod(),
-						result.getAuthenticationConfiguration(),
+						twoFactorResult.getAuthMethod(),
+						twoFactorResult
+						.getAuthenticationConfiguration(),
 						maxAttemptCount,
-						result.getAttemptCount(),
-						result.isSuccess(),
+						twoFactorResult.getAttemptCount(),
+						attackSuccess,
 						credential,
 						attackTimeMs);
 
-				if (result.isSuccess()
-						&& realLoginSuccess
-						&& result.getFinalUrl() != null
-						&& !result.getFinalUrl().isBlank()) {
+				// =================================================
+				// 最終結果ログ
+				// =================================================
+				System.out.println(
+						"===== 二要素認証 総当たり攻撃結果 =====");
 
-					return "redirect:"
-							+ result.getFinalUrl();
+				System.out.println(
+						"username = "
+								+ username);
+
+				System.out.println(
+						"password = "
+								+ credential);
+
+				System.out.println(
+						"最大試行回数 = "
+								+ maxAttemptCount);
+
+				System.out.println(
+						"実攻撃試行回数 = "
+								+ twoFactorResult.getAttemptCount());
+
+				System.out.println(
+						"総当たり攻撃成功 = "
+								+ attackSuccess);
+
+				System.out.println(
+						"実ログイン成功 = "
+								+ realLoginSuccess);
+
+				System.out.println(
+						"Final URL = "
+								+ finalUrl);
+
+				System.out.println(
+						"攻撃時間 = "
+								+ attackTimeMs
+								+ " ms");
+
+				System.out.println(
+						"========================================");
+
+				// =================================================
+				// ログイン成功
+				// =================================================
+				if (attackSuccess
+						&& realLoginSuccess
+						&& finalUrl != null
+						&& !finalUrl.isBlank()) {
+
+					return "redirect:" + finalUrl;
 				}
 
+				// =================================================
+				// 結果画面
+				// =================================================
 				redirectAttributes.addFlashAttribute(
 						"authMethod",
 						authMethod);
 
 				redirectAttributes.addFlashAttribute(
 						"attemptCount",
-						result.getAttemptCount());
+						twoFactorResult.getAttemptCount());
 
 				redirectAttributes.addFlashAttribute(
 						"success",
-						result.isSuccess());
+						attackSuccess);
 
 				redirectAttributes.addFlashAttribute(
 						"password",
-						result.getPassword());
+						twoFactorResult.getPassword());
 
 				redirectAttributes.addFlashAttribute(
 						"otp",
-						result.getOtp());
+						twoFactorResult.getOtp());
 
 				redirectAttributes.addFlashAttribute(
 						"password2",
@@ -1813,13 +2401,17 @@ public class AttackController {
 
 				redirectAttributes.addFlashAttribute(
 						"message",
-						result.isSuccess()
+						attackSuccess
 						? "二要素認証の突破に成功しました。"
 								: "二要素認証の突破に失敗しました。");
 
 				return "redirect:/result";
 			}
 
+
+			// =====================================================
+			// 不正な認証方式
+			// =====================================================
 			throw new IllegalArgumentException(
 					"不正な認証方式です。");
 
@@ -1835,6 +2427,11 @@ public class AttackController {
 			return "redirect:/result";
 		}
 	}
+
+
+	// =========================================================
+	// 辞書件数制限
+	// =========================================================
 
 	private int clampDictionaryEntries(
 			int maxEntries) {
@@ -1852,16 +2449,22 @@ public class AttackController {
 		return maxEntries;
 	}
 
+
 	// =========================================================
 	// 辞書攻撃
-	// 一段階 / 二段階 / 三段階
+	// 一段階認証のみ
 	// =========================================================
 
 	@PostMapping("/attack/dictionary-stage")
 	public String attackDictionaryStage(
-			@RequestParam("username") String username,
 
-			@RequestParam("authMethod") String authMethod,
+			@RequestParam("username")
+			String username,
+
+			@RequestParam(
+					value = "authMethod",
+					defaultValue = "one-stage-dictionary")
+			String authMethod,
 
 			@RequestParam(
 					value = "maxAttemptsPassword",
@@ -1869,19 +2472,8 @@ public class AttackController {
 					defaultValue = "100")
 			int maxAttemptsPassword,
 
-			@RequestParam(
-					value = "maxAttemptsPassword2",
-					required = false,
-					defaultValue = "100")
-			int maxAttemptsPassword2,
-
-			@RequestParam(
-					value = "maxAttemptsPassword3",
-					required = false,
-					defaultValue = "100")
-			int maxAttemptsPassword3,
-
 			RedirectAttributes redirectAttributes,
+
 			Model model) {
 
 		long startTime =
@@ -1889,31 +2481,61 @@ public class AttackController {
 
 		try {
 
+			// =====================================================
+			// 一段階辞書攻撃以外は拒否
+			// =====================================================
+
+			if (!"one-stage-dictionary".equals(authMethod)) {
+
+				throw new IllegalArgumentException(
+						"辞書攻撃は一段階認証のみ対応しています。");
+			}
+
+			// =====================================================
+			// 最大辞書件数を制限
+			// =====================================================
+
 			maxAttemptsPassword =
 					clampDictionaryEntries(
 							maxAttemptsPassword);
 
-			maxAttemptsPassword2 =
-					clampDictionaryEntries(
-							maxAttemptsPassword2);
+			// =====================================================
+			// 辞書攻撃開始ログ
+			// =====================================================
 
-			maxAttemptsPassword3 =
-					clampDictionaryEntries(
-							maxAttemptsPassword3);
+			System.out.println(
+					"========================================");
+
+			System.out.println(
+					"一段階辞書攻撃開始");
+
+			System.out.println(
+					"username = "
+							+ username);
+
+			System.out.println(
+					"最大試行回数 = "
+							+ maxAttemptsPassword);
+
+			System.out.println(
+					"========================================");
 
 			// =====================================================
 			// 辞書攻撃実行
 			// =====================================================
 
-			AttackService.DictionaryLoginResult
-			result =
-			attackService
-			.executeDictionaryWithLogin(
-					username,
-					authMethod,
-					maxAttemptsPassword,
-					maxAttemptsPassword2,
-					maxAttemptsPassword3);
+			AttackService.DictionaryLoginResult result =
+					attackService.executeDictionaryWithLogin(
+
+							username,
+
+							authMethod,
+
+							maxAttemptsPassword,
+
+							0,
+
+							0);
 
 			long attackTimeMs =
 					(System.nanoTime() - startTime)
@@ -1932,176 +2554,67 @@ public class AttackController {
 			String password =
 					result.getPassword();
 
-			String password2 =
-					result.getPassword2();
-
-			String password3 =
-					result.getPassword3();
-
 			int attemptCount =
 					result.getAttemptCount();
 
 			// =====================================================
-			// 重要
-			//
-			// newauthlabのログイン処理は、
-			// 認証失敗時でもHTTP 200で
-			// /login/one-stage などのログイン画面を
-			// 返す場合がある。
-			//
-			// そのため、辞書攻撃では
-			// 「HTTP通信が成功したか」ではなく、
-			// 最終URLを確認して実ログイン成功を判定する。
+			// 実ログイン成功判定
 			// =====================================================
 
-			if (isDictionaryAuthMethod(
-					authMethod)) {
+			String finalUrl =
+					result.getFinalUrl();
 
-				String finalUrl =
-						result.getFinalUrl();
+			realLoginSuccess =
+					isDictionaryLoginSuccess(
+							authMethod,
+							finalUrl);
 
-				boolean dictionaryLoginSuccess =
-						isDictionaryLoginSuccess(
-								authMethod,
-								finalUrl);
+			if (!realLoginSuccess) {
 
-				realLoginSuccess =
-						dictionaryLoginSuccess;
-
-				// -------------------------------------------------
-				// ログイン画面に戻っている場合
-				// 辞書攻撃も失敗として扱う
-				// -------------------------------------------------
-
-				if (!dictionaryLoginSuccess) {
-
-					attackSuccess =
-							false;
-				}
-
-				System.out.println(
-						"===== 辞書攻撃 最終判定 =====");
-
-				System.out.println(
-						"authMethod = "
-								+ authMethod);
-
-				System.out.println(
-						"Final URL = "
-								+ finalUrl);
-
-				System.out.println(
-						"辞書攻撃成功 = "
-								+ attackSuccess);
-
-				System.out.println(
-						"実ログイン成功 = "
-								+ realLoginSuccess);
-
-				System.out.println(
-						"============================");
+				attackSuccess = false;
 			}
-
-			// =====================================================
-			// 最大試行回数
-			// =====================================================
-
-			String maxAttemptCount;
-
-			if ("one-stage-dictionary"
-					.equals(authMethod)) {
-
-				maxAttemptCount =
-						String.valueOf(
-								maxAttemptsPassword);
-
-			}
-
-			else if ("two-stage-dictionary"
-					.equals(authMethod)) {
-
-				maxAttemptCount =
-						maxAttemptsPassword
-						+ " → "
-						+ maxAttemptsPassword2;
-
-			}
-
-			else {
-
-				maxAttemptCount =
-						maxAttemptsPassword
-						+ " → "
-						+ maxAttemptsPassword2
-						+ " → "
-						+ maxAttemptsPassword3;
-			}
-
-			// =====================================================
-			// 認証構成
-			// =====================================================
-
-			String configuration;
-
-			if ("one-stage-dictionary"
-					.equals(authMethod)) {
-
-				configuration =
-						"ID + Password";
-
-			}
-
-			else if ("two-stage-dictionary"
-					.equals(authMethod)) {
-
-				configuration =
-						"ID + Password → Password2";
-
-			}
-
-			else {
-
-				configuration =
-						"ID + Password → Password2 → Password3";
-			}
-
-			// =====================================================
-			// 認証情報
-			// =====================================================
-
-			String credential =
-					createDictionaryCredential(
-							password,
-							password2,
-							password3);
 
 			// =====================================================
 			// 実験結果保存
 			// =====================================================
 
+			String configuration =
+					"ID + Password";
+
+			String maxAttemptCount =
+					String.valueOf(
+							maxAttemptsPassword);
+
+			String credential =
+					createDictionaryCredential(
+							password,
+							null,
+							null);
+
 			experimentResultService.addResult(
+
 					username,
+
 					authMethod,
+
 					configuration,
+
 					maxAttemptCount,
+
 					attemptCount,
+
 					attackSuccess,
+
 					credential,
+
 					attackTimeMs);
 
 			// =====================================================
-			// コンソール
+			// 最終結果ログ
 			// =====================================================
 
 			System.out.println(
-					"========================================");
-
-			System.out.println(
-					"===== 辞書攻撃結果 =====");
-
-			System.out.println(
-					"authMethod = "
-							+ authMethod);
+					"===== 一段階辞書攻撃結果 =====");
 
 			System.out.println(
 					"username = "
@@ -2112,15 +2625,7 @@ public class AttackController {
 							+ password);
 
 			System.out.println(
-					"password2 = "
-							+ password2);
-
-			System.out.println(
-					"password3 = "
-							+ password3);
-
-			System.out.println(
-					"最大辞書件数 = "
+					"最大試行回数 = "
 							+ maxAttemptCount);
 
 			System.out.println(
@@ -2137,7 +2642,7 @@ public class AttackController {
 
 			System.out.println(
 					"Final URL = "
-							+ result.getFinalUrl());
+							+ finalUrl);
 
 			System.out.println(
 					"攻撃時間 = "
@@ -2154,38 +2659,6 @@ public class AttackController {
 			if (attackSuccess
 					&& realLoginSuccess) {
 
-				if ("one-stage-dictionary"
-						.equals(authMethod)) {
-
-					model.addAttribute(
-							"username",
-							username);
-
-					model.addAttribute(
-							"password",
-							password);
-
-					return "login-redirect";
-				}
-
-				if ("two-stage-dictionary"
-						.equals(authMethod)) {
-
-					model.addAttribute(
-							"username",
-							username);
-
-					model.addAttribute(
-							"password",
-							password);
-
-					model.addAttribute(
-							"password2",
-							password2);
-
-					return "two-stage-login-redirect";
-				}
-
 				model.addAttribute(
 						"username",
 						username);
@@ -2194,15 +2667,7 @@ public class AttackController {
 						"password",
 						password);
 
-				model.addAttribute(
-						"password2",
-						password2);
-
-				model.addAttribute(
-						"password3",
-						password3);
-
-				return "three-stage-login-redirect";
+				return "login-redirect";
 			}
 
 			// =====================================================
@@ -2227,11 +2692,11 @@ public class AttackController {
 
 			redirectAttributes.addFlashAttribute(
 					"password2",
-					password2);
+					null);
 
 			redirectAttributes.addFlashAttribute(
 					"password3",
-					password3);
+					null);
 
 			redirectAttributes.addFlashAttribute(
 					"otp",
@@ -2278,10 +2743,6 @@ public class AttackController {
 			String authMethod) {
 
 		return "one-stage-dictionary"
-				.equals(authMethod)
-				|| "two-stage-dictionary"
-				.equals(authMethod)
-				|| "three-stage-dictionary"
 				.equals(authMethod);
 	}
 
@@ -2294,7 +2755,8 @@ public class AttackController {
 			String authMethod,
 			String finalUrl) {
 
-		if (finalUrl == null
+		if (!"one-stage-dictionary".equals(authMethod)
+				|| finalUrl == null
 				|| finalUrl.isBlank()) {
 
 			return false;
@@ -2302,65 +2764,12 @@ public class AttackController {
 
 		try {
 
-			URI uri =
-					URI.create(
-							finalUrl);
+			URI uri = URI.create(finalUrl);
 
-			String path =
-					uri.getPath();
+			String path = uri.getPath();
 
-			// -------------------------------------------------
-			// 成功時
-			//
-			// newauthlabのログイン成功後は
-			// / へリダイレクトされる構成
-			//
-			// /home の場合も成功扱いにする
-			// -------------------------------------------------
-
-			if ("/".equals(path)
-					|| "/home".equals(path)) {
-
-				return true;
-			}
-
-			// -------------------------------------------------
-			// 一段階認証失敗
-			// -------------------------------------------------
-
-			if ("one-stage-dictionary"
-					.equals(authMethod)
-					&& "/login/one-stage"
-					.equals(path)) {
-
-				return false;
-			}
-
-			// -------------------------------------------------
-			// 二段階認証失敗
-			// -------------------------------------------------
-
-			if ("two-stage-dictionary"
-					.equals(authMethod)
-					&& "/login/two-stage"
-					.equals(path)) {
-
-				return false;
-			}
-
-			// -------------------------------------------------
-			// 三段階認証失敗
-			// -------------------------------------------------
-
-			if ("three-stage-dictionary"
-					.equals(authMethod)
-					&& "/login/three-stage"
-					.equals(path)) {
-
-				return false;
-			}
-
-			return false;
+			return "/".equals(path)
+					|| "/home".equals(path);
 
 		} catch (Exception e) {
 
@@ -2370,6 +2779,7 @@ public class AttackController {
 
 	// =========================================================
 	// 辞書攻撃の認証情報
+	// 一段階認証のみ
 	// =========================================================
 
 	private String createDictionaryCredential(
@@ -2377,37 +2787,11 @@ public class AttackController {
 			String password2,
 			String password3) {
 
-		if (password != null
-				&& !password.isBlank()
-				&& password2 != null
-				&& !password2.isBlank()
-				&& password3 != null
-				&& !password3.isBlank()) {
-
-			return password
-					+ " → "
-					+ password2
-					+ " → "
-					+ password3;
+		if (password == null || password.isBlank()) {
+			return null;
 		}
 
-		if (password != null
-				&& !password.isBlank()
-				&& password2 != null
-				&& !password2.isBlank()) {
-
-			return password
-					+ " → "
-					+ password2;
-		}
-
-		if (password != null
-				&& !password.isBlank()) {
-
-			return password;
-		}
-
-		return null;
+		return password;
 	}
 
 	// =========================================================
@@ -2807,6 +3191,57 @@ public class AttackController {
 						"one-factor-password"));
 
 		// =====================================================
+		// 一要素認証 Password ランダム
+		// =====================================================
+		model.addAttribute(
+				"oneFactorPasswordRandomExperimentCount",
+				experimentResultService
+				.getExperimentCountByAuthMethod(
+						"one-factor-password-random"));
+
+		model.addAttribute(
+				"oneFactorPasswordRandomSuccessCount",
+				experimentResultService
+				.getSuccessCountByAuthMethod(
+						"one-factor-password-random"));
+
+		model.addAttribute(
+				"oneFactorPasswordRandomSuccessRate",
+				experimentResultService
+				.getSuccessRateByAuthMethod(
+						"one-factor-password-random"));
+
+		model.addAttribute(
+				"oneFactorPasswordRandomAverageAttemptCount",
+				experimentResultService
+				.getAverageAttemptCountByAuthMethod(
+						"one-factor-password-random"));
+
+		model.addAttribute(
+				"oneFactorPasswordRandomSuccessAttackTimeTotal",
+				experimentResultService
+				.getSuccessAttackTimeTotalByAuthMethod(
+						"one-factor-password-random"));
+
+		model.addAttribute(
+				"oneFactorPasswordRandomSuccessAttackTimeTotalFormatted",
+				experimentResultService
+				.getSuccessAttackTimeTotalFormattedByAuthMethod(
+						"one-factor-password-random"));
+
+		model.addAttribute(
+				"oneFactorPasswordRandomAverageSuccessAttackTime",
+				experimentResultService
+				.getAverageSuccessAttackTimeByAuthMethod(
+						"one-factor-password-random"));
+
+		model.addAttribute(
+				"oneFactorPasswordRandomAverageSuccessAttackTimeFormatted",
+				experimentResultService
+				.getAverageSuccessAttackTimeFormattedByAuthMethod(
+						"one-factor-password-random"));
+
+		// =====================================================
 		// 一要素認証 Email OTP
 		// =====================================================
 
@@ -3170,110 +3605,6 @@ public class AttackController {
 				.getAverageSuccessAttackTimeFormattedByAuthMethod(
 						"one-stage-dictionary"));
 
-		// =====================================================
-		// 二段階認証 辞書攻撃
-		// =====================================================
-
-		model.addAttribute(
-				"twoStageDictionaryExperimentCount",
-				experimentResultService
-				.getExperimentCountByAuthMethod(
-						"two-stage-dictionary"));
-
-		model.addAttribute(
-				"twoStageDictionarySuccessCount",
-				experimentResultService
-				.getSuccessCountByAuthMethod(
-						"two-stage-dictionary"));
-
-		model.addAttribute(
-				"twoStageDictionarySuccessRate",
-				experimentResultService
-				.getSuccessRateByAuthMethod(
-						"two-stage-dictionary"));
-
-		model.addAttribute(
-				"twoStageDictionaryAverageAttemptCount",
-				experimentResultService
-				.getAverageAttemptCountByAuthMethod(
-						"two-stage-dictionary"));
-
-		model.addAttribute(
-				"twoStageDictionarySuccessAttackTimeTotal",
-				experimentResultService
-				.getSuccessAttackTimeTotalByAuthMethod(
-						"two-stage-dictionary"));
-
-		model.addAttribute(
-				"twoStageDictionarySuccessAttackTimeTotalFormatted",
-				experimentResultService
-				.getSuccessAttackTimeTotalFormattedByAuthMethod(
-						"two-stage-dictionary"));
-
-		model.addAttribute(
-				"twoStageDictionaryAverageSuccessAttackTime",
-				experimentResultService
-				.getAverageSuccessAttackTimeByAuthMethod(
-						"two-stage-dictionary"));
-
-		model.addAttribute(
-				"twoStageDictionaryAverageSuccessAttackTimeFormatted",
-				experimentResultService
-				.getAverageSuccessAttackTimeFormattedByAuthMethod(
-						"two-stage-dictionary"));
-
-		// =====================================================
-		// 三段階認証 辞書攻撃
-		// =====================================================
-
-		model.addAttribute(
-				"threeStageDictionaryExperimentCount",
-				experimentResultService
-				.getExperimentCountByAuthMethod(
-						"three-stage-dictionary"));
-
-		model.addAttribute(
-				"threeStageDictionarySuccessCount",
-				experimentResultService
-				.getSuccessCountByAuthMethod(
-						"three-stage-dictionary"));
-
-		model.addAttribute(
-				"threeStageDictionarySuccessRate",
-				experimentResultService
-				.getSuccessRateByAuthMethod(
-						"three-stage-dictionary"));
-
-		model.addAttribute(
-				"threeStageDictionaryAverageAttemptCount",
-				experimentResultService
-				.getAverageAttemptCountByAuthMethod(
-						"three-stage-dictionary"));
-
-		model.addAttribute(
-				"threeStageDictionarySuccessAttackTimeTotal",
-				experimentResultService
-				.getSuccessAttackTimeTotalByAuthMethod(
-						"three-stage-dictionary"));
-
-		model.addAttribute(
-				"threeStageDictionarySuccessAttackTimeTotalFormatted",
-				experimentResultService
-				.getSuccessAttackTimeTotalFormattedByAuthMethod(
-						"three-stage-dictionary"));
-
-		model.addAttribute(
-				"threeStageDictionaryAverageSuccessAttackTime",
-				experimentResultService
-				.getAverageSuccessAttackTimeByAuthMethod(
-						"three-stage-dictionary"));
-
-		model.addAttribute(
-				"threeStageDictionaryAverageSuccessAttackTimeFormatted",
-				experimentResultService
-				.getAverageSuccessAttackTimeFormattedByAuthMethod(
-						"three-stage-dictionary"));
-		
 		// =====================================================
 		// 二要素認証 Password + Email OTP ランダム
 		// =====================================================

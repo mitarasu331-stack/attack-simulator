@@ -526,6 +526,11 @@
 						type="hidden"
 						name="username"
 						id="randomUsername">
+				
+				<input
+						type="hidden"
+						name="authMethod"
+						id="randomAuthMethodHidden">
 
 
 				<!-- =================================================
@@ -539,7 +544,8 @@
 					</label>
 
 					<select
-							id="randomAuthMethod">
+							id="randomAuthMethod"
+							>
 
 						<option value="one-stage-random">
 							一段階認証
@@ -551,6 +557,10 @@
 
 						<option value="three-stage-random">
 							三段階認証
+						</option>
+						
+						<option value="one-factor-password-random">
+						       一要素認証（Password）
 						</option>
 
 						<option value="one-factor-email-otp-random">
@@ -658,6 +668,41 @@
 						</div>
 
 					</div>
+
+				</div>
+				
+				<!-- =================================================
+				     一要素認証（Password）ランダム
+				     ================================================= -->
+
+				<div
+				        id="randomOneFactorPasswordOption"
+				        class="attack-option">
+
+				    <div class="form-group">
+
+				        <label for="randomOneFactorPasswordAttempts">
+
+				            Password最大試行回数
+
+				        </label>
+
+				        <input
+				                type="number"
+				                id="randomOneFactorPasswordAttempts"
+				                name="maxAttemptsPassword"
+				                min="1"
+				                max="10000"
+				                value="10000">
+
+				        <div class="info">
+
+				            0000～9999 の中から重複なしで
+				            ランダムにPasswordを試行します。
+
+				        </div>
+
+				    </div>
 
 				</div>
 
@@ -817,14 +862,6 @@
 							一段階認証
 						</option>
 
-						<option value="two-stage-dictionary">
-							二段階認証
-						</option>
-
-						<option value="three-stage-dictionary">
-							三段階認証
-						</option>
-
 					</select>
 
 				</div>
@@ -854,69 +891,6 @@
 					</div>
 
 				</div>
-
-
-				<!-- =================================================
-				     Password2
-				     ================================================= -->
-
-				<div
-						id="dictionaryPassword2Group"
-						class="attack-option">
-
-					<div class="form-group">
-
-						<label for="dictionaryMaxPassword2">
-							Password2 辞書使用件数
-						</label>
-
-						<input
-								type="number"
-								id="dictionaryMaxPassword2"
-								name="maxAttemptsPassword2"
-								min="1"
-								max="100"
-								value="100">
-
-						<div class="info">
-							1～100件
-						</div>
-
-					</div>
-
-				</div>
-
-
-				<!-- =================================================
-				     Password3
-				     ================================================= -->
-
-				<div
-						id="dictionaryPassword3Group"
-						class="attack-option">
-
-					<div class="form-group">
-
-						<label for="dictionaryMaxPassword3">
-							Password3 辞書使用件数
-						</label>
-
-						<input
-								type="number"
-								id="dictionaryMaxPassword3"
-								name="maxAttemptsPassword3"
-								min="1"
-								max="100"
-								value="100">
-
-						<div class="info">
-							1～100件
-						</div>
-
-					</div>
-
-				</div>
-
 
 				<!-- =================================================
 				     辞書の説明
@@ -1529,6 +1503,11 @@
 			document.getElementById(
 					"randomUsername"
 			);
+	
+	const randomAuthMethodHidden =
+			document.getElementById(
+					"randomAuthMethodHidden"
+			);
 
 	const randomAuthMethod =
 			document.getElementById(
@@ -1549,6 +1528,16 @@
 			document.getElementById(
 					"randomThreeStageOption"
 			);
+	
+	const randomOneFactorPasswordOption =
+			document.getElementById(
+					"randomOneFactorPasswordOption"
+			);
+
+	const randomOneFactorPasswordAttempts =
+			document.getElementById(
+					"randomOneFactorPasswordAttempts"
+		    );
 
 	const randomEmailOtpOption =
 			document.getElementById(
@@ -1595,6 +1584,9 @@
 
 		const method =
 				randomAuthMethod.value;
+		
+		randomAuthMethodHidden.value =
+		        method;
 
 
 		// =====================================================
@@ -1658,6 +1650,18 @@
 					false;
 
 			return;
+		}
+		
+		// =================================================
+		// 一要素認証（Password）ランダム
+		// =================================================
+		if (
+		        method ===
+		        "one-factor-password-random"
+		) {
+		    randomOneFactorPasswordOption.classList.add("active");
+		    randomOneFactorPasswordAttempts.disabled = false;
+		    return;
 		}
 
 
@@ -1817,6 +1821,18 @@
 
 						return;
 					}
+					
+					// =================================================
+					// 一要素 Password
+					// =================================================
+					if (
+					        method ===
+					        "one-factor-password-random"
+					) {
+					        randomAttackForm.action =
+					                "/attack/factor";
+					        return;
+					}
 
 
 					// =================================================
@@ -1897,156 +1913,37 @@
 		);
 	}
 
-
 	// =========================================================
 	// 辞書攻撃
 	// =========================================================
 
 	const dictionaryForm =
-			document.getElementById(
-					"dictionaryForm"
-			);
+	    document.getElementById("dictionaryForm");
 
 	const dictionaryUsername =
-			document.getElementById(
-					"dictionaryUsername"
-			);
-
-	const dictionaryAuthMethod =
-			document.getElementById(
-					"dictionaryAuthMethod"
-			);
-
-	const dictionaryPassword2Group =
-			document.getElementById(
-					"dictionaryPassword2Group"
-			);
-
-	const dictionaryPassword3Group =
-			document.getElementById(
-					"dictionaryPassword3Group"
-			);
-
-	const dictionaryMaxPassword2 =
-			document.getElementById(
-					"dictionaryMaxPassword2"
-			);
-
-	const dictionaryMaxPassword3 =
-			document.getElementById(
-					"dictionaryMaxPassword3"
-			);
-
-
-	function updateDictionaryFields() {
-
-		if (!dictionaryAuthMethod) {
-			return;
-		}
-
-
-		const selectedMethod =
-				dictionaryAuthMethod.value;
-
-
-		dictionaryPassword2Group
-				.classList.remove("active");
-
-		dictionaryPassword3Group
-				.classList.remove("active");
-
-
-		dictionaryMaxPassword2.required =
-				false;
-
-		dictionaryMaxPassword3.required =
-				false;
-
-
-		if (
-				selectedMethod ===
-				"one-stage-dictionary"
-		) {
-
-			return;
-		}
-
-
-		if (
-				selectedMethod ===
-				"two-stage-dictionary"
-		) {
-
-			dictionaryPassword2Group
-					.classList.add("active");
-
-			dictionaryMaxPassword2.required =
-					true;
-
-			return;
-		}
-
-
-		if (
-				selectedMethod ===
-				"three-stage-dictionary"
-		) {
-
-			dictionaryPassword2Group
-					.classList.add("active");
-
-			dictionaryPassword3Group
-					.classList.add("active");
-
-			dictionaryMaxPassword2.required =
-					true;
-
-			dictionaryMaxPassword3.required =
-					true;
-		}
-
-	}
-
-
-	if (dictionaryAuthMethod) {
-
-		dictionaryAuthMethod.addEventListener(
-				"change",
-				updateDictionaryFields
-		);
-
-		updateDictionaryFields();
-	}
-
+	    document.getElementById("dictionaryUsername");
 
 	if (dictionaryForm) {
+	    dictionaryForm.addEventListener(
+	        "submit",
+	        function (event) {
+	            if (
+	                !targetUsername.value ||
+	                targetUsername.value.trim() === ""
+	            ) {
+	                event.preventDefault();
 
-		dictionaryForm.addEventListener(
-				"submit",
-				function (event) {
+	                alert(
+	                    "攻撃対象ユーザーを選択してください。"
+	                );
 
-					if (
-							!targetUsername.value
-							||
-							targetUsername.value.trim() === ""
-					) {
+	                return;
+	            }
 
-						event.preventDefault();
-
-						alert(
-								"攻撃対象ユーザーを選択してください。"
-						);
-
-						return;
-					}
-
-
-					dictionaryUsername.value =
-							targetUsername.value;
-
-				}
-		);
-
+	            dictionaryUsername.value =
+	                targetUsername.value;
+	        }
+	    );
 	}
 
 </script>

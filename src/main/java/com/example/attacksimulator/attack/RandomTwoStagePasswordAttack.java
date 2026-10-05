@@ -19,6 +19,7 @@ public class RandomTwoStagePasswordAttack {
 
 	public RandomTwoStagePasswordAttack(
 			PasswordEncoder passwordEncoder) {
+
 		this.passwordEncoder = passwordEncoder;
 	}
 
@@ -37,43 +38,43 @@ public class RandomTwoStagePasswordAttack {
 			int maxAttemptsPassword,
 			int maxAttemptsPassword2) {
 
+		// =====================================================
 		// 攻撃回数を 1 ～ 10000 に制限
+		// =====================================================
+
 		maxAttemptsPassword =
 				clampAttempts(maxAttemptsPassword);
 
 		maxAttemptsPassword2 =
 				clampAttempts(maxAttemptsPassword2);
 
-		System.out.println("========================================");
-		System.out.println("二段階認証 ランダム攻撃開始");
-		System.out.println("Password 最大試行回数 = "
-				+ maxAttemptsPassword);
-		System.out.println("Password2 最大試行回数 = "
-				+ maxAttemptsPassword2);
-		System.out.println("========================================");
-
-		/*
-		 * ========================================
-		 * Stage 1 : Password
-		 * ========================================
-		 */
+		// =====================================================
+		// Stage 1 : Password
+		// =====================================================
 
 		List<String> passwordCandidates =
 				createRandomCandidates();
 
 		int passwordAttemptCount = 0;
+
 		String password = null;
 
 		for (String candidate : passwordCandidates) {
 
-			if (passwordAttemptCount >= maxAttemptsPassword) {
+			if (passwordAttemptCount
+					>= maxAttemptsPassword) {
+
 				break;
 			}
 
 			passwordAttemptCount++;
 
+			// -------------------------------------------------
+			// Password候補を1件ずつ表示
+			// -------------------------------------------------
+
 			System.out.println(
-					"Password 試行 "
+					"ランダムPassword 試行 "
 							+ passwordAttemptCount
 							+ " / "
 							+ maxAttemptsPassword
@@ -86,36 +87,19 @@ public class RandomTwoStagePasswordAttack {
 
 				password = candidate;
 
-				System.out.println(
-						"Password 攻撃成功");
-				System.out.println(
-						"Password = "
-								+ password);
-				System.out.println(
-						"Password 試行回数 = "
-								+ passwordAttemptCount);
-
 				break;
 			}
 		}
 
-		/*
-		 * Password が突破できなかった場合
-		 * Password2 は攻撃しない
-		 */
+		// =====================================================
+		// Passwordが突破できなかった場合
+		// Password2は攻撃しない
+		// =====================================================
+
 		if (password == null) {
 
 			int totalAttemptCount =
 					passwordAttemptCount;
-
-			System.out.println(
-					"Password 攻撃失敗");
-			System.out.println(
-					"Password2 は攻撃しません");
-			System.out.println(
-					"総攻撃試行回数 = "
-							+ totalAttemptCount);
-			System.out.println("========================================");
 
 			return new AttackResult(
 					false,
@@ -126,29 +110,33 @@ public class RandomTwoStagePasswordAttack {
 					totalAttemptCount);
 		}
 
-		/*
-		 * ========================================
-		 * Stage 2 : Password2
-		 * ========================================
-		 */
+		// =====================================================
+		// Stage 2 : Password2
+		// =====================================================
 
 		List<String> password2Candidates =
 				createRandomCandidates();
 
 		int password2AttemptCount = 0;
+
 		String password2 = null;
 
 		for (String candidate : password2Candidates) {
 
 			if (password2AttemptCount
 					>= maxAttemptsPassword2) {
+
 				break;
 			}
 
 			password2AttemptCount++;
 
+			// -------------------------------------------------
+			// Password2候補を1件ずつ表示
+			// -------------------------------------------------
+
 			System.out.println(
-					"Password2 試行 "
+					"ランダムPassword2 試行 "
 							+ password2AttemptCount
 							+ " / "
 							+ maxAttemptsPassword2
@@ -161,24 +149,13 @@ public class RandomTwoStagePasswordAttack {
 
 				password2 = candidate;
 
-				System.out.println(
-						"Password2 攻撃成功");
-				System.out.println(
-						"Password2 = "
-								+ password2);
-				System.out.println(
-						"Password2 試行回数 = "
-								+ password2AttemptCount);
-
 				break;
 			}
 		}
 
-		/*
-		 * ========================================
-		 * 結果
-		 * ========================================
-		 */
+		// =====================================================
+		// 結果
+		// =====================================================
 
 		boolean success =
 				password != null
@@ -187,42 +164,6 @@ public class RandomTwoStagePasswordAttack {
 		int totalAttemptCount =
 				passwordAttemptCount
 				+ password2AttemptCount;
-
-		if (success) {
-
-			System.out.println(
-					"二段階認証ランダム攻撃成功");
-			System.out.println(
-					"Password = "
-							+ password);
-			System.out.println(
-					"Password2 = "
-							+ password2);
-
-		} else {
-
-			System.out.println(
-					"二段階認証ランダム攻撃失敗");
-
-			if (password2 == null) {
-				System.out.println(
-						"Password2 が突破できませんでした");
-			}
-		}
-
-		System.out.println(
-				"Password 試行回数 = "
-						+ passwordAttemptCount);
-
-		System.out.println(
-				"Password2 試行回数 = "
-						+ password2AttemptCount);
-
-		System.out.println(
-				"総攻撃試行回数 = "
-						+ totalAttemptCount);
-
-		System.out.println("========================================");
 
 		return new AttackResult(
 				success,
@@ -248,7 +189,9 @@ public class RandomTwoStagePasswordAttack {
 				i++) {
 
 			candidates.add(
-					String.format("%04d", i));
+					String.format(
+							"%04d",
+							i));
 		}
 
 		Collections.shuffle(
@@ -264,10 +207,12 @@ public class RandomTwoStagePasswordAttack {
 	private int clampAttempts(int attempts) {
 
 		if (attempts < 1) {
+
 			return 1;
 		}
 
 		if (attempts > 10000) {
+
 			return 10000;
 		}
 
@@ -280,11 +225,15 @@ public class RandomTwoStagePasswordAttack {
 	public static class AttackResult {
 
 		private final boolean success;
+
 		private final String password;
+
 		private final String password2;
 
 		private final int passwordAttemptCount;
+
 		private final int password2AttemptCount;
+
 		private final int attemptCount;
 
 		public AttackResult(
@@ -295,37 +244,52 @@ public class RandomTwoStagePasswordAttack {
 				int password2AttemptCount,
 				int attemptCount) {
 
-			this.success = success;
-			this.password = password;
-			this.password2 = password2;
+			this.success =
+					success;
+
+			this.password =
+					password;
+
+			this.password2 =
+					password2;
+
 			this.passwordAttemptCount =
 					passwordAttemptCount;
+
 			this.password2AttemptCount =
 					password2AttemptCount;
-			this.attemptCount = attemptCount;
+
+			this.attemptCount =
+					attemptCount;
 		}
 
 		public boolean isSuccess() {
+
 			return success;
 		}
 
 		public String getPassword() {
+
 			return password;
 		}
 
 		public String getPassword2() {
+
 			return password2;
 		}
 
 		public int getPasswordAttemptCount() {
+
 			return passwordAttemptCount;
 		}
 
 		public int getPassword2AttemptCount() {
+
 			return password2AttemptCount;
 		}
 
 		public int getAttemptCount() {
+
 			return attemptCount;
 		}
 	}

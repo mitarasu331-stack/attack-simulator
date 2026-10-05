@@ -22,11 +22,6 @@ public class MultiStagePasswordBruteForceAttack {
 	// 一段階認証
 	// =========================================================
 
-	/**
-	 * 既存互換版
-	 *
-	 * Password最大10000回
-	 */
 	public AttackResult executeOneStage(
 			String passwordHash) {
 
@@ -35,54 +30,27 @@ public class MultiStagePasswordBruteForceAttack {
 				PASSWORD_MAX_ATTEMPTS);
 	}
 
-	/**
-	 * Passwordの最大試行回数を指定
-	 */
 	public AttackResult executeOneStage(
 			String passwordHash,
 			int maxAttemptsPassword) {
 
 		validateHash(passwordHash);
 
-		int actualMaxAttempts =
-				clampAttempts(
-						maxAttemptsPassword);
+		int maxAttempts =
+				clampAttempts(maxAttemptsPassword);
 
-		int attemptCount = 0;
-
-		for (int i = PASSWORD_MIN;
-				i <= PASSWORD_MAX;
-				i++) {
-
-			if (attemptCount >= actualMaxAttempts) {
-				break;
-			}
-
-			String candidate =
-					formatPassword(i);
-
-			attemptCount++;
-
-			if (passwordEncoder.matches(
-					candidate,
-					passwordHash)) {
-
-				return new AttackResult(
-						true,
-						candidate,
-						null,
-						null,
-						attemptCount,
-						1);
-			}
-		}
+		BruteForceStageResult stageResult =
+				bruteForce(
+						passwordHash,
+						maxAttempts,
+						"Password");
 
 		return new AttackResult(
-				false,
+				stageResult.isSuccess(),
+				stageResult.getPassword(),
 				null,
 				null,
-				null,
-				attemptCount,
+				stageResult.getAttemptCount(),
 				1);
 	}
 
@@ -91,12 +59,6 @@ public class MultiStagePasswordBruteForceAttack {
 	// Password → Password2
 	// =========================================================
 
-	/**
-	 * 既存互換版
-	 *
-	 * Password 10000回
-	 * Password2 10000回
-	 */
 	public AttackResult executeTwoStage(
 			String passwordHash,
 			String password2Hash) {
@@ -108,9 +70,6 @@ public class MultiStagePasswordBruteForceAttack {
 				PASSWORD_MAX_ATTEMPTS);
 	}
 
-	/**
-	 * Password / Password2 の最大試行回数を個別指定
-	 */
 	public AttackResult executeTwoStage(
 			String passwordHash,
 			String password2Hash,
@@ -120,27 +79,21 @@ public class MultiStagePasswordBruteForceAttack {
 		validateHash(passwordHash);
 		validateHash(password2Hash);
 
-		int actualMaxAttemptsPassword =
-				clampAttempts(
-						maxAttemptsPassword);
+		int maxPassword =
+				clampAttempts(maxAttemptsPassword);
 
-		int actualMaxAttemptsPassword2 =
-				clampAttempts(
-						maxAttemptsPassword2);
-
-		// =====================================================
-		// Password
-		// =====================================================
+		int maxPassword2 =
+				clampAttempts(maxAttemptsPassword2);
 
 		BruteForceStageResult passwordResult =
 				bruteForce(
 						passwordHash,
-						actualMaxAttemptsPassword);
+						maxPassword,
+						"Password");
 
 		int totalAttempts =
 				passwordResult.getAttemptCount();
 
-		// Passwordで失敗した場合
 		if (!passwordResult.isSuccess()) {
 
 			return new AttackResult(
@@ -152,36 +105,17 @@ public class MultiStagePasswordBruteForceAttack {
 					2);
 		}
 
-		// =====================================================
-		// Password2
-		// =====================================================
-
 		BruteForceStageResult password2Result =
 				bruteForce(
 						password2Hash,
-						actualMaxAttemptsPassword2);
+						maxPassword2,
+						"Password2");
 
 		totalAttempts +=
 				password2Result.getAttemptCount();
 
-		// Password2で失敗した場合
-		if (!password2Result.isSuccess()) {
-
-			return new AttackResult(
-					false,
-					passwordResult.getPassword(),
-					null,
-					null,
-					totalAttempts,
-					2);
-		}
-
-		// =====================================================
-		// 全段階成功
-		// =====================================================
-
 		return new AttackResult(
-				true,
+				password2Result.isSuccess(),
 				passwordResult.getPassword(),
 				password2Result.getPassword(),
 				null,
@@ -194,11 +128,6 @@ public class MultiStagePasswordBruteForceAttack {
 	// Password → Password2 → Password3
 	// =========================================================
 
-	/**
-	 * 既存互換版
-	 *
-	 * すべて最大10000回
-	 */
 	public AttackResult executeThreeStage(
 			String passwordHash,
 			String password2Hash,
@@ -213,9 +142,6 @@ public class MultiStagePasswordBruteForceAttack {
 				PASSWORD_MAX_ATTEMPTS);
 	}
 
-	/**
-	 * Password / Password2 / Password3 を個別指定
-	 */
 	public AttackResult executeThreeStage(
 			String passwordHash,
 			String password2Hash,
@@ -228,33 +154,24 @@ public class MultiStagePasswordBruteForceAttack {
 		validateHash(password2Hash);
 		validateHash(password3Hash);
 
-		int actualMaxAttemptsPassword =
-				clampAttempts(
-						maxAttemptsPassword);
+		int maxPassword =
+				clampAttempts(maxAttemptsPassword);
 
-		int actualMaxAttemptsPassword2 =
-				clampAttempts(
-						maxAttemptsPassword2);
+		int maxPassword2 =
+				clampAttempts(maxAttemptsPassword2);
 
-		int actualMaxAttemptsPassword3 =
-				clampAttempts(
-						maxAttemptsPassword3);
-
-		int totalAttempts = 0;
-
-		// =====================================================
-		// Password
-		// =====================================================
+		int maxPassword3 =
+				clampAttempts(maxAttemptsPassword3);
 
 		BruteForceStageResult passwordResult =
 				bruteForce(
 						passwordHash,
-						actualMaxAttemptsPassword);
+						maxPassword,
+						"Password");
 
-		totalAttempts +=
+		int totalAttempts =
 				passwordResult.getAttemptCount();
 
-		// Passwordで失敗
 		if (!passwordResult.isSuccess()) {
 
 			return new AttackResult(
@@ -266,19 +183,15 @@ public class MultiStagePasswordBruteForceAttack {
 					3);
 		}
 
-		// =====================================================
-		// Password2
-		// =====================================================
-
 		BruteForceStageResult password2Result =
 				bruteForce(
 						password2Hash,
-						actualMaxAttemptsPassword2);
+						maxPassword2,
+						"Password2");
 
 		totalAttempts +=
 				password2Result.getAttemptCount();
 
-		// Password2で失敗
 		if (!password2Result.isSuccess()) {
 
 			return new AttackResult(
@@ -290,36 +203,17 @@ public class MultiStagePasswordBruteForceAttack {
 					3);
 		}
 
-		// =====================================================
-		// Password3
-		// =====================================================
-
 		BruteForceStageResult password3Result =
 				bruteForce(
 						password3Hash,
-						actualMaxAttemptsPassword3);
+						maxPassword3,
+						"Password3");
 
 		totalAttempts +=
 				password3Result.getAttemptCount();
 
-		// Password3で失敗
-		if (!password3Result.isSuccess()) {
-
-			return new AttackResult(
-					false,
-					passwordResult.getPassword(),
-					password2Result.getPassword(),
-					null,
-					totalAttempts,
-					3);
-		}
-
-		// =====================================================
-		// 全段階成功
-		// =====================================================
-
 		return new AttackResult(
-				true,
+				password3Result.isSuccess(),
 				passwordResult.getPassword(),
 				password2Result.getPassword(),
 				password3Result.getPassword(),
@@ -333,22 +227,30 @@ public class MultiStagePasswordBruteForceAttack {
 
 	private BruteForceStageResult bruteForce(
 			String passwordHash,
-			int maxAttempts) {
+			int maxAttempts,
+			String stageName) {
 
 		int attemptCount = 0;
 
 		for (int i = PASSWORD_MIN;
-				i <= PASSWORD_MAX;
+				i <= PASSWORD_MAX
+						&& attemptCount < maxAttempts;
 				i++) {
-
-			if (attemptCount >= maxAttempts) {
-				break;
-			}
 
 			String candidate =
 					formatPassword(i);
 
 			attemptCount++;
+
+			// 候補パスワードを1件ずつ表示
+			System.out.println(
+					stageName
+							+ " 総当たり攻撃 試行 "
+							+ attemptCount
+							+ " / "
+							+ maxAttempts
+							+ " : "
+							+ candidate);
 
 			if (passwordEncoder.matches(
 					candidate,
@@ -389,7 +291,8 @@ public class MultiStagePasswordBruteForceAttack {
 	// Password形式
 	// =========================================================
 
-	private String formatPassword(int value) {
+	private String formatPassword(
+			int value) {
 
 		return String.format(
 				"%04d",
@@ -429,9 +332,7 @@ public class MultiStagePasswordBruteForceAttack {
 				int attemptCount) {
 
 			this.success = success;
-
 			this.password = password;
-
 			this.attemptCount = attemptCount;
 		}
 
@@ -475,15 +376,10 @@ public class MultiStagePasswordBruteForceAttack {
 				int stageCount) {
 
 			this.success = success;
-
 			this.password = password;
-
 			this.password2 = password2;
-
 			this.password3 = password3;
-
 			this.totalAttempts = totalAttempts;
-
 			this.stageCount = stageCount;
 		}
 

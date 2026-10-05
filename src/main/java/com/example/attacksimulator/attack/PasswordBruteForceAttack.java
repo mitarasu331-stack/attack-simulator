@@ -68,6 +68,15 @@ public class PasswordBruteForceAttack {
 
 			attemptCount++;
 
+			// 候補パスワードを1件ずつ表示
+			System.out.println(
+					"総当たり攻撃 試行 "
+							+ attemptCount
+							+ " / "
+							+ actualMaxAttempts
+							+ " : "
+							+ candidate);
+
 			if (passwordEncoder.matches(
 					candidate,
 					passwordHash)) {

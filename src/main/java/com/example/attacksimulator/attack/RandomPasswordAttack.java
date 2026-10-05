@@ -113,23 +113,10 @@ public class RandomPasswordAttack {
 				secureRandom);
 
 		// =====================================================
-		// ランダム攻撃開始
+		// ランダム攻撃
 		// =====================================================
 
 		int attemptCount = 0;
-
-		System.out.println(
-				"========================================");
-
-		System.out.println(
-				"ランダムPassword攻撃開始");
-
-		System.out.println(
-				"最大試行回数 = "
-						+ actualMaxAttempts);
-
-		System.out.println(
-				"========================================");
 
 		for (int i = 0;
 				i < candidates.size();
@@ -168,11 +155,11 @@ public class RandomPasswordAttack {
 			attemptCount++;
 
 			// -------------------------------------------------
-			// 攻撃中の数字を表示
+			// 候補を1件ずつ表示
 			// -------------------------------------------------
 
 			System.out.println(
-					"試行 "
+					"ランダムPassword 試行 "
 							+ attemptCount
 							+ " / "
 							+ actualMaxAttempts
@@ -194,23 +181,6 @@ public class RandomPasswordAttack {
 
 			if (matched) {
 
-				System.out.println(
-						"========================================");
-
-				System.out.println(
-						"一段階ランダム攻撃突破成功");
-
-				System.out.println(
-						"Password = "
-								+ candidate);
-
-				System.out.println(
-						"試行回数 = "
-								+ attemptCount);
-
-				System.out.println(
-						"========================================");
-
 				return new AttackResult(
 						true,
 						candidate,
@@ -219,21 +189,8 @@ public class RandomPasswordAttack {
 		}
 
 		// =====================================================
-		// 最大試行回数到達
+		// 最大試行回数までに突破できなかった
 		// =====================================================
-
-		System.out.println(
-				"========================================");
-
-		System.out.println(
-				"一段階ランダム攻撃失敗");
-
-		System.out.println(
-				"試行回数 = "
-						+ attemptCount);
-
-		System.out.println(
-				"========================================");
 
 		return new AttackResult(
 				false,

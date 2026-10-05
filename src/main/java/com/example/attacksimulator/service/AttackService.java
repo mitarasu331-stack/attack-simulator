@@ -9,7 +9,6 @@ import com.example.attacksimulator.attack.MultiStagePasswordBruteForceAttack;
 import com.example.attacksimulator.attack.RandomEmailOtpAttack;
 import com.example.attacksimulator.attack.RandomPasswordAttack;
 import com.example.attacksimulator.attack.RandomThreeStagePasswordAttack;
-import com.example.attacksimulator.attack.RandomTwoFactorPasswordEmailOtpAttack;
 import com.example.attacksimulator.attack.RandomTwoStagePasswordAttack;
 import com.example.attacksimulator.client.NewAuthLabLoginClient;
 import com.example.attacksimulator.client.NewAuthLabLoginClient.LoginResult;
@@ -21,8 +20,6 @@ public class AttackService {
 
 	private final MultiStagePasswordBruteForceAttack multiStagePasswordBruteForceAttack;
 
-	private final EmailOtpBruteForceAttack emailOtpBruteForceAttack;
-
 	private final FactorAuthenticationAttack factorAuthenticationAttack;
 
 	private final RandomPasswordAttack randomPasswordAttack;
@@ -31,9 +28,6 @@ public class AttackService {
 
 	private final RandomThreeStagePasswordAttack randomThreeStagePasswordAttack;
 
-	private final RandomEmailOtpAttack randomEmailOtpAttack;
-
-	private final RandomTwoFactorPasswordEmailOtpAttack randomTwoFactorPasswordEmailOtpAttack;
 
 	private final NewAuthLabUserRepository newAuthLabUserRepository;
 
@@ -45,8 +39,6 @@ public class AttackService {
 
 			MultiStagePasswordBruteForceAttack multiStagePasswordBruteForceAttack,
 
-			EmailOtpBruteForceAttack emailOtpBruteForceAttack,
-
 			FactorAuthenticationAttack factorAuthenticationAttack,
 
 			RandomPasswordAttack randomPasswordAttack,
@@ -55,9 +47,6 @@ public class AttackService {
 
 			RandomThreeStagePasswordAttack randomThreeStagePasswordAttack,
 
-			RandomEmailOtpAttack randomEmailOtpAttack,
-
-			RandomTwoFactorPasswordEmailOtpAttack randomTwoFactorPasswordEmailOtpAttack,
 
 			NewAuthLabUserRepository newAuthLabUserRepository,
 
@@ -67,9 +56,6 @@ public class AttackService {
 
 		this.multiStagePasswordBruteForceAttack =
 				multiStagePasswordBruteForceAttack;
-
-		this.emailOtpBruteForceAttack =
-				emailOtpBruteForceAttack;
 
 		this.factorAuthenticationAttack =
 				factorAuthenticationAttack;
@@ -82,12 +68,6 @@ public class AttackService {
 
 		this.randomThreeStagePasswordAttack =
 				randomThreeStagePasswordAttack;
-
-		this.randomEmailOtpAttack =
-				randomEmailOtpAttack;
-
-		this.randomTwoFactorPasswordEmailOtpAttack =
-				randomTwoFactorPasswordEmailOtpAttack;
 
 		this.newAuthLabUserRepository =
 				newAuthLabUserRepository;
@@ -625,7 +605,7 @@ public class AttackService {
 						user.getPassword(),
 						maxAttemptsPassword);
 	}
-	
+
 	// =========================================================
 	// 一要素認証
 	// Password
@@ -634,35 +614,35 @@ public class AttackService {
 
 	public FactorAuthenticationAttack.FactorAttackResult
 	executeOneFactorRandomPassword(
-	        String username) {
+			String username) {
 
-	    return executeOneFactorRandomPassword(
-	            username,
-	            10_000);
+		return executeOneFactorRandomPassword(
+				username,
+				10_000);
 	}
 
 	public FactorAuthenticationAttack.FactorAttackResult
 	executeOneFactorRandomPassword(
-	        String username,
-	        int maxAttemptsPassword) {
+			String username,
+			int maxAttemptsPassword) {
 
-	    NewAuthLabUser user =
-	            getUser(username);
+		NewAuthLabUser user =
+				getUser(username);
 
-	    String passwordHash =
-	            user.getPassword();
+		String passwordHash =
+				user.getPassword();
 
-	    if (passwordHash == null
-	            || passwordHash.isBlank()) {
+		if (passwordHash == null
+				|| passwordHash.isBlank()) {
 
-	        throw new IllegalArgumentException(
-	                "指定されたユーザーのPasswordが登録されていません。");
-	    }
+			throw new IllegalArgumentException(
+					"指定されたユーザーのPasswordが登録されていません。");
+		}
 
-	    return factorAuthenticationAttack
-	            .executeOneFactorRandomPassword(
-	                    passwordHash,
-	                    maxAttemptsPassword);
+		return factorAuthenticationAttack
+				.executeOneFactorRandomPassword(
+						passwordHash,
+						maxAttemptsPassword);
 	}
 
 	// =========================================================
@@ -687,10 +667,10 @@ public class AttackService {
 		}
 
 		return factorAuthenticationAttack
-			    .executeOneFactorEmailOtp(
-			            username,
-			            user.getEmail(),
-			            maxAttempts);
+				.executeOneFactorEmailOtp(
+						username,
+						user.getEmail(),
+						maxAttempts);
 	}
 
 	// =========================================================
@@ -699,13 +679,12 @@ public class AttackService {
 	// 実ログイン付き
 	// =========================================================
 
-	public OneFactorEmailOtpLoginResult
+	public FactorAuthenticationAttack.FactorAttackResult
 	executeOneFactorEmailOtpWithLogin(
 			String username,
 			int maxAttempts) {
 
-		NewAuthLabUser user =
-				getUser(username);
+		NewAuthLabUser user = getUser(username);
 
 		if (user.getEmail() == null
 				|| user.getEmail().isBlank()) {
@@ -714,16 +693,11 @@ public class AttackService {
 					"指定されたユーザーにメールアドレスが登録されていません。");
 		}
 
-		EmailOtpBruteForceAttack.AttackResult
-		attackResult =
-		emailOtpBruteForceAttack
-		.execute(
-				username,
-				user.getEmail(),
-				maxAttempts);
-
-		return new OneFactorEmailOtpLoginResult(
-				attackResult);
+		return factorAuthenticationAttack
+				.executeOneFactorEmailOtp(
+						username,
+						user.getEmail(),
+						maxAttempts);
 	}
 
 	// =========================================================
@@ -732,7 +706,14 @@ public class AttackService {
 	// ランダム攻撃
 	// =========================================================
 
-	public RandomEmailOtpLoginResult
+
+	// =========================================================
+	// 一要素認証
+	// Email OTP
+	// ランダム攻撃
+	// =========================================================
+
+	public FactorAuthenticationAttack.FactorAttackResult
 	executeRandomOneFactorEmailOtp(
 			String username) {
 
@@ -741,7 +722,7 @@ public class AttackService {
 				1_000_000);
 	}
 
-	public RandomEmailOtpLoginResult
+	public FactorAuthenticationAttack.FactorAttackResult
 	executeRandomOneFactorEmailOtp(
 			String username,
 			int maxAttempts) {
@@ -756,57 +737,11 @@ public class AttackService {
 					"指定されたユーザーにメールアドレスが登録されていません。");
 		}
 
-		// =====================================================
-		// まずOTPを1回送信
-		// =====================================================
-
-		LoginResult sendResult =
-				newAuthLabLoginClient.sendEmailOtp(
+		return factorAuthenticationAttack
+				.executeOneFactorRandomEmailOtp(
 						username,
-						user.getEmail());
-
-		if (!sendResult.isRequestSuccess()) {
-
-			return new RandomEmailOtpLoginResult(
-					new RandomEmailOtpAttack.AttackResult(
-							false,
-							null,
-							0),
-					sendResult);
-		}
-
-		// =====================================================
-		// OTPをランダム攻撃
-		// =====================================================
-
-		final LoginResult[] successfulLogin =
-				new LoginResult[1];
-
-		RandomEmailOtpAttack.AttackResult
-		attackResult =
-		randomEmailOtpAttack.execute(
-				candidateOtp -> {
-
-					LoginResult verifyResult =
-							newAuthLabLoginClient
-							.verifyEmailOtp(
-									candidateOtp);
-
-					if (verifyResult.isSuccess()) {
-
-						successfulLogin[0] =
-								verifyResult;
-
-						return true;
-					}
-
-					return false;
-				},
-				maxAttempts);
-
-		return new RandomEmailOtpLoginResult(
-				attackResult,
-				successfulLogin[0]);
+						user.getEmail(),
+						maxAttempts);
 	}
 
 	// =========================================================
@@ -860,7 +795,7 @@ public class AttackService {
 	// PasswordもOTPもランダム
 	// =========================================================
 
-	public RandomTwoFactorPasswordEmailOtpAttack.AttackResult
+	public FactorAuthenticationAttack.FactorAttackResult
 	executeRandomTwoFactorPasswordEmailOtp(
 			String username) {
 
@@ -870,7 +805,7 @@ public class AttackService {
 				1_000_000);
 	}
 
-	public RandomTwoFactorPasswordEmailOtpAttack.AttackResult
+	public FactorAuthenticationAttack.FactorAttackResult
 	executeRandomTwoFactorPasswordEmailOtp(
 			String username,
 			int maxAttemptsPassword,
@@ -879,6 +814,16 @@ public class AttackService {
 		NewAuthLabUser user =
 				getUser(username);
 
+		String passwordHash =
+				user.getPassword();
+
+		if (passwordHash == null
+				|| passwordHash.isBlank()) {
+
+			throw new IllegalArgumentException(
+					"指定されたユーザーのPasswordが登録されていません。");
+		}
+
 		if (user.getEmail() == null
 				|| user.getEmail().isBlank()) {
 
@@ -886,77 +831,12 @@ public class AttackService {
 					"指定されたユーザーにメールアドレスが登録されていません。");
 		}
 
-		// =====================================================
-		// Passwordが見つかったかを保持
-		// =====================================================
-
-		final String[] foundPassword =
-				new String[1];
-
-		// =====================================================
-		// Email OTPの実ログイン結果
-		// =====================================================
-
-		final LoginResult[] successfulLogin =
-				new LoginResult[1];
-
-		// =====================================================
-		// ランダム二要素攻撃
-		// =====================================================
-
-		RandomTwoFactorPasswordEmailOtpAttack.AttackResult
-		attackResult =
-		randomTwoFactorPasswordEmailOtpAttack
-		.execute(
-				maxAttemptsPassword,
-				maxAttemptsOtp,
-
-				// -----------------------------------------
-				// Password verifier
-				// -----------------------------------------
-
-				candidatePassword -> {
-
-					LoginResult loginResult =
-							newAuthLabLoginClient
-							.loginTwoFactorPassword(
-									username,
-									candidatePassword);
-
-					if (loginResult.isSuccess()) {
-
-						foundPassword[0] =
-								candidatePassword;
-
-						return true;
-					}
-
-					return false;
-				},
-
-				// -----------------------------------------
-				// OTP verifier
-				// -----------------------------------------
-
-				candidateOtp -> {
-
-					LoginResult verifyResult =
-							newAuthLabLoginClient
-							.verifyTwoFactorOtp(
-									candidateOtp);
-
-					if (verifyResult.isSuccess()) {
-
-						successfulLogin[0] =
-								verifyResult;
-
-						return true;
-					}
-
-					return false;
-				});
-
-		return attackResult;
+		return factorAuthenticationAttack
+				.executeTwoFactorRandomPasswordEmailOtp(
+						username,
+						passwordHash,
+						maxAttemptsPassword,
+						maxAttemptsOtp);
 	}
 
 	// =========================================================
@@ -1620,220 +1500,46 @@ public class AttackService {
 
 	// =========================================================
 	// 辞書攻撃
+	// 一段階認証のみ
 	// =========================================================
 
-	public DictionaryLoginResult
-	executeDictionaryWithLogin(
+	public DictionaryLoginResult executeDictionaryWithLogin(
 			String username,
 			String authMethod,
 			int maxAttemptsPassword,
 			int maxAttemptsPassword2,
 			int maxAttemptsPassword3) {
 
+		if (!"one-stage-dictionary".equals(authMethod)) {
+
+			throw new IllegalArgumentException(
+					"辞書攻撃は一段階認証のみ対応しています。");
+		}
+
 		final LoginResult[] successfulLogin =
 				new LoginResult[1];
 
-		DictionaryPasswordAttack.AttackResult result;
+		DictionaryPasswordAttack.AttackResult result =
+				dictionaryPasswordAttack.executeOneStage(
+						maxAttemptsPassword,
+						password -> {
 
-		// =====================================================
-		// 一段階
-		// =====================================================
+							LoginResult loginResult =
+									newAuthLabLoginClient.loginOneStage(
+											username,
+											password);
 
-		if ("one-stage-dictionary"
-				.equals(authMethod)) {
+							if (loginResult != null
+									&& loginResult.isSuccess()) {
 
-			result =
-					dictionaryPasswordAttack
-					.executeOneStage(
-							maxAttemptsPassword,
-							password -> {
+								successfulLogin[0] =
+										loginResult;
 
-								LoginResult loginResult =
-										newAuthLabLoginClient
-										.loginOneStage(
-												username,
-												password);
+								return true;
+							}
 
-								if (loginResult.isSuccess()) {
-
-									successfulLogin[0] =
-											loginResult;
-
-									return true;
-								}
-
-								return false;
-							});
-		}
-
-		// =====================================================
-		// 二段階
-		// Password → Password2
-		// =====================================================
-
-		else if ("two-stage-dictionary"
-				.equals(authMethod)) {
-
-			final String[] foundPassword =
-					new String[1];
-
-			result =
-					dictionaryPasswordAttack
-					.executeTwoStage(
-							maxAttemptsPassword,
-							maxAttemptsPassword2,
-							(stage, candidate) -> {
-
-								if (stage == 1) {
-
-									LoginResult loginResult =
-											newAuthLabLoginClient
-											.loginOneStage(
-													username,
-													candidate);
-
-									if (loginResult.isSuccess()) {
-
-										foundPassword[0] =
-												candidate;
-
-										return true;
-									}
-
-									return false;
-								}
-
-								if (stage == 2) {
-
-									if (foundPassword[0] == null) {
-
-										return false;
-									}
-
-									LoginResult loginResult =
-											newAuthLabLoginClient
-											.loginTwoStage(
-													username,
-													foundPassword[0],
-													candidate);
-
-									if (loginResult.isSuccess()) {
-
-										successfulLogin[0] =
-												loginResult;
-
-										return true;
-									}
-
-									return false;
-								}
-
-								return false;
-							});
-		}
-
-		// =====================================================
-		// 三段階
-		// Password → Password2 → Password3
-		// =====================================================
-
-		else if ("three-stage-dictionary"
-				.equals(authMethod)) {
-
-			final String[] foundPassword =
-					new String[1];
-
-			final String[] foundPassword2 =
-					new String[1];
-
-			result =
-					dictionaryPasswordAttack
-					.executeThreeStage(
-							maxAttemptsPassword,
-							maxAttemptsPassword2,
-							maxAttemptsPassword3,
-							(stage, candidate) -> {
-
-								if (stage == 1) {
-
-									LoginResult loginResult =
-											newAuthLabLoginClient
-											.loginOneStage(
-													username,
-													candidate);
-
-									if (loginResult.isSuccess()) {
-
-										foundPassword[0] =
-												candidate;
-
-										return true;
-									}
-
-									return false;
-								}
-
-								if (stage == 2) {
-
-									if (foundPassword[0] == null) {
-
-										return false;
-									}
-
-									LoginResult loginResult =
-											newAuthLabLoginClient
-											.loginTwoStage(
-													username,
-													foundPassword[0],
-													candidate);
-
-									if (loginResult.isSuccess()) {
-
-										foundPassword2[0] =
-												candidate;
-
-										return true;
-									}
-
-									return false;
-								}
-
-								if (stage == 3) {
-
-									if (foundPassword[0] == null
-											|| foundPassword2[0] == null) {
-
-										return false;
-									}
-
-									LoginResult loginResult =
-											newAuthLabLoginClient
-											.loginThreeStage(
-													username,
-													foundPassword[0],
-													foundPassword2[0],
-													candidate);
-
-									if (loginResult.isSuccess()) {
-
-										successfulLogin[0] =
-												loginResult;
-
-										return true;
-									}
-
-									return false;
-								}
-
-								return false;
-							});
-		}
-
-		else {
-
-			throw new IllegalArgumentException(
-					"不正な辞書攻撃方式です。");
-		}
+							return false;
+						});
 
 		return new DictionaryLoginResult(
 				result,

@@ -33,22 +33,6 @@ public class RandomEmailOtpAttack {
 		maxAttempts =
 				clampAttempts(maxAttempts);
 
-		System.out.println(
-				"========================================");
-
-		System.out.println(
-				"一要素 Email OTP ランダム攻撃開始");
-
-		System.out.println(
-				"最大試行回数 = "
-						+ maxAttempts);
-
-		System.out.println(
-				"OTP候補 = 000000 ～ 999999");
-
-		System.out.println(
-				"========================================");
-
 		// =====================================================
 		// 000000～999999を作成
 		// =====================================================
@@ -87,8 +71,12 @@ public class RandomEmailOtpAttack {
 							"%06d",
 							candidate);
 
+			// -------------------------------------------------
+			// OTP候補は1件ずつ必ず表示
+			// -------------------------------------------------
+
 			System.out.println(
-					"OTP 試行 "
+					"ランダムOTP 試行 "
 							+ attemptCount
 							+ " / "
 							+ maxAttempts
@@ -105,45 +93,9 @@ public class RandomEmailOtpAttack {
 
 				success = true;
 
-				System.out.println(
-						"OTP 攻撃成功");
-
-				System.out.println(
-						"OTP = "
-								+ otp);
-
-				System.out.println(
-						"OTP 試行回数 = "
-								+ attemptCount);
-
 				break;
 			}
 		}
-
-		// =====================================================
-		// 結果表示
-		// =====================================================
-
-		if (success) {
-
-			System.out.println(
-					"一要素 Email OTP ランダム攻撃成功");
-
-		} else {
-
-			System.out.println(
-					"一要素 Email OTP ランダム攻撃失敗");
-
-			System.out.println(
-					"最大試行回数までにOTPを突破できませんでした。");
-		}
-
-		System.out.println(
-				"実攻撃試行回数 = "
-						+ attemptCount);
-
-		System.out.println(
-				"========================================");
 
 		return new AttackResult(
 				success,

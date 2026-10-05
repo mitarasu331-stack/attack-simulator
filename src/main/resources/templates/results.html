@@ -1496,190 +1496,6 @@
 		</div>
 
 		<!-- =====================================================
-		     13. 二段階認証 辞書攻撃
-		     ===================================================== -->
-
-		<div class="method-card">
-
-			<div class="method-title">
-				二段階認証（辞書攻撃）
-			</div>
-
-			<div class="method-grid">
-
-				<div class="method-item">
-					<span class="method-label">
-						実験回数
-					</span>
-
-					<span
-							class="method-value"
-							th:text="${twoStageDictionaryExperimentCount}">
-					</span>
-				</div>
-
-				<div class="method-item">
-					<span class="method-label">
-						成功回数
-					</span>
-
-					<span
-							class="method-value"
-							th:text="${twoStageDictionarySuccessCount}">
-					</span>
-				</div>
-
-				<div class="method-item">
-					<span class="method-label">
-						認証突破率
-					</span>
-
-					<span
-							class="method-value"
-							th:text="${twoStageDictionarySuccessRate} + '%'">
-					</span>
-				</div>
-
-				<div class="method-item">
-					<span class="method-label">
-						平均攻撃試行回数
-					</span>
-
-					<span
-							class="method-value"
-							th:text="${twoStageDictionaryAverageAttemptCount}">
-					</span>
-				</div>
-
-				<div class="method-item">
-					<span class="method-label">
-						成功時攻撃時間合計
-					</span>
-
-					<span
-							class="method-value"
-							th:text="${twoStageDictionarySuccessAttackTimeTotal} + ' ms'">
-					</span>
-
-					<div
-							class="duration"
-							th:text="${twoStageDictionarySuccessAttackTimeTotalFormatted}">
-					</div>
-				</div>
-
-				<div class="method-item">
-					<span class="method-label">
-						成功時平均攻撃時間
-					</span>
-
-					<span
-							class="method-value"
-							th:text="${twoStageDictionaryAverageSuccessAttackTime} + ' ms'">
-					</span>
-
-					<div
-							class="duration"
-							th:text="${twoStageDictionaryAverageSuccessAttackTimeFormatted}">
-					</div>
-				</div>
-
-			</div>
-
-		</div>
-
-		<!-- =====================================================
-		     14. 三段階認証 辞書攻撃
-		     ===================================================== -->
-
-		<div class="method-card">
-
-			<div class="method-title">
-				三段階認証（辞書攻撃）
-			</div>
-
-			<div class="method-grid">
-
-				<div class="method-item">
-					<span class="method-label">
-						実験回数
-					</span>
-
-					<span
-							class="method-value"
-							th:text="${threeStageDictionaryExperimentCount}">
-					</span>
-				</div>
-
-				<div class="method-item">
-					<span class="method-label">
-						成功回数
-					</span>
-
-					<span
-							class="method-value"
-							th:text="${threeStageDictionarySuccessCount}">
-					</span>
-				</div>
-
-				<div class="method-item">
-					<span class="method-label">
-						認証突破率
-					</span>
-
-					<span
-							class="method-value"
-							th:text="${threeStageDictionarySuccessRate} + '%'">
-					</span>
-				</div>
-
-				<div class="method-item">
-					<span class="method-label">
-						平均攻撃試行回数
-					</span>
-
-					<span
-							class="method-value"
-							th:text="${threeStageDictionaryAverageAttemptCount}">
-					</span>
-				</div>
-
-				<div class="method-item">
-					<span class="method-label">
-						成功時攻撃時間合計
-					</span>
-
-					<span
-							class="method-value"
-							th:text="${threeStageDictionarySuccessAttackTimeTotal} + ' ms'">
-					</span>
-
-					<div
-							class="duration"
-							th:text="${threeStageDictionarySuccessAttackTimeTotalFormatted}">
-					</div>
-				</div>
-
-				<div class="method-item">
-					<span class="method-label">
-						成功時平均攻撃時間
-					</span>
-
-					<span
-							class="method-value"
-							th:text="${threeStageDictionaryAverageSuccessAttackTime} + ' ms'">
-					</span>
-
-					<div
-							class="duration"
-							th:text="${threeStageDictionaryAverageSuccessAttackTimeFormatted}">
-					</div>
-				</div>
-
-			</div>
-
-		</div>
-
-		<!-- =====================================================
 		     実験結果一覧
 		     ===================================================== -->
 
@@ -1749,14 +1565,6 @@
 
 				<option value="one-stage-dictionary">
 					一段階認証（辞書攻撃）
-				</option>
-
-				<option value="two-stage-dictionary">
-					二段階認証（辞書攻撃）
-				</option>
-
-				<option value="three-stage-dictionary">
-					三段階認証（辞書攻撃）
 				</option>
 
 			</select>
@@ -1890,6 +1698,13 @@
 										th:case="'one-factor-password'">
 									一要素認証（Password）
 								</span>
+								
+								<span
+								        th:case="'one-factor-password-random'">
+
+								    一要素認証（Password・ランダム）
+
+								</span>
 
 								<span
 										th:case="'one-factor-email-otp'">
@@ -1929,16 +1744,6 @@
 								<span
 										th:case="'one-stage-dictionary'">
 									一段階認証（辞書攻撃）
-								</span>
-
-								<span
-										th:case="'two-stage-dictionary'">
-									二段階認証（辞書攻撃）
-								</span>
-
-								<span
-										th:case="'three-stage-dictionary'">
-									三段階認証（辞書攻撃）
 								</span>
 
 								<span

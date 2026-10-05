@@ -57,27 +57,6 @@ public class RandomThreeStagePasswordAttack {
 				clampAttempts(
 						maxAttemptsPassword3);
 
-		System.out.println(
-				"========================================");
-
-		System.out.println(
-				"三段階認証 ランダム攻撃開始");
-
-		System.out.println(
-				"Password 最大試行回数 = "
-						+ maxAttemptsPassword);
-
-		System.out.println(
-				"Password2 最大試行回数 = "
-						+ maxAttemptsPassword2);
-
-		System.out.println(
-				"Password3 最大試行回数 = "
-						+ maxAttemptsPassword3);
-
-		System.out.println(
-				"========================================");
-
 		// =====================================================
 		// Stage 1
 		// Password
@@ -91,7 +70,7 @@ public class RandomThreeStagePasswordAttack {
 		String password = null;
 
 		for (String candidate :
-			passwordCandidates) {
+				passwordCandidates) {
 
 			if (passwordAttemptCount
 					>= maxAttemptsPassword) {
@@ -101,8 +80,12 @@ public class RandomThreeStagePasswordAttack {
 
 			passwordAttemptCount++;
 
+			// -------------------------------------------------
+			// Password候補は1件ずつ表示
+			// -------------------------------------------------
+
 			System.out.println(
-					"Password 試行 "
+					"ランダムPassword 試行 "
 							+ passwordAttemptCount
 							+ " / "
 							+ maxAttemptsPassword
@@ -115,17 +98,6 @@ public class RandomThreeStagePasswordAttack {
 
 				password = candidate;
 
-				System.out.println(
-						"Password 攻撃成功");
-
-				System.out.println(
-						"Password = "
-								+ password);
-
-				System.out.println(
-						"Password 試行回数 = "
-								+ passwordAttemptCount);
-
 				break;
 			}
 		}
@@ -135,22 +107,6 @@ public class RandomThreeStagePasswordAttack {
 		// =====================================================
 
 		if (password == null) {
-
-			System.out.println(
-					"Password 攻撃失敗");
-
-			System.out.println(
-					"Password2 は攻撃しません");
-
-			System.out.println(
-					"Password3 は攻撃しません");
-
-			System.out.println(
-					"総攻撃試行回数 = "
-							+ passwordAttemptCount);
-
-			System.out.println(
-					"========================================");
 
 			return new AttackResult(
 					false,
@@ -176,7 +132,7 @@ public class RandomThreeStagePasswordAttack {
 		String password2 = null;
 
 		for (String candidate :
-			password2Candidates) {
+				password2Candidates) {
 
 			if (password2AttemptCount
 					>= maxAttemptsPassword2) {
@@ -186,8 +142,12 @@ public class RandomThreeStagePasswordAttack {
 
 			password2AttemptCount++;
 
+			// -------------------------------------------------
+			// Password2候補は1件ずつ表示
+			// -------------------------------------------------
+
 			System.out.println(
-					"Password2 試行 "
+					"ランダムPassword2 試行 "
 							+ password2AttemptCount
 							+ " / "
 							+ maxAttemptsPassword2
@@ -199,17 +159,6 @@ public class RandomThreeStagePasswordAttack {
 					password2Hash)) {
 
 				password2 = candidate;
-
-				System.out.println(
-						"Password2 攻撃成功");
-
-				System.out.println(
-						"Password2 = "
-								+ password2);
-
-				System.out.println(
-						"Password2 試行回数 = "
-								+ password2AttemptCount);
 
 				break;
 			}
@@ -223,20 +172,7 @@ public class RandomThreeStagePasswordAttack {
 
 			int totalAttemptCount =
 					passwordAttemptCount
-					+ password2AttemptCount;
-
-			System.out.println(
-					"Password2 攻撃失敗");
-
-			System.out.println(
-					"Password3 は攻撃しません");
-
-			System.out.println(
-					"総攻撃試行回数 = "
-							+ totalAttemptCount);
-
-			System.out.println(
-					"========================================");
+							+ password2AttemptCount;
 
 			return new AttackResult(
 					false,
@@ -262,7 +198,7 @@ public class RandomThreeStagePasswordAttack {
 		String password3 = null;
 
 		for (String candidate :
-			password3Candidates) {
+				password3Candidates) {
 
 			if (password3AttemptCount
 					>= maxAttemptsPassword3) {
@@ -272,8 +208,12 @@ public class RandomThreeStagePasswordAttack {
 
 			password3AttemptCount++;
 
+			// -------------------------------------------------
+			// Password3候補は1件ずつ表示
+			// -------------------------------------------------
+
 			System.out.println(
-					"Password3 試行 "
+					"ランダムPassword3 試行 "
 							+ password3AttemptCount
 							+ " / "
 							+ maxAttemptsPassword3
@@ -286,17 +226,6 @@ public class RandomThreeStagePasswordAttack {
 
 				password3 = candidate;
 
-				System.out.println(
-						"Password3 攻撃成功");
-
-				System.out.println(
-						"Password3 = "
-								+ password3);
-
-				System.out.println(
-						"Password3 試行回数 = "
-								+ password3AttemptCount);
-
 				break;
 			}
 		}
@@ -307,61 +236,13 @@ public class RandomThreeStagePasswordAttack {
 
 		boolean success =
 				password != null
-				&& password2 != null
-				&& password3 != null;
+						&& password2 != null
+						&& password3 != null;
 
 		int totalAttemptCount =
 				passwordAttemptCount
-				+ password2AttemptCount
-				+ password3AttemptCount;
-
-		if (success) {
-
-			System.out.println(
-					"三段階認証ランダム攻撃成功");
-
-			System.out.println(
-					"Password = "
-							+ password);
-
-			System.out.println(
-					"Password2 = "
-							+ password2);
-
-			System.out.println(
-					"Password3 = "
-							+ password3);
-
-		} else {
-
-			System.out.println(
-					"三段階認証ランダム攻撃失敗");
-
-			if (password3 == null) {
-
-				System.out.println(
-						"Password3 が突破できませんでした");
-			}
-		}
-
-		System.out.println(
-				"Password 試行回数 = "
-						+ passwordAttemptCount);
-
-		System.out.println(
-				"Password2 試行回数 = "
-						+ password2AttemptCount);
-
-		System.out.println(
-				"Password3 試行回数 = "
-						+ password3AttemptCount);
-
-		System.out.println(
-				"総攻撃試行回数 = "
-						+ totalAttemptCount);
-
-		System.out.println(
-				"========================================");
+						+ password2AttemptCount
+						+ password3AttemptCount;
 
 		return new AttackResult(
 				success,
