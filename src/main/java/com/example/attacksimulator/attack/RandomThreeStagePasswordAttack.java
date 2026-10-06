@@ -16,12 +16,17 @@ public class RandomThreeStagePasswordAttack {
 	private static final int MAX_PASSWORD = 9999;
 
 	/**
-	 * 1000回ごとの待機時間
+	 * 1000回ごとの仮想待機時間
+	 *
+	 * 実際には待機しない
 	 *
 	 * 60秒 = 60000ms
 	 */
 	private static final long WAIT_TIME_MILLIS =
 			60_000L;
+
+	private static final int WAIT_INTERVAL =
+			1_000;
 
 	private final PasswordEncoder passwordEncoder;
 
@@ -77,8 +82,12 @@ public class RandomThreeStagePasswordAttack {
 
 		String password = null;
 
+		// Passwordの仮想待機時間
+		long passwordVirtualWaitTime =
+				0L;
+
 		for (String candidate :
-				passwordCandidates) {
+			passwordCandidates) {
 
 			if (passwordAttemptCount
 					>= maxAttemptsPassword) {
@@ -114,13 +123,29 @@ public class RandomThreeStagePasswordAttack {
 			}
 
 			// -------------------------------------------------
-			// 1000回ごとに1分待機
+			// 1000回失敗するごとに
+			// 実際には待機せず60秒を仮想時間として加算
 			// -------------------------------------------------
 
-			waitEvery1000Attempts(
-					passwordAttemptCount,
-					maxAttemptsPassword,
-					"Password");
+			if (passwordAttemptCount
+					% WAIT_INTERVAL == 0) {
+
+				passwordVirtualWaitTime +=
+						WAIT_TIME_MILLIS;
+
+				System.out.println(
+						"ランダムPassword "
+								+ passwordAttemptCount
+								+ "回失敗"
+								+ " → 仮想待機時間 "
+								+ WAIT_TIME_MILLIS
+								+ " ms を加算");
+
+				System.out.println(
+						"Password 累積仮想待機時間 = "
+								+ passwordVirtualWaitTime
+								+ " ms");
+			}
 		}
 
 		// =====================================================
@@ -137,7 +162,8 @@ public class RandomThreeStagePasswordAttack {
 					passwordAttemptCount,
 					0,
 					0,
-					passwordAttemptCount);
+					passwordAttemptCount,
+					passwordVirtualWaitTime);
 		}
 
 		// =====================================================
@@ -152,8 +178,12 @@ public class RandomThreeStagePasswordAttack {
 
 		String password2 = null;
 
+		// Password2の仮想待機時間
+		long password2VirtualWaitTime =
+				0L;
+
 		for (String candidate :
-				password2Candidates) {
+			password2Candidates) {
 
 			if (password2AttemptCount
 					>= maxAttemptsPassword2) {
@@ -189,13 +219,29 @@ public class RandomThreeStagePasswordAttack {
 			}
 
 			// -------------------------------------------------
-			// 1000回ごとに1分待機
+			// 1000回失敗するごとに
+			// 実際には待機せず60秒を仮想時間として加算
 			// -------------------------------------------------
 
-			waitEvery1000Attempts(
-					password2AttemptCount,
-					maxAttemptsPassword2,
-					"Password2");
+			if (password2AttemptCount
+					% WAIT_INTERVAL == 0) {
+
+				password2VirtualWaitTime +=
+						WAIT_TIME_MILLIS;
+
+				System.out.println(
+						"ランダムPassword2 "
+								+ password2AttemptCount
+								+ "回失敗"
+								+ " → 仮想待機時間 "
+								+ WAIT_TIME_MILLIS
+								+ " ms を加算");
+
+				System.out.println(
+						"Password2 累積仮想待機時間 = "
+								+ password2VirtualWaitTime
+								+ " ms");
+			}
 		}
 
 		// =====================================================
@@ -206,7 +252,11 @@ public class RandomThreeStagePasswordAttack {
 
 			int totalAttemptCount =
 					passwordAttemptCount
-							+ password2AttemptCount;
+					+ password2AttemptCount;
+
+			long virtualWaitTimeMillis =
+					passwordVirtualWaitTime
+					+ password2VirtualWaitTime;
 
 			return new AttackResult(
 					false,
@@ -216,7 +266,8 @@ public class RandomThreeStagePasswordAttack {
 					passwordAttemptCount,
 					password2AttemptCount,
 					0,
-					totalAttemptCount);
+					totalAttemptCount,
+					virtualWaitTimeMillis);
 		}
 
 		// =====================================================
@@ -231,8 +282,12 @@ public class RandomThreeStagePasswordAttack {
 
 		String password3 = null;
 
+		// Password3の仮想待機時間
+		long password3VirtualWaitTime =
+				0L;
+
 		for (String candidate :
-				password3Candidates) {
+			password3Candidates) {
 
 			if (password3AttemptCount
 					>= maxAttemptsPassword3) {
@@ -268,13 +323,29 @@ public class RandomThreeStagePasswordAttack {
 			}
 
 			// -------------------------------------------------
-			// 1000回ごとに1分待機
+			// 1000回失敗するごとに
+			// 実際には待機せず60秒を仮想時間として加算
 			// -------------------------------------------------
 
-			waitEvery1000Attempts(
-					password3AttemptCount,
-					maxAttemptsPassword3,
-					"Password3");
+			if (password3AttemptCount
+					% WAIT_INTERVAL == 0) {
+
+				password3VirtualWaitTime +=
+						WAIT_TIME_MILLIS;
+
+				System.out.println(
+						"ランダムPassword3 "
+								+ password3AttemptCount
+								+ "回失敗"
+								+ " → 仮想待機時間 "
+								+ WAIT_TIME_MILLIS
+								+ " ms を加算");
+
+				System.out.println(
+						"Password3 累積仮想待機時間 = "
+								+ password3VirtualWaitTime
+								+ " ms");
+			}
 		}
 
 		// =====================================================
@@ -283,13 +354,23 @@ public class RandomThreeStagePasswordAttack {
 
 		boolean success =
 				password != null
-						&& password2 != null
-						&& password3 != null;
+				&& password2 != null
+				&& password3 != null;
 
 		int totalAttemptCount =
 				passwordAttemptCount
-						+ password2AttemptCount
-						+ password3AttemptCount;
+				+ password2AttemptCount
+				+ password3AttemptCount;
+
+		long virtualWaitTimeMillis =
+				passwordVirtualWaitTime
+				+ password2VirtualWaitTime
+				+ password3VirtualWaitTime;
+
+		System.out.println(
+				"三段階認証 累積仮想待機時間 = "
+						+ virtualWaitTimeMillis
+						+ " ms");
 
 		return new AttackResult(
 				success,
@@ -299,64 +380,8 @@ public class RandomThreeStagePasswordAttack {
 				passwordAttemptCount,
 				password2AttemptCount,
 				password3AttemptCount,
-				totalAttemptCount);
-	}
-
-	// =========================================================
-	// 1000回ごとの待機
-	// =========================================================
-
-	private void waitEvery1000Attempts(
-			int attemptCount,
-			int maxAttempts,
-			String stageName) {
-
-		// -----------------------------------------------------
-		// 1000回ごと
-		//
-		// ただし、最後の試行後には待機しない
-		// -----------------------------------------------------
-
-		if (attemptCount % 1000 != 0
-				|| attemptCount >= maxAttempts) {
-
-			return;
-		}
-
-		System.out.println(
-				"----------------------------------------");
-
-		System.out.println(
-				"ランダム"
-						+ stageName
-						+ " が1000回試行されたため1分待機します。");
-
-		System.out.println(
-				"現在の試行回数 = "
-						+ attemptCount);
-
-		System.out.println(
-				"待機時間 = 60000 ms");
-
-		System.out.println(
-				"----------------------------------------");
-
-		try {
-
-			Thread.sleep(
-					WAIT_TIME_MILLIS);
-
-		} catch (InterruptedException e) {
-
-			// スレッドの割り込み状態を復元
-			Thread.currentThread().interrupt();
-
-			throw new IllegalStateException(
-					"ランダム"
-							+ stageName
-							+ "攻撃中の待機が中断されました。",
-					e);
-		}
+				totalAttemptCount,
+				virtualWaitTimeMillis);
 	}
 
 	// =========================================================
@@ -427,6 +452,12 @@ public class RandomThreeStagePasswordAttack {
 
 		private final int attemptCount;
 
+		/**
+		 * 実際には待機していないが、
+		 * 攻撃時間として加算する仮想待機時間
+		 */
+		private final long virtualWaitTimeMillis;
+
 		public AttackResult(
 				boolean success,
 				String password,
@@ -435,7 +466,8 @@ public class RandomThreeStagePasswordAttack {
 				int passwordAttemptCount,
 				int password2AttemptCount,
 				int password3AttemptCount,
-				int attemptCount) {
+				int attemptCount,
+				long virtualWaitTimeMillis) {
 
 			this.success = success;
 
@@ -456,6 +488,9 @@ public class RandomThreeStagePasswordAttack {
 
 			this.attemptCount =
 					attemptCount;
+
+			this.virtualWaitTimeMillis =
+					virtualWaitTimeMillis;
 		}
 
 		public boolean isSuccess() {
@@ -496,6 +531,11 @@ public class RandomThreeStagePasswordAttack {
 		public int getAttemptCount() {
 
 			return attemptCount;
+		}
+
+		public long getVirtualWaitTimeMillis() {
+
+			return virtualWaitTimeMillis;
 		}
 	}
 }

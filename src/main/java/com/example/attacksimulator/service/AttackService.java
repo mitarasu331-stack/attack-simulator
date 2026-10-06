@@ -899,7 +899,7 @@ public class AttackService {
 
 			return attackResult.getTotalAttempts();
 		}
-		
+
 		public long getVirtualWaitTimeMillis() {
 
 			return attackResult
@@ -967,7 +967,7 @@ public class AttackService {
 
 			return attackResult.getAttemptCount();
 		}
-		
+
 		public long getVirtualWaitTimeMillis() {
 
 			return attackResult
@@ -1139,9 +1139,9 @@ public class AttackService {
 
 			return attackResult.getAttemptCount();
 		}
-		
+
 		public long getVirtualWaitTimeMillis() {
-		    return attackResult.getVirtualWaitTimeMillis();
+			return attackResult.getVirtualWaitTimeMillis();
 		}
 
 		public String getFinalUrl() {
@@ -1324,6 +1324,12 @@ public class AttackService {
 		public int getAttemptCount() {
 
 			return attackResult.getAttemptCount();
+		}
+
+		public long getVirtualWaitTimeMillis() {
+
+			return attackResult
+					.getVirtualWaitTimeMillis();
 		}
 
 		public String getFinalUrl() {
@@ -1574,7 +1580,9 @@ public class AttackService {
 		private final LoginResult loginResult;
 
 		public DictionaryLoginResult(
+
 				DictionaryPasswordAttack.AttackResult attackResult,
+
 				LoginResult loginResult) {
 
 			this.attackResult =
@@ -1638,6 +1646,16 @@ public class AttackService {
 
 			return attackResult
 					.getPassword3AttemptCount();
+		}
+
+		// =========================================================
+		// 仮想待機時間
+		// =========================================================
+
+		public long getVirtualWaitTimeMillis() {
+
+			return attackResult
+					.getVirtualWaitTimeMillis();
 		}
 
 		public String getFinalUrl() {

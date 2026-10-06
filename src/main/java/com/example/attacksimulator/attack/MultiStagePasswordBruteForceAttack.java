@@ -258,94 +258,98 @@ public class MultiStagePasswordBruteForceAttack {
 	// =========================================================
 
 	private BruteForceStageResult bruteForce(
-			String passwordHash,
-			int maxAttempts,
-			String stageName) {
+	        String passwordHash,
+	        int maxAttempts,
+	        String stageName) {
 
-		int attemptCount = 0;
+	    int attemptCount = 0;
 
-		long virtualWaitTimeMillis = 0L;
+	    long virtualWaitTimeMillis = 0L;
 
-		for (int i = PASSWORD_MIN;
-				i <= PASSWORD_MAX
-						&& attemptCount < maxAttempts;
-				i++) {
+	    for (int i = PASSWORD_MIN;
+	            i <= PASSWORD_MAX
+	                    && attemptCount < maxAttempts;
+	            i++) {
 
-			String candidate =
-					formatPassword(i);
+	        String candidate =
+	                formatPassword(i);
 
-			attemptCount++;
+	        attemptCount++;
 
-			// -------------------------------------------------
-			// 候補パスワードを1件ずつ表示
-			// -------------------------------------------------
+	        // -------------------------------------------------
+	        // 候補パスワードを1件ずつ表示
+	        // -------------------------------------------------
 
-			System.out.println(
-					stageName
-							+ " 総当たり攻撃 試行 "
-							+ attemptCount
-							+ " / "
-							+ maxAttempts
-							+ " : "
-							+ candidate);
+	        System.out.println(
+	                stageName
+	                        + " 総当たり攻撃 試行 "
+	                        + attemptCount
+	                        + " / "
+	                        + maxAttempts
+	                        + " : "
+	                        + candidate);
 
-			// -------------------------------------------------
-			// BCrypt照合
-			// -------------------------------------------------
+	        // -------------------------------------------------
+	        // BCrypt照合
+	        // -------------------------------------------------
 
-			if (passwordEncoder.matches(
-					candidate,
-					passwordHash)) {
+	        if (passwordEncoder.matches(
+	                candidate,
+	                passwordHash)) {
 
-				return new BruteForceStageResult(
-						true,
-						candidate,
-						attemptCount,
-						virtualWaitTimeMillis);
-			}
+	            // 成功した場合は、
+	            // その試行回数が1000回目であっても
+	            // 仮想待機時間は加算しない。
+	            return new BruteForceStageResult(
+	                    true,
+	                    candidate,
+	                    attemptCount,
+	                    virtualWaitTimeMillis);
+	        }
 
-			// =================================================
-			// 1000回ごとに仮想待機時間を加算
-			// =================================================
+	        // =================================================
+	        // 1000回失敗するごとに仮想待機時間を加算
+	        // =================================================
 
-			if (attemptCount % 1000 == 0
-					&& attemptCount < maxAttempts) {
+	        if (attemptCount % 1000 == 0) {
 
-				virtualWaitTimeMillis +=
-						WAIT_TIME_MILLIS;
+	            virtualWaitTimeMillis +=
+	                    WAIT_TIME_MILLIS;
 
-				System.out.println(
-						"----------------------------------------");
+	            System.out.println(
+	                    "----------------------------------------");
 
-				System.out.println(
-						stageName
-								+ " が1000回失敗したため"
-								+ "仮想待機時間を1分加算します。");
+	            System.out.println(
+	                    stageName
+	                            + " が"
+	                            + attemptCount
+	                            + "回失敗したため"
+	                            + "仮想待機時間を1分加算します。");
 
-				System.out.println(
-						"現在の試行回数 = "
-								+ attemptCount);
+	            System.out.println(
+	                    "現在の試行回数 = "
+	                            + attemptCount);
 
-				System.out.println(
-						"今回の仮想待機時間 = "
-								+ WAIT_TIME_MILLIS
-								+ " ms");
+	            System.out.println(
+	                    "今回の仮想待機時間 = "
+	                            + WAIT_TIME_MILLIS
+	                            + " ms");
 
-				System.out.println(
-						"累積仮想待機時間 = "
-								+ virtualWaitTimeMillis
-								+ " ms");
+	            System.out.println(
+	                    "累積仮想待機時間 = "
+	                            + virtualWaitTimeMillis
+	                            + " ms");
 
-				System.out.println(
-						"----------------------------------------");
-			}
-		}
+	            System.out.println(
+	                    "----------------------------------------");
+	        }
+	    }
 
-		return new BruteForceStageResult(
-				false,
-				null,
-				attemptCount,
-				virtualWaitTimeMillis);
+	    return new BruteForceStageResult(
+	            false,
+	            null,
+	            attemptCount,
+	            virtualWaitTimeMillis);
 	}
 
 	// =========================================================

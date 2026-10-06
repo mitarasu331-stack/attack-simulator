@@ -1191,7 +1191,8 @@ public class NewAuthLabLoginClient {
 
 		String passwordBody =
 				"username=" + encode(username)
-				+ "&password=" + encode(password);
+				+ "&password=" + encode(password)
+				+ "&fromAttackSimulator=true";
 
 		HttpRequest passwordRequest =
 				HttpRequest.newBuilder()
