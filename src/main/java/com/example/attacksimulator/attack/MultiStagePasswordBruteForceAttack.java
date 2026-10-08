@@ -28,28 +28,29 @@ public class MultiStagePasswordBruteForceAttack {
 	 * 2回目：5分
 	 * 3回目：10分
 	 * 4回目：20分
-	 * 5回目：30分
-	 * 6回目：60分
 	 *
-	 * 7回目：攻撃処理を強制終了
+	 * 5回目：攻撃処理を強制終了
+	 *
+	 * ※5回目の強制終了時には
+	 * 追加の仮想待機時間は加算しない。
 	 */
 	private static final long[] WAIT_TIMES = {
 			60_000L,       // 1回目：1分
 			300_000L,      // 2回目：5分
 			600_000L,      // 3回目：10分
-			1_200_000L,    // 4回目：20分
-			1_800_000L,    // 5回目：30分
-			3_600_000L     // 6回目：60分
+			1_200_000L     // 4回目：20分
 	};
 
 	/**
-	 * 7回目の試行制限で
+	 * 5回目の試行制限で
 	 * 攻撃処理を強制終了する。
+	 *
+	 * 5000回失敗した時点で強制終了。
 	 *
 	 * 実際のアカウントロックは行わない。
 	 */
 	private static final int FORCE_TERMINATION_RESTRICTION_COUNT =
-			7;
+			5;
 
 	private final PasswordEncoder passwordEncoder;
 
@@ -411,12 +412,12 @@ public class MultiStagePasswordBruteForceAttack {
 
 			System.out.println(
 					stageName
-							+ " 総当たり攻撃 試行 "
-							+ attemptCount
-							+ " / "
-							+ maxAttempts
-							+ " : "
-							+ candidate);
+					+ " 総当たり攻撃 試行 "
+					+ attemptCount
+					+ " / "
+					+ maxAttempts
+					+ " : "
+					+ candidate);
 
 			// -------------------------------------------------
 			// BCrypt照合
@@ -427,8 +428,11 @@ public class MultiStagePasswordBruteForceAttack {
 					passwordHash)) {
 
 				// 成功した場合は、
-				// その試行回数が1000回目であっても
+				// その試行回数が1000回目、
+				// 2000回目、3000回目、4000回目、
+				// 5000回目であっても
 				// 仮想待機時間は加算しない。
+
 				return new BruteForceStageResult(
 						true,
 						candidate,
@@ -446,11 +450,13 @@ public class MultiStagePasswordBruteForceAttack {
 
 				int restrictionCount =
 						attemptCount
-								/ WAIT_INTERVAL;
+						/ WAIT_INTERVAL;
 
 				// =================================================
-				// 7回目
+				// 5回目
 				// 攻撃処理を強制終了
+				//
+				// 5000回失敗した時点で終了。
 				//
 				// 実際のアカウントロックは行わない。
 				// =================================================
@@ -463,9 +469,9 @@ public class MultiStagePasswordBruteForceAttack {
 
 					System.out.println(
 							stageName
-									+ " が"
-									+ attemptCount
-									+ "回失敗");
+							+ " が"
+							+ attemptCount
+							+ "回失敗");
 
 					System.out.println(
 							"試行制限 "
@@ -495,12 +501,12 @@ public class MultiStagePasswordBruteForceAttack {
 				}
 
 				// =================================================
-				// 1～6回目の試行制限
+				// 1～4回目の試行制限
 				// =================================================
 
 				long waitTimeMillis =
 						WAIT_TIMES[
-								restrictionCount - 1];
+						           restrictionCount - 1];
 
 				virtualWaitTimeMillis +=
 						waitTimeMillis;
@@ -510,9 +516,9 @@ public class MultiStagePasswordBruteForceAttack {
 
 				System.out.println(
 						stageName
-								+ " が"
-								+ attemptCount
-								+ "回失敗");
+						+ " が"
+						+ attemptCount
+						+ "回失敗");
 
 				System.out.println(
 						"試行制限 "

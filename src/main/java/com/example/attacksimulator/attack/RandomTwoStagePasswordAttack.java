@@ -56,29 +56,15 @@ public class RandomTwoStagePasswordAttack {
 			1_200_000L;
 
 	/**
-	 * 制限5回目
-	 * 5000回失敗 → 30分
-	 */
-	private static final long WAIT_TIME_5 =
-			1_800_000L;
-
-	/**
-	 * 制限6回目
-	 * 6000回失敗 → 60分
-	 */
-	private static final long WAIT_TIME_6 =
-			3_600_000L;
-
-	/**
-	 * 7回目の制限
+	 * 5回目の制限
 	 *
-	 * 7000回失敗した時点で
+	 * 5000回失敗した時点で
 	 * 攻撃処理を強制終了する。
 	 *
-	 * 実際のアカウントはロックしない。
+	 * 5回目には追加の待機時間を加算しない。
 	 */
 	private static final int FORCE_TERMINATION_RESTRICTION_COUNT =
-			7;
+			5;
 
 	// =========================================================
 	// PasswordEncoder
@@ -122,9 +108,7 @@ public class RandomTwoStagePasswordAttack {
 	 * 2000回  → 5分
 	 * 3000回  → 10分
 	 * 4000回  → 20分
-	 * 5000回  → 30分
-	 * 6000回  → 60分
-	 * 7000回  → 攻撃処理を強制終了
+	 * 5000回  → 攻撃処理を強制終了
 	 *
 	 * 実際には待機しない。
 	 */
@@ -211,8 +195,8 @@ public class RandomTwoStagePasswordAttack {
 				passwordRestrictionCount++;
 
 				// ---------------------------------------------
-				// 7回目の制限
-				// 7000回失敗
+				// 5回目の制限
+				// 5000回失敗
 				// ---------------------------------------------
 
 				if (passwordRestrictionCount
@@ -229,7 +213,7 @@ public class RandomTwoStagePasswordAttack {
 									+ "回失敗しました。");
 
 					System.out.println(
-							"7回目の試行制限に到達したため、"
+							"5回目の試行制限に到達したため、"
 									+ "攻撃処理を強制終了します。");
 
 					System.out.println(
@@ -250,7 +234,7 @@ public class RandomTwoStagePasswordAttack {
 				}
 
 				// ---------------------------------------------
-				// 1～6回目の制限
+				// 1～4回目の制限
 				// ---------------------------------------------
 
 				long waitTime =
@@ -270,7 +254,7 @@ public class RandomTwoStagePasswordAttack {
 
 				System.out.println(
 						passwordRestrictionCount
-								+ "回目の試行制限");
+						+ "回目の試行制限");
 
 				System.out.println(
 						"仮想待機時間 = "
@@ -366,8 +350,8 @@ public class RandomTwoStagePasswordAttack {
 				password2RestrictionCount++;
 
 				// ---------------------------------------------
-				// 7回目の制限
-				// 7000回失敗
+				// 5回目の制限
+				// 5000回失敗
 				// ---------------------------------------------
 
 				if (password2RestrictionCount
@@ -384,7 +368,7 @@ public class RandomTwoStagePasswordAttack {
 									+ "回失敗しました。");
 
 					System.out.println(
-							"7回目の試行制限に到達したため、"
+							"5回目の試行制限に到達したため、"
 									+ "攻撃処理を強制終了します。");
 
 					System.out.println(
@@ -409,7 +393,7 @@ public class RandomTwoStagePasswordAttack {
 				}
 
 				// ---------------------------------------------
-				// 1～6回目の制限
+				// 1～4回目の制限
 				// ---------------------------------------------
 
 				long waitTime =
@@ -429,7 +413,7 @@ public class RandomTwoStagePasswordAttack {
 
 				System.out.println(
 						password2RestrictionCount
-								+ "回目の試行制限");
+						+ "回目の試行制限");
 
 				System.out.println(
 						"仮想待機時間 = "
@@ -489,12 +473,6 @@ public class RandomTwoStagePasswordAttack {
 
 		case 4:
 			return WAIT_TIME_4;
-
-		case 5:
-			return WAIT_TIME_5;
-
-		case 6:
-			return WAIT_TIME_6;
 
 		default:
 			return 0L;
@@ -670,6 +648,19 @@ public class RandomTwoStagePasswordAttack {
 		/**
 		 * 実際には待っていないが、
 		 * 攻撃時間として加算する待機時間
+		 *
+		 * 1回目の制限 = 1分
+		 * 2回目の制限 = 5分
+		 * 3回目の制限 = 10分
+		 * 4回目の制限 = 20分
+		 *
+		 * 最大累積時間：
+		 *
+		 * 1 + 5 + 10 + 20
+		 * = 36分
+		 *
+		 * PasswordとPassword2の
+		 * 各段階で発生した時間を累積する。
 		 */
 		public long getVirtualWaitTimeMillis() {
 
@@ -679,6 +670,12 @@ public class RandomTwoStagePasswordAttack {
 		/**
 		 * 試行制限によって
 		 * 攻撃処理を強制終了したか
+		 *
+		 * true：
+		 * 5000回失敗して強制終了
+		 *
+		 * false：
+		 * 強制終了していない
 		 */
 		public boolean isForceTerminated() {
 

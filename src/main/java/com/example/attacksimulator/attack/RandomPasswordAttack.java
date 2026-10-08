@@ -51,10 +51,8 @@ public class RandomPasswordAttack {
 	 * 2回目 = 5分
 	 * 3回目 = 10分
 	 * 4回目 = 20分
-	 * 5回目 = 30分
-	 * 6回目 = 60分
 	 *
-	 * 7回目は強制終了するため、
+	 * 5回目は強制終了するため、
 	 * 待機時間は設定しない。
 	 */
 	private static final long[] WAIT_TIMES = {
@@ -62,24 +60,22 @@ public class RandomPasswordAttack {
 			60_000L,       // 1分
 			300_000L,      // 5分
 			600_000L,      // 10分
-			1_200_000L,    // 20分
-			1_800_000L,    // 30分
-			3_600_000L     // 60分
+			1_200_000L     // 20分
 	};
 
 	/**
 	 * 強制終了する制限回数
 	 *
-	 * 1000回 × 7回
-	 * = 7000回失敗
+	 * 1000回 × 5回
+	 * = 5000回失敗
 	 *
-	 * 7回目の制限に到達した時点で
+	 * 5回目の制限に到達した時点で
 	 * 攻撃処理を強制終了する。
 	 *
 	 * 実際のアカウントロックは行わない。
 	 */
 	private static final int FORCE_TERMINATION_RESTRICTION_COUNT =
-			7;
+			5;
 
 	// =========================================================
 	// PasswordEncoder
@@ -185,13 +181,14 @@ public class RandomPasswordAttack {
 		 * 2000回失敗
 		 * → 2回目
 		 *
-		 * ...
+		 * 3000回失敗
+		 * → 3回目
 		 *
-		 * 6000回失敗
-		 * → 6回目
+		 * 4000回失敗
+		 * → 4回目
 		 *
-		 * 7000回失敗
-		 * → 7回目、強制終了
+		 * 5000回失敗
+		 * → 5回目、強制終了
 		 */
 		int restrictionCount = 0;
 
@@ -283,12 +280,12 @@ public class RandomPasswordAttack {
 				restrictionCount++;
 
 				// -------------------------------------------------
-				// 7回目の制限
+				// 5回目の制限
 				//
-				// 7000回失敗した時点で
+				// 5000回失敗した時点で
 				// 攻撃処理を強制終了する。
 				//
-				// 7回目には追加待機時間を加算しない。
+				// 5回目には追加待機時間を加算しない。
 				// -------------------------------------------------
 
 				if (restrictionCount
@@ -330,12 +327,12 @@ public class RandomPasswordAttack {
 				}
 
 				// -------------------------------------------------
-				// 1～6回目の制限
+				// 1～4回目の制限
 				// -------------------------------------------------
 
 				long waitTime =
 						WAIT_TIMES[
-								restrictionCount - 1];
+						           restrictionCount - 1];
 
 				virtualWaitTimeMillis +=
 						waitTime;
@@ -525,13 +522,11 @@ public class RandomPasswordAttack {
 		 * 2回目の制限 = 5分
 		 * 3回目の制限 = 10分
 		 * 4回目の制限 = 20分
-		 * 5回目の制限 = 30分
-		 * 6回目の制限 = 60分
 		 *
 		 * 最大累積時間：
 		 *
-		 * 1 + 5 + 10 + 20 + 30 + 60
-		 * = 126分
+		 * 1 + 5 + 10 + 20
+		 * = 36分
 		 */
 		public long getVirtualWaitTimeMillis() {
 
@@ -543,7 +538,7 @@ public class RandomPasswordAttack {
 		 * 攻撃処理が強制終了されたかを取得する。
 		 *
 		 * true：
-		 * 7000回失敗して強制終了
+		 * 5000回失敗して強制終了
 		 *
 		 * false：
 		 * 強制終了していない

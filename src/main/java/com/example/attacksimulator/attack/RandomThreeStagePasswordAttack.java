@@ -32,25 +32,22 @@ public class RandomThreeStagePasswordAttack {
 	 * 2回目   → 5分
 	 * 3回目   → 10分
 	 * 4回目   → 20分
-	 * 5回目   → 30分
-	 * 6回目   → 60分
 	 */
 	private static final long[] WAIT_TIMES = {
 			60_000L,
 			300_000L,
 			600_000L,
-			1_200_000L,
-			1_800_000L,
-			3_600_000L
+			1_200_000L
 	};
 
 	/**
-	 * 7回目の制限到達時に攻撃処理を強制終了する
+	 * 5回目の制限到達時に
+	 * 攻撃処理を強制終了する
 	 *
-	 * 7000回失敗
+	 * 5000回失敗
 	 */
 	private static final int FORCE_TERMINATION_RESTRICTION_COUNT =
-			7;
+			5;
 
 	private final PasswordEncoder passwordEncoder;
 
@@ -164,9 +161,9 @@ public class RandomThreeStagePasswordAttack {
 				passwordRestrictionCount++;
 
 				// -------------------------------------------------
-				// 7回目の制限
+				// 5回目の制限
 				//
-				// 7000回失敗
+				// 5000回失敗
 				// → 攻撃処理を強制終了
 				//
 				// 待機時間は追加しない。
@@ -188,7 +185,7 @@ public class RandomThreeStagePasswordAttack {
 				}
 
 				// -------------------------------------------------
-				// 1～6回目の制限
+				// 1～4回目の制限
 				// -------------------------------------------------
 
 				long waitTime =
@@ -318,8 +315,8 @@ public class RandomThreeStagePasswordAttack {
 				password2RestrictionCount++;
 
 				// -------------------------------------------------
-				// 7回目の制限
-				// → 7000回失敗で強制終了
+				// 5回目の制限
+				// → 5000回失敗で強制終了
 				// -------------------------------------------------
 
 				if (password2RestrictionCount
@@ -338,7 +335,7 @@ public class RandomThreeStagePasswordAttack {
 				}
 
 				// -------------------------------------------------
-				// 1～6回目の制限
+				// 1～4回目の制限
 				// -------------------------------------------------
 
 				long waitTime =
@@ -484,8 +481,8 @@ public class RandomThreeStagePasswordAttack {
 				password3RestrictionCount++;
 
 				// -------------------------------------------------
-				// 7回目の制限
-				// → 7000回失敗で強制終了
+				// 5回目の制限
+				// → 5000回失敗で強制終了
 				// -------------------------------------------------
 
 				if (password3RestrictionCount
@@ -504,7 +501,7 @@ public class RandomThreeStagePasswordAttack {
 				}
 
 				// -------------------------------------------------
-				// 1～6回目の制限
+				// 1～4回目の制限
 				// -------------------------------------------------
 
 				long waitTime =
@@ -758,14 +755,34 @@ public class RandomThreeStagePasswordAttack {
 			return attemptCount;
 		}
 
+		/**
+		 * 実際には待っていないが、
+		 * 攻撃時間として加算する仮想待機時間
+		 *
+		 * 1段階あたりの最大累積時間：
+		 *
+		 * 1 + 5 + 10 + 20
+		 * = 36分
+		 *
+		 * 三段階すべてで最大まで制限された場合：
+		 *
+		 * 36 + 36 + 36
+		 * = 108分
+		 */
 		public long getVirtualWaitTimeMillis() {
 
 			return virtualWaitTimeMillis;
 		}
 
 		/**
-		 * 試行制限によって攻撃処理を
-		 * 強制終了したか
+		 * 試行制限によって
+		 * 攻撃処理を強制終了したか
+		 *
+		 * true：
+		 * 5000回失敗して強制終了
+		 *
+		 * false：
+		 * 強制終了していない
 		 */
 		public boolean isForceTerminated() {
 
