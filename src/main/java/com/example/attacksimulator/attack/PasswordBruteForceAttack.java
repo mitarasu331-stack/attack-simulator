@@ -10,17 +10,44 @@ public class PasswordBruteForceAttack {
 	private static final int PASSWORD_MAX = 9999;
 
 	/**
-	 * 1000回ごとの仮想待機時間
+	 * 試行制限のしきい値
+	 *
+	 * 1000回失敗するごとに試行制限が発生する。
+	 */
+	private static final int WAIT_INTERVAL =
+			1_000;
+
+	/**
+	 * 試行制限による仮想待機時間
 	 *
 	 * 実際には待機しない。
 	 *
-	 * 60秒 = 60000ms
+	 * 1回目：60秒
+	 * 2回目：5分
+	 * 3回目：10分
+	 * 4回目：20分
+	 * 5回目：30分
+	 * 6回目：60分
+	 *
+	 * 7回目：攻撃処理を強制終了
 	 */
-	private static final long WAIT_TIME_MILLIS =
-			60_000L;
+	private static final long[] WAIT_TIMES = {
+			60_000L,       // 1回目：1分
+			300_000L,      // 2回目：5分
+			600_000L,      // 3回目：10分
+			1_200_000L,    // 4回目：20分
+			1_800_000L,    // 5回目：30分
+			3_600_000L     // 6回目：60分
+	};
 
-	private static final int WAIT_INTERVAL =
-			1_000;
+	/**
+	 * 7回目の試行制限で
+	 * 攻撃処理を強制終了する。
+	 *
+	 * 実際のアカウントロックは行わない。
+	 */
+	private static final int FORCE_TERMINATION_RESTRICTION_COUNT =
+			7;
 
 	private final PasswordEncoder passwordEncoder;
 
@@ -47,8 +74,15 @@ public class PasswordBruteForceAttack {
 	 *
 	 * 実際には待機せず連続して試行する。
 	 *
-	 * 1000回失敗するごとに
-	 * 攻撃時間として60秒を仮想的に加算する。
+	 * 1000回失敗するごとに試行制限を発生させる。
+	 *
+	 * 1回目：1分
+	 * 2回目：5分
+	 * 3回目：10分
+	 * 4回目：20分
+	 * 5回目：30分
+	 * 6回目：60分
+	 * 7回目：攻撃処理を強制終了
 	 */
 	public AttackResult execute(
 			String passwordHash,
@@ -118,38 +152,112 @@ public class PasswordBruteForceAttack {
 					candidate,
 					passwordHash)) {
 
-				// 1000回目で成功した場合などは、
-				// 仮想待機時間を追加しない。
+				// 正解した場合は、
+				// その試行が1000回目であっても
+				// 試行制限による仮想時間は追加しない。
 				return new AttackResult(
 						true,
 						candidate,
 						attemptCount,
-						virtualWaitTimeMillis);
+						virtualWaitTimeMillis,
+						false);
 			}
 
 			// -------------------------------------------------
-			// 1000回失敗するごとに
-			// 実際には待機せず60秒を仮想時間として加算
+			// 1000回失敗するごとに試行制限
 			// -------------------------------------------------
 
 			if (attemptCount
 					% WAIT_INTERVAL == 0) {
 
+				int restrictionCount =
+						attemptCount
+								/ WAIT_INTERVAL;
+
+				// -------------------------------------------------
+				// 7回目
+				// 攻撃処理を強制終了
+				//
+				// 実際のアカウントロックは行わない。
+				// -------------------------------------------------
+
+				if (restrictionCount
+						>= FORCE_TERMINATION_RESTRICTION_COUNT) {
+
+					System.out.println(
+							"========================================");
+
+					System.out.println(
+							"総当たり攻撃 "
+									+ attemptCount
+									+ "回失敗");
+
+					System.out.println(
+							"試行制限 "
+									+ restrictionCount
+									+ "回目");
+
+					System.out.println(
+							"攻撃処理を強制終了します。");
+
+					System.out.println(
+							"※実際のアカウントロックは行いません。");
+
+					System.out.println(
+							"累積仮想待機時間 = "
+									+ virtualWaitTimeMillis
+									+ " ms");
+
+					System.out.println(
+							"========================================");
+
+					return new AttackResult(
+							false,
+							null,
+							attemptCount,
+							virtualWaitTimeMillis,
+							true);
+				}
+
+				// -------------------------------------------------
+				// 1～6回目の試行制限
+				// -------------------------------------------------
+
+				long waitTimeMillis =
+						WAIT_TIMES[
+								restrictionCount - 1];
+
 				virtualWaitTimeMillis +=
-						WAIT_TIME_MILLIS;
+						waitTimeMillis;
+
+				System.out.println(
+						"========================================");
 
 				System.out.println(
 						"総当たり攻撃 "
 								+ attemptCount
-								+ "回失敗"
-								+ " → 仮想待機時間 "
-								+ WAIT_TIME_MILLIS
+								+ "回失敗");
+
+				System.out.println(
+						"試行制限 "
+								+ restrictionCount
+								+ "回目");
+
+				System.out.println(
+						"仮想待機時間 "
+								+ waitTimeMillis
 								+ " ms を加算");
 
 				System.out.println(
 						"累積仮想待機時間 = "
 								+ virtualWaitTimeMillis
 								+ " ms");
+
+				System.out.println(
+						"※実際には待機していません。");
+
+				System.out.println(
+						"========================================");
 			}
 		}
 
@@ -161,7 +269,8 @@ public class PasswordBruteForceAttack {
 				false,
 				null,
 				attemptCount,
-				virtualWaitTimeMillis);
+				virtualWaitTimeMillis,
+				false);
 	}
 
 	public static class AttackResult {
@@ -178,11 +287,20 @@ public class PasswordBruteForceAttack {
 		 */
 		private final long virtualWaitTimeMillis;
 
+		/**
+		 * 試行制限によって
+		 * 攻撃処理が強制終了されたかどうか
+		 *
+		 * 実際のアカウントロックではない。
+		 */
+		private final boolean forceTerminated;
+
 		public AttackResult(
 				boolean success,
 				String password,
 				int attemptCount,
-				long virtualWaitTimeMillis) {
+				long virtualWaitTimeMillis,
+				boolean forceTerminated) {
 
 			this.success = success;
 
@@ -192,6 +310,9 @@ public class PasswordBruteForceAttack {
 
 			this.virtualWaitTimeMillis =
 					virtualWaitTimeMillis;
+
+			this.forceTerminated =
+					forceTerminated;
 		}
 
 		public boolean isSuccess() {
@@ -216,6 +337,17 @@ public class PasswordBruteForceAttack {
 		public long getVirtualWaitTimeMillis() {
 
 			return virtualWaitTimeMillis;
+		}
+
+		/**
+		 * 試行制限によって
+		 * 攻撃処理が強制終了されたかどうか
+		 *
+		 * 実際のアカウントロックではない。
+		 */
+		public boolean isForceTerminated() {
+
+			return forceTerminated;
 		}
 	}
 }

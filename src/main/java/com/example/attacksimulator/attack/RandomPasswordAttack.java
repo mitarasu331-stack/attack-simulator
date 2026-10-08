@@ -24,21 +24,62 @@ public class RandomPasswordAttack {
 			10_000;
 
 	/**
-	 * 1000回ごとの仮想待機時間
+	 * 仮想待機時間
 	 *
 	 * 実際には待機しない。
 	 * 実験上の攻撃時間にだけ加算する。
 	 *
+	 * 1回目の制限 = 1分
+	 *
 	 * 60秒 = 60000ms
 	 */
-	private static final long VIRTUAL_WAIT_TIME_MILLIS =
+	private static final long FIRST_WAIT_TIME_MILLIS =
 			60_000L;
 
 	/**
 	 * 仮想待機が発生する間隔
+	 *
+	 * 1000回失敗するごとに制限が発生する。
 	 */
 	private static final int WAIT_INTERVAL =
 			1_000;
+
+	/**
+	 * 制限回数ごとの仮想待機時間
+	 *
+	 * 1回目 = 1分
+	 * 2回目 = 5分
+	 * 3回目 = 10分
+	 * 4回目 = 20分
+	 * 5回目 = 30分
+	 * 6回目 = 60分
+	 *
+	 * 7回目は強制終了するため、
+	 * 待機時間は設定しない。
+	 */
+	private static final long[] WAIT_TIMES = {
+
+			60_000L,       // 1分
+			300_000L,      // 5分
+			600_000L,      // 10分
+			1_200_000L,    // 20分
+			1_800_000L,    // 30分
+			3_600_000L     // 60分
+	};
+
+	/**
+	 * 強制終了する制限回数
+	 *
+	 * 1000回 × 7回
+	 * = 7000回失敗
+	 *
+	 * 7回目の制限に到達した時点で
+	 * 攻撃処理を強制終了する。
+	 *
+	 * 実際のアカウントロックは行わない。
+	 */
+	private static final int FORCE_TERMINATION_RESTRICTION_COUNT =
+			7;
 
 	// =========================================================
 	// PasswordEncoder
@@ -135,6 +176,30 @@ public class RandomPasswordAttack {
 
 		int attemptCount = 0;
 
+		/**
+		 * 現在までに発生した制限回数
+		 *
+		 * 1000回失敗
+		 * → 1回目
+		 *
+		 * 2000回失敗
+		 * → 2回目
+		 *
+		 * ...
+		 *
+		 * 6000回失敗
+		 * → 6回目
+		 *
+		 * 7000回失敗
+		 * → 7回目、強制終了
+		 */
+		int restrictionCount = 0;
+
+		/**
+		 * 累積仮想待機時間
+		 */
+		long virtualWaitTimeMillis = 0L;
+
 		for (int i = 0;
 				i < candidates.size();
 				i++) {
@@ -194,6 +259,9 @@ public class RandomPasswordAttack {
 
 			// -------------------------------------------------
 			// 突破成功
+			//
+			// 成功した場合は、
+			// その回数の制限時間を加算しない。
 			// -------------------------------------------------
 
 			if (matched) {
@@ -201,7 +269,104 @@ public class RandomPasswordAttack {
 				return new AttackResult(
 						true,
 						candidate,
-						attemptCount);
+						attemptCount,
+						virtualWaitTimeMillis,
+						false);
+			}
+
+			// =================================================
+			// 失敗した場合の試行制限判定
+			// =================================================
+
+			if (attemptCount % WAIT_INTERVAL == 0) {
+
+				restrictionCount++;
+
+				// -------------------------------------------------
+				// 7回目の制限
+				//
+				// 7000回失敗した時点で
+				// 攻撃処理を強制終了する。
+				//
+				// 7回目には追加待機時間を加算しない。
+				// -------------------------------------------------
+
+				if (restrictionCount
+						>= FORCE_TERMINATION_RESTRICTION_COUNT) {
+
+					System.out.println(
+							"========================================");
+
+					System.out.println(
+							"ランダムPassword攻撃を強制終了します。");
+
+					System.out.println(
+							"試行回数 = "
+									+ attemptCount);
+
+					System.out.println(
+							"制限回数 = "
+									+ restrictionCount);
+
+					System.out.println(
+							"強制終了条件 = "
+									+ WAIT_INTERVAL
+									+ "回 × "
+									+ FORCE_TERMINATION_RESTRICTION_COUNT
+									+ "回");
+
+					System.out.println(
+							"実際のユーザーアカウントはロックしません。");
+
+					System.out.println(
+							"========================================");
+
+					return new AttackResult(
+							false,
+							null,
+							attemptCount,
+							virtualWaitTimeMillis,
+							true);
+				}
+
+				// -------------------------------------------------
+				// 1～6回目の制限
+				// -------------------------------------------------
+
+				long waitTime =
+						WAIT_TIMES[
+								restrictionCount - 1];
+
+				virtualWaitTimeMillis +=
+						waitTime;
+
+				System.out.println(
+						"----------------------------------------");
+
+				System.out.println(
+						"ランダムPassword攻撃が"
+								+ attemptCount
+								+ "回失敗しました。");
+
+				System.out.println(
+						"制限回数 = "
+								+ restrictionCount);
+
+				System.out.println(
+						"今回の仮想待機時間 = "
+								+ formatWaitTime(
+										waitTime));
+
+				System.out.println(
+						"累積仮想待機時間 = "
+								+ formatWaitTime(
+										virtualWaitTimeMillis));
+
+				System.out.println(
+						"※実際には待機しません。");
+
+				System.out.println(
+						"----------------------------------------");
 			}
 		}
 
@@ -212,7 +377,9 @@ public class RandomPasswordAttack {
 		return new AttackResult(
 				false,
 				null,
-				attemptCount);
+				attemptCount,
+				virtualWaitTimeMillis,
+				false);
 	}
 
 	// =========================================================
@@ -236,6 +403,19 @@ public class RandomPasswordAttack {
 	}
 
 	// =========================================================
+	// 待機時間表示
+	// =========================================================
+
+	private String formatWaitTime(
+			long waitTimeMillis) {
+
+		long minutes =
+				waitTimeMillis / 60_000L;
+
+		return minutes + "分";
+	}
+
+	// =========================================================
 	// 攻撃結果
 	// =========================================================
 
@@ -247,10 +427,61 @@ public class RandomPasswordAttack {
 
 		private final int attemptCount;
 
+		/**
+		 * 累積仮想待機時間
+		 */
+		private final long virtualWaitTimeMillis;
+
+		/**
+		 * 試行制限による強制終了
+		 */
+		private final boolean forceTerminated;
+
+		// =====================================================
+		// 既存コンストラクタ
+		// =====================================================
+
 		public AttackResult(
 				boolean success,
 				String password,
 				int attemptCount) {
+
+			this(
+					success,
+					password,
+					attemptCount,
+					0L,
+					false);
+		}
+
+		// =====================================================
+		// 仮想待機時間対応コンストラクタ
+		// =====================================================
+
+		public AttackResult(
+				boolean success,
+				String password,
+				int attemptCount,
+				long virtualWaitTimeMillis) {
+
+			this(
+					success,
+					password,
+					attemptCount,
+					virtualWaitTimeMillis,
+					false);
+		}
+
+		// =====================================================
+		// 強制終了対応コンストラクタ
+		// =====================================================
+
+		public AttackResult(
+				boolean success,
+				String password,
+				int attemptCount,
+				long virtualWaitTimeMillis,
+				boolean forceTerminated) {
 
 			this.success =
 					success;
@@ -260,6 +491,12 @@ public class RandomPasswordAttack {
 
 			this.attemptCount =
 					attemptCount;
+
+			this.virtualWaitTimeMillis =
+					virtualWaitTimeMillis;
+
+			this.forceTerminated =
+					forceTerminated;
 		}
 
 		// =====================================================
@@ -282,28 +519,38 @@ public class RandomPasswordAttack {
 		}
 
 		/**
-		 * 仮想待機時間を取得する。
+		 * 累積仮想待機時間を取得する。
 		 *
-		 * 1000回ごとに1分。
+		 * 1回目の制限 = 1分
+		 * 2回目の制限 = 5分
+		 * 3回目の制限 = 10分
+		 * 4回目の制限 = 20分
+		 * 5回目の制限 = 30分
+		 * 6回目の制限 = 60分
 		 *
-		 * 例：
-		 *  999回  → 0分
-		 * 1000回  → 1分
-		 * 1999回  → 1分
-		 * 2000回  → 2分
-		 * 2500回  → 2分
-		 * 9999回  → 9分
-		 * 10000回 → 10分
+		 * 最大累積時間：
 		 *
-		 * ※最後の試行後に待機するかどうかを
-		 *   攻撃時間計算側で調整する場合は、
-		 *   その仕様に合わせて変更可能。
+		 * 1 + 5 + 10 + 20 + 30 + 60
+		 * = 126分
 		 */
 		public long getVirtualWaitTimeMillis() {
 
-			return (long)
-					(attemptCount / WAIT_INTERVAL)
-					* VIRTUAL_WAIT_TIME_MILLIS;
+			return virtualWaitTimeMillis;
+		}
+
+		/**
+		 * 試行制限によって
+		 * 攻撃処理が強制終了されたかを取得する。
+		 *
+		 * true：
+		 * 7000回失敗して強制終了
+		 *
+		 * false：
+		 * 強制終了していない
+		 */
+		public boolean isForceTerminated() {
+
+			return forceTerminated;
 		}
 	}
 }

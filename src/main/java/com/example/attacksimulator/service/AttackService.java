@@ -16,6 +16,7 @@ import com.example.attacksimulator.model.NewAuthLabUser;
 import com.example.attacksimulator.repository.NewAuthLabUserRepository;
 
 @Service
+
 public class AttackService {
 
 	private final MultiStagePasswordBruteForceAttack multiStagePasswordBruteForceAttack;
@@ -27,7 +28,6 @@ public class AttackService {
 	private final RandomTwoStagePasswordAttack randomTwoStagePasswordAttack;
 
 	private final RandomThreeStagePasswordAttack randomThreeStagePasswordAttack;
-
 
 	private final NewAuthLabUserRepository newAuthLabUserRepository;
 
@@ -47,7 +47,6 @@ public class AttackService {
 
 			RandomThreeStagePasswordAttack randomThreeStagePasswordAttack,
 
-
 			NewAuthLabUserRepository newAuthLabUserRepository,
 
 			NewAuthLabLoginClient newAuthLabLoginClient,
@@ -55,28 +54,37 @@ public class AttackService {
 			DictionaryPasswordAttack dictionaryPasswordAttack) {
 
 		this.multiStagePasswordBruteForceAttack =
+
 				multiStagePasswordBruteForceAttack;
 
 		this.factorAuthenticationAttack =
+
 				factorAuthenticationAttack;
 
 		this.randomPasswordAttack =
+
 				randomPasswordAttack;
 
 		this.randomTwoStagePasswordAttack =
+
 				randomTwoStagePasswordAttack;
 
 		this.randomThreeStagePasswordAttack =
+
 				randomThreeStagePasswordAttack;
 
 		this.newAuthLabUserRepository =
+
 				newAuthLabUserRepository;
 
 		this.newAuthLabLoginClient =
+
 				newAuthLabLoginClient;
 
 		this.dictionaryPasswordAttack =
+
 				dictionaryPasswordAttack;
+
 	}
 
 	// =========================================================
@@ -84,14 +92,21 @@ public class AttackService {
 	// =========================================================
 
 	public NewAuthLabUser getUser(
+
 			String username) {
 
 		return newAuthLabUserRepository
+
 				.findByUsername(username)
+
 				.orElseThrow(() ->
+
 				new IllegalArgumentException(
+
 						"指定されたユーザーが見つかりません: "
+
 								+ username));
+
 	}
 
 	// =========================================================
@@ -100,26 +115,39 @@ public class AttackService {
 	// =========================================================
 
 	public MultiStagePasswordBruteForceAttack.AttackResult
+
 	executeOneStage(
+
 			String username) {
 
 		return executeOneStage(
+
 				username,
+
 				10_000);
+
 	}
 
 	public MultiStagePasswordBruteForceAttack.AttackResult
+
 	executeOneStage(
+
 			String username,
+
 			int maxAttemptsPassword) {
 
 		NewAuthLabUser user =
+
 				getUser(username);
 
 		return multiStagePasswordBruteForceAttack
+
 				.executeOneStage(
+
 						user.getPassword(),
+
 						maxAttemptsPassword);
+
 	}
 
 	// =========================================================
@@ -128,42 +156,65 @@ public class AttackService {
 	// =========================================================
 
 	public OneStageLoginResult
+
 	executeOneStageWithLogin(
+
 			String username) {
 
 		return executeOneStageWithLogin(
+
 				username,
+
 				10_000);
+
 	}
 
 	public OneStageLoginResult
+
 	executeOneStageWithLogin(
+
 			String username,
+
 			int maxAttemptsPassword) {
 
 		MultiStagePasswordBruteForceAttack.AttackResult
+
 		attackResult =
+
 		executeOneStage(
+
 				username,
+
 				maxAttemptsPassword);
 
 		if (!attackResult.isSuccess()) {
 
 			return new OneStageLoginResult(
+
 					attackResult,
+
 					false,
+
 					null);
+
 		}
 
 		LoginResult loginResult =
+
 				newAuthLabLoginClient.loginOneStage(
+
 						username,
+
 						attackResult.getPassword());
 
 		return new OneStageLoginResult(
+
 				attackResult,
+
 				loginResult.isSuccess(),
+
 				loginResult);
+
 	}
 
 	// =========================================================
@@ -172,26 +223,39 @@ public class AttackService {
 	// =========================================================
 
 	public RandomPasswordAttack.AttackResult
+
 	executeRandomOneStage(
+
 			String username) {
 
 		return executeRandomOneStage(
+
 				username,
+
 				10_000);
+
 	}
 
 	public RandomPasswordAttack.AttackResult
+
 	executeRandomOneStage(
+
 			String username,
+
 			int maxAttemptsPassword) {
 
 		NewAuthLabUser user =
+
 				getUser(username);
 
 		return randomPasswordAttack
+
 				.execute(
+
 						user.getPassword(),
+
 						maxAttemptsPassword);
+
 	}
 
 	// =========================================================
@@ -200,42 +264,65 @@ public class AttackService {
 	// =========================================================
 
 	public RandomOneStageLoginResult
+
 	executeRandomOneStageWithLogin(
+
 			String username) {
 
 		return executeRandomOneStageWithLogin(
+
 				username,
+
 				10_000);
+
 	}
 
 	public RandomOneStageLoginResult
+
 	executeRandomOneStageWithLogin(
+
 			String username,
+
 			int maxAttemptsPassword) {
 
 		RandomPasswordAttack.AttackResult
+
 		attackResult =
+
 		executeRandomOneStage(
+
 				username,
+
 				maxAttemptsPassword);
 
 		if (!attackResult.isSuccess()) {
 
 			return new RandomOneStageLoginResult(
+
 					attackResult,
+
 					false,
+
 					null);
+
 		}
 
 		LoginResult loginResult =
+
 				newAuthLabLoginClient.loginOneStage(
+
 						username,
+
 						attackResult.getPassword());
 
 		return new RandomOneStageLoginResult(
+
 				attackResult,
+
 				loginResult.isSuccess(),
+
 				loginResult);
+
 	}
 
 	// =========================================================
@@ -245,30 +332,47 @@ public class AttackService {
 	// =========================================================
 
 	public MultiStagePasswordBruteForceAttack.AttackResult
+
 	executeTwoStage(
+
 			String username) {
 
 		return executeTwoStage(
+
 				username,
+
 				10_000,
+
 				10_000);
+
 	}
 
 	public MultiStagePasswordBruteForceAttack.AttackResult
+
 	executeTwoStage(
+
 			String username,
+
 			int maxAttemptsPassword,
+
 			int maxAttemptsPassword2) {
 
 		NewAuthLabUser user =
+
 				getUser(username);
 
 		return multiStagePasswordBruteForceAttack
+
 				.executeTwoStage(
+
 						user.getPassword(),
+
 						user.getPassword2(),
+
 						maxAttemptsPassword,
+
 						maxAttemptsPassword2);
+
 	}
 
 	// =========================================================
@@ -277,46 +381,73 @@ public class AttackService {
 	// =========================================================
 
 	public TwoStageLoginResult
+
 	executeTwoStageWithLogin(
+
 			String username) {
 
 		return executeTwoStageWithLogin(
+
 				username,
+
 				10_000,
+
 				10_000);
+
 	}
 
 	public TwoStageLoginResult
+
 	executeTwoStageWithLogin(
+
 			String username,
+
 			int maxAttemptsPassword,
+
 			int maxAttemptsPassword2) {
 
 		MultiStagePasswordBruteForceAttack.AttackResult
+
 		attackResult =
+
 		executeTwoStage(
+
 				username,
+
 				maxAttemptsPassword,
+
 				maxAttemptsPassword2);
 
 		if (!attackResult.isSuccess()) {
 
 			return new TwoStageLoginResult(
+
 					attackResult,
+
 					false,
+
 					null);
+
 		}
 
 		LoginResult loginResult =
+
 				newAuthLabLoginClient.loginTwoStage(
+
 						username,
+
 						attackResult.getPassword(),
+
 						attackResult.getPassword2());
 
 		return new TwoStageLoginResult(
+
 				attackResult,
+
 				loginResult.isSuccess(),
+
 				loginResult);
+
 	}
 
 	// =========================================================
@@ -326,30 +457,47 @@ public class AttackService {
 	// =========================================================
 
 	public RandomTwoStagePasswordAttack.AttackResult
+
 	executeRandomTwoStage(
+
 			String username) {
 
 		return executeRandomTwoStage(
+
 				username,
+
 				10_000,
+
 				10_000);
+
 	}
 
 	public RandomTwoStagePasswordAttack.AttackResult
+
 	executeRandomTwoStage(
+
 			String username,
+
 			int maxAttemptsPassword,
+
 			int maxAttemptsPassword2) {
 
 		NewAuthLabUser user =
+
 				getUser(username);
 
 		return randomTwoStagePasswordAttack
+
 				.execute(
+
 						user.getPassword(),
+
 						user.getPassword2(),
+
 						maxAttemptsPassword,
+
 						maxAttemptsPassword2);
+
 	}
 
 	// =========================================================
@@ -358,46 +506,73 @@ public class AttackService {
 	// =========================================================
 
 	public RandomTwoStageLoginResult
+
 	executeRandomTwoStageWithLogin(
+
 			String username) {
 
 		return executeRandomTwoStageWithLogin(
+
 				username,
+
 				10_000,
+
 				10_000);
+
 	}
 
 	public RandomTwoStageLoginResult
+
 	executeRandomTwoStageWithLogin(
+
 			String username,
+
 			int maxAttemptsPassword,
+
 			int maxAttemptsPassword2) {
 
 		RandomTwoStagePasswordAttack.AttackResult
+
 		attackResult =
+
 		executeRandomTwoStage(
+
 				username,
+
 				maxAttemptsPassword,
+
 				maxAttemptsPassword2);
 
 		if (!attackResult.isSuccess()) {
 
 			return new RandomTwoStageLoginResult(
+
 					attackResult,
+
 					false,
+
 					null);
+
 		}
 
 		LoginResult loginResult =
+
 				newAuthLabLoginClient.loginTwoStage(
+
 						username,
+
 						attackResult.getPassword(),
+
 						attackResult.getPassword2());
 
 		return new RandomTwoStageLoginResult(
+
 				attackResult,
+
 				loginResult.isSuccess(),
+
 				loginResult);
+
 	}
 
 	// =========================================================
@@ -407,34 +582,55 @@ public class AttackService {
 	// =========================================================
 
 	public MultiStagePasswordBruteForceAttack.AttackResult
+
 	executeThreeStage(
+
 			String username) {
 
 		return executeThreeStage(
+
 				username,
+
 				10_000,
+
 				10_000,
+
 				10_000);
+
 	}
 
 	public MultiStagePasswordBruteForceAttack.AttackResult
+
 	executeThreeStage(
+
 			String username,
+
 			int maxAttemptsPassword,
+
 			int maxAttemptsPassword2,
+
 			int maxAttemptsPassword3) {
 
 		NewAuthLabUser user =
+
 				getUser(username);
 
 		return multiStagePasswordBruteForceAttack
+
 				.executeThreeStage(
+
 						user.getPassword(),
+
 						user.getPassword2(),
+
 						user.getPassword3(),
+
 						maxAttemptsPassword,
+
 						maxAttemptsPassword2,
+
 						maxAttemptsPassword3);
+
 	}
 
 	// =========================================================
@@ -443,50 +639,81 @@ public class AttackService {
 	// =========================================================
 
 	public ThreeStageLoginResult
+
 	executeThreeStageWithLogin(
+
 			String username) {
 
 		return executeThreeStageWithLogin(
+
 				username,
+
 				10_000,
+
 				10_000,
+
 				10_000);
+
 	}
 
 	public ThreeStageLoginResult
+
 	executeThreeStageWithLogin(
+
 			String username,
+
 			int maxAttemptsPassword,
+
 			int maxAttemptsPassword2,
+
 			int maxAttemptsPassword3) {
 
 		MultiStagePasswordBruteForceAttack.AttackResult
+
 		attackResult =
+
 		executeThreeStage(
+
 				username,
+
 				maxAttemptsPassword,
+
 				maxAttemptsPassword2,
+
 				maxAttemptsPassword3);
 
 		if (!attackResult.isSuccess()) {
 
 			return new ThreeStageLoginResult(
+
 					attackResult,
+
 					false,
+
 					null);
+
 		}
 
 		LoginResult loginResult =
+
 				newAuthLabLoginClient.loginThreeStage(
+
 						username,
+
 						attackResult.getPassword(),
+
 						attackResult.getPassword2(),
+
 						attackResult.getPassword3());
 
 		return new ThreeStageLoginResult(
+
 				attackResult,
+
 				loginResult.isSuccess(),
+
 				loginResult);
+
 	}
 
 	// =========================================================
@@ -496,34 +723,55 @@ public class AttackService {
 	// =========================================================
 
 	public RandomThreeStagePasswordAttack.AttackResult
+
 	executeRandomThreeStage(
+
 			String username) {
 
 		return executeRandomThreeStage(
+
 				username,
+
 				10_000,
+
 				10_000,
+
 				10_000);
+
 	}
 
 	public RandomThreeStagePasswordAttack.AttackResult
+
 	executeRandomThreeStage(
+
 			String username,
+
 			int maxAttemptsPassword,
+
 			int maxAttemptsPassword2,
+
 			int maxAttemptsPassword3) {
 
 		NewAuthLabUser user =
+
 				getUser(username);
 
 		return randomThreeStagePasswordAttack
+
 				.execute(
+
 						user.getPassword(),
+
 						user.getPassword2(),
+
 						user.getPassword3(),
+
 						maxAttemptsPassword,
+
 						maxAttemptsPassword2,
+
 						maxAttemptsPassword3);
+
 	}
 
 	// =========================================================
@@ -532,50 +780,87 @@ public class AttackService {
 	// =========================================================
 
 	public RandomThreeStageLoginResult
+
 	executeRandomThreeStageWithLogin(
+
 			String username) {
 
 		return executeRandomThreeStageWithLogin(
+
 				username,
+
 				10_000,
+
 				10_000,
+
 				10_000);
+
 	}
 
 	public RandomThreeStageLoginResult
+
 	executeRandomThreeStageWithLogin(
+
 			String username,
+
 			int maxAttemptsPassword,
+
 			int maxAttemptsPassword2,
+
 			int maxAttemptsPassword3) {
 
 		RandomThreeStagePasswordAttack.AttackResult
+
 		attackResult =
+
 		executeRandomThreeStage(
+
 				username,
+
 				maxAttemptsPassword,
+
 				maxAttemptsPassword2,
+
 				maxAttemptsPassword3);
+
+		// =====================================================
+		// 攻撃失敗
+		//
+		// 通常失敗でも強制終了でも、
+		// 実ログインは実行しない。
+		// =====================================================
 
 		if (!attackResult.isSuccess()) {
 
 			return new RandomThreeStageLoginResult(
+
 					attackResult,
+
 					false,
+
 					null);
 		}
 
 		LoginResult loginResult =
+
 				newAuthLabLoginClient.loginThreeStage(
+
 						username,
+
 						attackResult.getPassword(),
+
 						attackResult.getPassword2(),
+
 						attackResult.getPassword3());
 
 		return new RandomThreeStageLoginResult(
+
 				attackResult,
+
 				loginResult.isSuccess(),
+
 				loginResult);
+
 	}
 
 	// =========================================================
@@ -584,26 +869,39 @@ public class AttackService {
 	// =========================================================
 
 	public FactorAuthenticationAttack.FactorAttackResult
+
 	executeOneFactorPassword(
+
 			String username) {
 
 		return executeOneFactorPassword(
+
 				username,
+
 				10_000);
+
 	}
 
 	public FactorAuthenticationAttack.FactorAttackResult
+
 	executeOneFactorPassword(
+
 			String username,
+
 			int maxAttemptsPassword) {
 
 		NewAuthLabUser user =
+
 				getUser(username);
 
 		return factorAuthenticationAttack
+
 				.executeOneFactorPassword(
+
 						user.getPassword(),
+
 						maxAttemptsPassword);
+
 	}
 
 	// =========================================================
@@ -613,36 +911,53 @@ public class AttackService {
 	// =========================================================
 
 	public FactorAuthenticationAttack.FactorAttackResult
+
 	executeOneFactorRandomPassword(
+
 			String username) {
 
 		return executeOneFactorRandomPassword(
+
 				username,
+
 				10_000);
+
 	}
 
 	public FactorAuthenticationAttack.FactorAttackResult
+
 	executeOneFactorRandomPassword(
+
 			String username,
+
 			int maxAttemptsPassword) {
 
 		NewAuthLabUser user =
+
 				getUser(username);
 
 		String passwordHash =
+
 				user.getPassword();
 
 		if (passwordHash == null
+
 				|| passwordHash.isBlank()) {
 
 			throw new IllegalArgumentException(
+
 					"指定されたユーザーのPasswordが登録されていません。");
+
 		}
 
 		return factorAuthenticationAttack
+
 				.executeOneFactorRandomPassword(
+
 						passwordHash,
+
 						maxAttemptsPassword);
+
 	}
 
 	// =========================================================
@@ -652,25 +967,37 @@ public class AttackService {
 	// =========================================================
 
 	public FactorAuthenticationAttack.FactorAttackResult
+
 	executeOneFactorEmailOtp(
+
 			String username,
+
 			int maxAttempts) {
 
 		NewAuthLabUser user =
+
 				getUser(username);
 
 		if (user.getEmail() == null
+
 				|| user.getEmail().isBlank()) {
 
 			throw new IllegalArgumentException(
+
 					"指定されたユーザーにメールアドレスが登録されていません。");
+
 		}
 
 		return factorAuthenticationAttack
+
 				.executeOneFactorEmailOtp(
+
 						username,
+
 						user.getEmail(),
+
 						maxAttempts);
+
 	}
 
 	// =========================================================
@@ -680,68 +1007,91 @@ public class AttackService {
 	// =========================================================
 
 	public FactorAuthenticationAttack.FactorAttackResult
+
 	executeOneFactorEmailOtpWithLogin(
+
 			String username,
-			int maxAttempts) {
 
-		NewAuthLabUser user = getUser(username);
-
-		if (user.getEmail() == null
-				|| user.getEmail().isBlank()) {
-
-			throw new IllegalArgumentException(
-					"指定されたユーザーにメールアドレスが登録されていません。");
-		}
-
-		return factorAuthenticationAttack
-				.executeOneFactorEmailOtp(
-						username,
-						user.getEmail(),
-						maxAttempts);
-	}
-
-	// =========================================================
-	// 一要素認証
-	// Email OTP
-	// ランダム攻撃
-	// =========================================================
-
-
-	// =========================================================
-	// 一要素認証
-	// Email OTP
-	// ランダム攻撃
-	// =========================================================
-
-	public FactorAuthenticationAttack.FactorAttackResult
-	executeRandomOneFactorEmailOtp(
-			String username) {
-
-		return executeRandomOneFactorEmailOtp(
-				username,
-				1_000_000);
-	}
-
-	public FactorAuthenticationAttack.FactorAttackResult
-	executeRandomOneFactorEmailOtp(
-			String username,
 			int maxAttempts) {
 
 		NewAuthLabUser user =
+
 				getUser(username);
 
 		if (user.getEmail() == null
+
 				|| user.getEmail().isBlank()) {
 
 			throw new IllegalArgumentException(
+
 					"指定されたユーザーにメールアドレスが登録されていません。");
+
 		}
 
 		return factorAuthenticationAttack
-				.executeOneFactorRandomEmailOtp(
+
+				.executeOneFactorEmailOtp(
+
 						username,
+
 						user.getEmail(),
+
 						maxAttempts);
+
+	}
+
+	// =========================================================
+	// 一要素認証
+	// Email OTP
+	// ランダム攻撃
+	// =========================================================
+
+	public FactorAuthenticationAttack.FactorAttackResult
+
+	executeRandomOneFactorEmailOtp(
+
+			String username) {
+
+		return executeRandomOneFactorEmailOtp(
+
+				username,
+
+				1_000_000);
+
+	}
+
+	public FactorAuthenticationAttack.FactorAttackResult
+
+	executeRandomOneFactorEmailOtp(
+
+			String username,
+
+			int maxAttempts) {
+
+		NewAuthLabUser user =
+
+				getUser(username);
+
+		if (user.getEmail() == null
+
+				|| user.getEmail().isBlank()) {
+
+			throw new IllegalArgumentException(
+
+					"指定されたユーザーにメールアドレスが登録されていません。");
+
+		}
+
+		return factorAuthenticationAttack
+
+				.executeOneFactorRandomEmailOtp(
+
+						username,
+
+						user.getEmail(),
+
+						maxAttempts);
+
 	}
 
 	// =========================================================
@@ -751,40 +1101,61 @@ public class AttackService {
 	// =========================================================
 
 	public FactorAuthenticationAttack.FactorAttackResult
+
 	executeTwoFactorPasswordEmailOtp(
+
 			String username) {
 
 		return executeTwoFactorPasswordEmailOtp(
+
 				username,
+
 				10_000,
+
 				1_000_000);
+
 	}
 
 	public FactorAuthenticationAttack.FactorAttackResult
+
 	executeTwoFactorPasswordEmailOtp(
+
 			String username,
+
 			int maxAttemptsPassword,
+
 			int maxAttemptsOtp) {
 
 		NewAuthLabUser user =
+
 				getUser(username);
 
 		String passwordHash =
+
 				user.getPassword();
 
 		if (passwordHash == null
+
 				|| passwordHash.isBlank()) {
 
 			throw new IllegalArgumentException(
+
 					"指定されたユーザーのPasswordが登録されていません。");
+
 		}
 
 		return factorAuthenticationAttack
+
 				.executeTwoFactorPasswordEmailOtp(
+
 						username,
+
 						passwordHash,
+
 						maxAttemptsPassword,
+
 						maxAttemptsOtp);
+
 	}
 
 	// =========================================================
@@ -796,47 +1167,71 @@ public class AttackService {
 	// =========================================================
 
 	public FactorAuthenticationAttack.FactorAttackResult
+
 	executeRandomTwoFactorPasswordEmailOtp(
+
 			String username) {
 
 		return executeRandomTwoFactorPasswordEmailOtp(
+
 				username,
+
 				10_000,
+
 				1_000_000);
+
 	}
 
 	public FactorAuthenticationAttack.FactorAttackResult
+
 	executeRandomTwoFactorPasswordEmailOtp(
+
 			String username,
+
 			int maxAttemptsPassword,
+
 			int maxAttemptsOtp) {
 
 		NewAuthLabUser user =
+
 				getUser(username);
 
 		String passwordHash =
+
 				user.getPassword();
 
 		if (passwordHash == null
+
 				|| passwordHash.isBlank()) {
 
 			throw new IllegalArgumentException(
+
 					"指定されたユーザーのPasswordが登録されていません。");
+
 		}
 
 		if (user.getEmail() == null
+
 				|| user.getEmail().isBlank()) {
 
 			throw new IllegalArgumentException(
+
 					"指定されたユーザーにメールアドレスが登録されていません。");
+
 		}
 
 		return factorAuthenticationAttack
+
 				.executeTwoFactorRandomPasswordEmailOtp(
+
 						username,
+
 						passwordHash,
+
 						maxAttemptsPassword,
+
 						maxAttemptsOtp);
+
 	}
 
 	// =========================================================
@@ -847,6 +1242,7 @@ public class AttackService {
 	public static class OneStageLoginResult {
 
 		private final MultiStagePasswordBruteForceAttack.AttackResult
+
 		attackResult;
 
 		private final boolean loginSuccess;
@@ -854,57 +1250,83 @@ public class AttackService {
 		private final LoginResult loginResult;
 
 		public OneStageLoginResult(
+
 				MultiStagePasswordBruteForceAttack.AttackResult
+
 				attackResult,
+
 				boolean loginSuccess,
+
 				LoginResult loginResult) {
 
 			this.attackResult =
+
 					attackResult;
 
 			this.loginSuccess =
+
 					loginSuccess;
 
 			this.loginResult =
+
 					loginResult;
+
 		}
 
 		public MultiStagePasswordBruteForceAttack.AttackResult
+
 		getAttackResult() {
 
 			return attackResult;
+
 		}
 
 		public boolean isLoginSuccess() {
 
 			return loginSuccess;
+
 		}
 
 		public LoginResult getLoginResult() {
 
 			return loginResult;
+
 		}
 
 		public boolean isSuccess() {
 
 			return attackResult.isSuccess();
+
 		}
 
 		public String getPassword() {
 
 			return attackResult.getPassword();
+
 		}
 
 		public int getAttemptCount() {
 
 			return attackResult.getTotalAttempts();
+
 		}
 
 		public long getVirtualWaitTimeMillis() {
 
 			return attackResult
+
 					.getVirtualWaitTimeMillis();
+
 		}
+
+		public boolean isForceTerminated() {
+
+			return attackResult != null
+
+					&& attackResult.isForceTerminated();
+
+		}
+
 	}
 
 	// =========================================================
@@ -915,6 +1337,7 @@ public class AttackService {
 	public static class RandomOneStageLoginResult {
 
 		private final RandomPasswordAttack.AttackResult
+
 		attackResult;
 
 		private final boolean loginSuccess;
@@ -922,56 +1345,81 @@ public class AttackService {
 		private final LoginResult loginResult;
 
 		public RandomOneStageLoginResult(
+
 				RandomPasswordAttack.AttackResult
+
 				attackResult,
+
 				boolean loginSuccess,
+
 				LoginResult loginResult) {
 
 			this.attackResult =
+
 					attackResult;
 
 			this.loginSuccess =
+
 					loginSuccess;
 
 			this.loginResult =
+
 					loginResult;
+
 		}
 
 		public RandomPasswordAttack.AttackResult
+
 		getAttackResult() {
 
 			return attackResult;
+
 		}
 
 		public boolean isLoginSuccess() {
 
 			return loginSuccess;
+
 		}
 
 		public LoginResult getLoginResult() {
 
 			return loginResult;
+
 		}
 
 		public boolean isSuccess() {
 
 			return attackResult.isSuccess();
+
 		}
 
 		public String getPassword() {
 
 			return attackResult.getPassword();
+
 		}
 
 		public int getAttemptCount() {
 
 			return attackResult.getAttemptCount();
+
 		}
 
 		public long getVirtualWaitTimeMillis() {
 
 			return attackResult
+
 					.getVirtualWaitTimeMillis();
+
+		}
+
+		public boolean isForceTerminated() {
+
+			return attackResult != null
+
+					&& attackResult.isForceTerminated();
+
 		}
 
 		public String getFinalUrl() {
@@ -979,9 +1427,11 @@ public class AttackService {
 			if (loginResult == null) {
 
 				return null;
+
 			}
 
 			return loginResult.getFinalUrl();
+
 		}
 
 		public String getSessionCookie() {
@@ -989,10 +1439,13 @@ public class AttackService {
 			if (loginResult == null) {
 
 				return null;
+
 			}
 
 			return loginResult.getSessionCookie();
+
 		}
+
 	}
 
 	// =========================================================
@@ -1003,6 +1456,7 @@ public class AttackService {
 	public static class TwoStageLoginResult {
 
 		private final MultiStagePasswordBruteForceAttack.AttackResult
+
 		attackResult;
 
 		private final boolean loginSuccess;
@@ -1010,56 +1464,81 @@ public class AttackService {
 		private final LoginResult loginResult;
 
 		public TwoStageLoginResult(
+
 				MultiStagePasswordBruteForceAttack.AttackResult
+
 				attackResult,
+
 				boolean loginSuccess,
+
 				LoginResult loginResult) {
 
 			this.attackResult =
+
 					attackResult;
 
 			this.loginSuccess =
+
 					loginSuccess;
 
 			this.loginResult =
+
 					loginResult;
+
 		}
 
 		public MultiStagePasswordBruteForceAttack.AttackResult
+
 		getAttackResult() {
 
 			return attackResult;
+
 		}
 
 		public boolean isLoginSuccess() {
 
 			return loginSuccess;
+
 		}
 
 		public LoginResult getLoginResult() {
 
 			return loginResult;
+
 		}
 
 		public boolean isSuccess() {
 
 			return attackResult.isSuccess();
+
 		}
 
 		public String getPassword() {
 
 			return attackResult.getPassword();
+
 		}
 
 		public String getPassword2() {
 
 			return attackResult.getPassword2();
+
 		}
 
 		public int getAttemptCount() {
 
 			return attackResult.getTotalAttempts();
+
 		}
+
+		public boolean isForceTerminated() {
+
+			return attackResult != null
+
+					&& attackResult.isForceTerminated();
+
+		}
+
 	}
 
 	// =========================================================
@@ -1070,6 +1549,7 @@ public class AttackService {
 	public static class RandomTwoStageLoginResult {
 
 		private final RandomTwoStagePasswordAttack.AttackResult
+
 		attackResult;
 
 		private final boolean loginSuccess;
@@ -1077,71 +1557,103 @@ public class AttackService {
 		private final LoginResult loginResult;
 
 		public RandomTwoStageLoginResult(
+
 				RandomTwoStagePasswordAttack.AttackResult
+
 				attackResult,
+
 				boolean loginSuccess,
+
 				LoginResult loginResult) {
 
 			this.attackResult =
+
 					attackResult;
 
 			this.loginSuccess =
+
 					loginSuccess;
 
 			this.loginResult =
+
 					loginResult;
+
 		}
 
 		public RandomTwoStagePasswordAttack.AttackResult
+
 		getAttackResult() {
 
 			return attackResult;
+
 		}
 
 		public boolean isLoginSuccess() {
 
 			return loginSuccess;
+
 		}
 
 		public LoginResult getLoginResult() {
 
 			return loginResult;
+
 		}
 
 		public boolean isSuccess() {
 
 			return attackResult.isSuccess();
+
 		}
 
 		public String getPassword() {
 
 			return attackResult.getPassword();
+
 		}
 
 		public String getPassword2() {
 
 			return attackResult.getPassword2();
+
 		}
 
 		public int getPasswordAttemptCount() {
 
 			return attackResult
+
 					.getPasswordAttemptCount();
+
 		}
 
 		public int getPassword2AttemptCount() {
 
 			return attackResult
+
 					.getPassword2AttemptCount();
+
 		}
 
 		public int getAttemptCount() {
 
 			return attackResult.getAttemptCount();
+
 		}
 
 		public long getVirtualWaitTimeMillis() {
-			return attackResult.getVirtualWaitTimeMillis();
+
+			return attackResult
+
+					.getVirtualWaitTimeMillis();
+
+		}
+
+		public boolean isForceTerminated() {
+
+			return attackResult != null
+
+					&& attackResult.isForceTerminated();
+
 		}
 
 		public String getFinalUrl() {
@@ -1149,9 +1661,11 @@ public class AttackService {
 			if (loginResult == null) {
 
 				return null;
+
 			}
 
 			return loginResult.getFinalUrl();
+
 		}
 
 		public String getSessionCookie() {
@@ -1159,10 +1673,13 @@ public class AttackService {
 			if (loginResult == null) {
 
 				return null;
+
 			}
 
 			return loginResult.getSessionCookie();
+
 		}
+
 	}
 
 	// =========================================================
@@ -1173,6 +1690,7 @@ public class AttackService {
 	public static class ThreeStageLoginResult {
 
 		private final MultiStagePasswordBruteForceAttack.AttackResult
+
 		attackResult;
 
 		private final boolean loginSuccess;
@@ -1180,61 +1698,87 @@ public class AttackService {
 		private final LoginResult loginResult;
 
 		public ThreeStageLoginResult(
+
 				MultiStagePasswordBruteForceAttack.AttackResult
+
 				attackResult,
+
 				boolean loginSuccess,
+
 				LoginResult loginResult) {
 
 			this.attackResult =
+
 					attackResult;
 
 			this.loginSuccess =
+
 					loginSuccess;
 
 			this.loginResult =
+
 					loginResult;
+
 		}
 
 		public MultiStagePasswordBruteForceAttack.AttackResult
+
 		getAttackResult() {
 
 			return attackResult;
+
 		}
 
 		public boolean isLoginSuccess() {
 
 			return loginSuccess;
+
 		}
 
 		public LoginResult getLoginResult() {
 
 			return loginResult;
+
 		}
 
 		public boolean isSuccess() {
 
 			return attackResult.isSuccess();
+
 		}
 
 		public String getPassword() {
 
 			return attackResult.getPassword();
+
 		}
 
 		public String getPassword2() {
 
 			return attackResult.getPassword2();
+
 		}
 
 		public String getPassword3() {
 
 			return attackResult.getPassword3();
+
 		}
 
 		public int getAttemptCount() {
 
 			return attackResult.getTotalAttempts();
+
 		}
+
+		public boolean isForceTerminated() {
+
+			return attackResult != null
+
+					&& attackResult.isForceTerminated();
+
+		}
+
 	}
 
 	// =========================================================
@@ -1245,6 +1789,7 @@ public class AttackService {
 	public static class RandomThreeStageLoginResult {
 
 		private final RandomThreeStagePasswordAttack.AttackResult
+
 		attackResult;
 
 		private final boolean loginSuccess;
@@ -1252,84 +1797,125 @@ public class AttackService {
 		private final LoginResult loginResult;
 
 		public RandomThreeStageLoginResult(
+
 				RandomThreeStagePasswordAttack.AttackResult
+
 				attackResult,
+
 				boolean loginSuccess,
+
 				LoginResult loginResult) {
 
 			this.attackResult =
+
 					attackResult;
 
 			this.loginSuccess =
+
 					loginSuccess;
 
 			this.loginResult =
+
 					loginResult;
+
 		}
 
 		public RandomThreeStagePasswordAttack.AttackResult
+
 		getAttackResult() {
 
 			return attackResult;
+
 		}
 
 		public boolean isLoginSuccess() {
 
 			return loginSuccess;
+
 		}
 
 		public LoginResult getLoginResult() {
 
 			return loginResult;
+
 		}
 
 		public boolean isSuccess() {
 
 			return attackResult.isSuccess();
+
 		}
 
 		public String getPassword() {
 
 			return attackResult.getPassword();
+
 		}
 
 		public String getPassword2() {
 
 			return attackResult.getPassword2();
+
 		}
 
 		public String getPassword3() {
 
 			return attackResult.getPassword3();
+
 		}
 
 		public int getPasswordAttemptCount() {
 
 			return attackResult
+
 					.getPasswordAttemptCount();
+
 		}
 
 		public int getPassword2AttemptCount() {
 
 			return attackResult
+
 					.getPassword2AttemptCount();
+
 		}
 
 		public int getPassword3AttemptCount() {
 
 			return attackResult
+
 					.getPassword3AttemptCount();
+
 		}
 
 		public int getAttemptCount() {
 
 			return attackResult.getAttemptCount();
+
 		}
 
 		public long getVirtualWaitTimeMillis() {
 
 			return attackResult
+
 					.getVirtualWaitTimeMillis();
+
+		}
+
+		// =====================================================
+		// 攻撃処理強制終了
+		//
+		// 7000回失敗した場合、
+		// 実際のアカウントはロックせず、
+		// 攻撃処理のみを強制終了する。
+		// =====================================================
+
+		public boolean isForceTerminated() {
+
+			return attackResult != null
+
+					&& attackResult.isForceTerminated();
+
 		}
 
 		public String getFinalUrl() {
@@ -1337,9 +1923,11 @@ public class AttackService {
 			if (loginResult == null) {
 
 				return null;
+
 			}
 
 			return loginResult.getFinalUrl();
+
 		}
 
 		public String getSessionCookie() {
@@ -1347,10 +1935,13 @@ public class AttackService {
 			if (loginResult == null) {
 
 				return null;
+
 			}
 
 			return loginResult.getSessionCookie();
+
 		}
+
 	}
 
 	// =========================================================
@@ -1361,43 +1952,57 @@ public class AttackService {
 	public static class RandomEmailOtpLoginResult {
 
 		private final RandomEmailOtpAttack.AttackResult
+
 		attackResult;
 
 		private final LoginResult loginResult;
 
 		public RandomEmailOtpLoginResult(
+
 				RandomEmailOtpAttack.AttackResult
+
 				attackResult,
+
 				LoginResult loginResult) {
 
 			this.attackResult =
+
 					attackResult;
 
 			this.loginResult =
+
 					loginResult;
+
 		}
 
 		public RandomEmailOtpAttack.AttackResult
+
 		getAttackResult() {
 
 			return attackResult;
+
 		}
 
 		public LoginResult getLoginResult() {
 
 			return loginResult;
+
 		}
 
 		public boolean isSuccess() {
 
 			return attackResult != null
+
 					&& attackResult.isSuccess();
+
 		}
 
 		public boolean isLoginSuccess() {
 
 			return loginResult != null
+
 					&& loginResult.isSuccess();
+
 		}
 
 		public String getOtp() {
@@ -1405,9 +2010,11 @@ public class AttackService {
 			if (attackResult == null) {
 
 				return null;
+
 			}
 
 			return attackResult.getOtp();
+
 		}
 
 		public int getAttemptCount() {
@@ -1415,9 +2022,11 @@ public class AttackService {
 			if (attackResult == null) {
 
 				return 0;
+
 			}
 
 			return attackResult.getAttemptCount();
+
 		}
 
 		public String getFinalUrl() {
@@ -1425,9 +2034,11 @@ public class AttackService {
 			if (loginResult == null) {
 
 				return null;
+
 			}
 
 			return loginResult.getFinalUrl();
+
 		}
 
 		public String getSessionCookie() {
@@ -1435,10 +2046,13 @@ public class AttackService {
 			if (loginResult == null) {
 
 				return null;
+
 			}
 
 			return loginResult.getSessionCookie();
+
 		}
+
 	}
 
 	// =========================================================
@@ -1449,20 +2063,27 @@ public class AttackService {
 	public static class OneFactorEmailOtpLoginResult {
 
 		private final EmailOtpBruteForceAttack.AttackResult
+
 		attackResult;
 
 		public OneFactorEmailOtpLoginResult(
+
 				EmailOtpBruteForceAttack.AttackResult
+
 				attackResult) {
 
 			this.attackResult =
+
 					attackResult;
+
 		}
 
 		public EmailOtpBruteForceAttack.AttackResult
+
 		getAttackResult() {
 
 			return attackResult;
+
 		}
 
 		public boolean isLoginSuccess() {
@@ -1470,29 +2091,37 @@ public class AttackService {
 			return attackResult.getLoginResult() != null
 
 					&& attackResult
+
 					.getLoginResult()
+
 					.isSuccess();
+
 		}
 
 		public LoginResult getLoginResult() {
 
 			return attackResult
+
 					.getLoginResult();
+
 		}
 
 		public boolean isSuccess() {
 
 			return attackResult.isSuccess();
+
 		}
 
 		public String getOtp() {
 
 			return attackResult.getOtp();
+
 		}
 
 		public int getAttemptCount() {
 
 			return attackResult.getAttemptCount();
+
 		}
 
 		public String getFinalUrl() {
@@ -1500,11 +2129,15 @@ public class AttackService {
 			if (attackResult.getLoginResult() == null) {
 
 				return null;
+
 			}
 
 			return attackResult
+
 					.getLoginResult()
+
 					.getFinalUrl();
+
 		}
 
 		public String getSessionCookie() {
@@ -1512,12 +2145,17 @@ public class AttackService {
 			if (attackResult.getLoginResult() == null) {
 
 				return null;
+
 			}
 
 			return attackResult
+
 					.getLoginResult()
+
 					.getSessionCookie();
+
 		}
+
 	}
 
 	// =========================================================
@@ -1526,46 +2164,67 @@ public class AttackService {
 	// =========================================================
 
 	public DictionaryLoginResult executeDictionaryWithLogin(
+
 			String username,
+
 			String authMethod,
+
 			int maxAttemptsPassword,
+
 			int maxAttemptsPassword2,
+
 			int maxAttemptsPassword3) {
 
 		if (!"one-stage-dictionary".equals(authMethod)) {
 
 			throw new IllegalArgumentException(
+
 					"辞書攻撃は一段階認証のみ対応しています。");
+
 		}
 
 		final LoginResult[] successfulLogin =
+
 				new LoginResult[1];
 
 		DictionaryPasswordAttack.AttackResult result =
+
 				dictionaryPasswordAttack.executeOneStage(
+
 						maxAttemptsPassword,
+
 						password -> {
 
 							LoginResult loginResult =
+
 									newAuthLabLoginClient.loginOneStage(
+
 											username,
+
 											password);
 
 							if (loginResult != null
+
 									&& loginResult.isSuccess()) {
 
 								successfulLogin[0] =
+
 										loginResult;
 
 								return true;
+
 							}
 
 							return false;
+
 						});
 
 		return new DictionaryLoginResult(
+
 				result,
+
 				successfulLogin[0]);
+
 	}
 
 	// =========================================================
@@ -1575,6 +2234,7 @@ public class AttackService {
 	public static class DictionaryLoginResult {
 
 		private final DictionaryPasswordAttack.AttackResult
+
 		attackResult;
 
 		private final LoginResult loginResult;
@@ -1586,66 +2246,85 @@ public class AttackService {
 				LoginResult loginResult) {
 
 			this.attackResult =
+
 					attackResult;
 
 			this.loginResult =
+
 					loginResult;
+
 		}
 
 		public DictionaryPasswordAttack.AttackResult
+
 		getAttackResult() {
 
 			return attackResult;
+
 		}
 
 		public boolean isSuccess() {
 
 			return attackResult != null
+
 					&& attackResult.isSuccess();
+
 		}
 
 		public boolean isLoginSuccess() {
 
 			return loginResult != null
+
 					&& loginResult.isSuccess();
+
 		}
 
 		public String getPassword() {
 
 			return attackResult.getPassword();
+
 		}
 
 		public String getPassword2() {
 
 			return attackResult.getPassword2();
+
 		}
 
 		public String getPassword3() {
 
 			return attackResult.getPassword3();
+
 		}
 
 		public int getAttemptCount() {
 
 			return attackResult.getTotalAttempts();
+
 		}
 
 		public int getPasswordAttemptCount() {
 
 			return attackResult
+
 					.getPasswordAttemptCount();
+
 		}
 
 		public int getPassword2AttemptCount() {
 
 			return attackResult
+
 					.getPassword2AttemptCount();
+
 		}
 
 		public int getPassword3AttemptCount() {
 
 			return attackResult
+
 					.getPassword3AttemptCount();
+
 		}
 
 		// =========================================================
@@ -1655,7 +2334,25 @@ public class AttackService {
 		public long getVirtualWaitTimeMillis() {
 
 			return attackResult
+
 					.getVirtualWaitTimeMillis();
+
+		}
+
+		// =========================================================
+		// 攻撃処理強制終了
+		//
+		// 70回失敗した場合、
+		// 実際のアカウントはロックせず、
+		// 攻撃処理のみを強制終了する。
+		// =========================================================
+
+		public boolean isForceTerminated() {
+
+			return attackResult != null
+
+					&& attackResult.isForceTerminated();
+
 		}
 
 		public String getFinalUrl() {
@@ -1663,14 +2360,19 @@ public class AttackService {
 			if (loginResult == null) {
 
 				return null;
+
 			}
 
 			return loginResult.getFinalUrl();
+
 		}
 
 		public LoginResult getLoginResult() {
 
 			return loginResult;
+
 		}
+
 	}
+
 }

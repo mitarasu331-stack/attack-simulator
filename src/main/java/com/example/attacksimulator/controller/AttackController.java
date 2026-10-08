@@ -69,7 +69,6 @@ public class AttackController {
 
 		return "attack";
 	}
-
 	// =========================================================
 	// 一段階認証 / 二段階認証 / 三段階認証
 	// 総当たり
@@ -77,7 +76,9 @@ public class AttackController {
 
 	@PostMapping("/attack/multi-stage")
 	public String attackMultiStage(
+
 			@RequestParam("username") String username,
+
 			@RequestParam("authMethod") String authMethod,
 
 			@RequestParam(
@@ -195,10 +196,10 @@ public class AttackController {
 
 				AttackService.OneStageLoginResult
 				oneStageResult =
-				attackService
-				.executeOneStageWithLogin(
-						username,
-						maxAttemptsPassword);
+						attackService
+								.executeOneStageWithLogin(
+										username,
+										maxAttemptsPassword);
 
 				result =
 						oneStageResult.getAttackResult();
@@ -209,7 +210,6 @@ public class AttackController {
 				maxAttemptCount =
 						String.valueOf(
 								maxAttemptsPassword);
-
 			}
 
 			// =================================================
@@ -220,11 +220,11 @@ public class AttackController {
 
 				AttackService.TwoStageLoginResult
 				twoStageResult =
-				attackService
-				.executeTwoStageWithLogin(
-						username,
-						maxAttemptsPassword,
-						maxAttemptsPassword2);
+						attackService
+								.executeTwoStageWithLogin(
+										username,
+										maxAttemptsPassword,
+										maxAttemptsPassword2);
 
 				result =
 						twoStageResult.getAttackResult();
@@ -236,7 +236,6 @@ public class AttackController {
 						maxAttemptsPassword
 						+ " → "
 						+ maxAttemptsPassword2;
-
 			}
 
 			// =================================================
@@ -247,12 +246,12 @@ public class AttackController {
 
 				AttackService.ThreeStageLoginResult
 				threeStageResult =
-				attackService
-				.executeThreeStageWithLogin(
-						username,
-						maxAttemptsPassword,
-						maxAttemptsPassword2,
-						maxAttemptsPassword3);
+						attackService
+								.executeThreeStageWithLogin(
+										username,
+										maxAttemptsPassword,
+										maxAttemptsPassword2,
+										maxAttemptsPassword3);
 
 				result =
 						threeStageResult.getAttackResult();
@@ -266,7 +265,6 @@ public class AttackController {
 						+ maxAttemptsPassword2
 						+ " → "
 						+ maxAttemptsPassword3;
-
 			}
 
 			else {
@@ -275,16 +273,27 @@ public class AttackController {
 						"不正な認証方式です。");
 			}
 
+			// =================================================
+			// 試行制限による強制終了判定
+			// =================================================
+
+			boolean forceTerminated =
+					result.isForceTerminated();
+
+			// =================================================
+			// 攻撃時間計算
+			// =================================================
+
 			long actualAttackTimeMs =
-			        (System.nanoTime() - startTime)
-			        / 1_000_000;
+					(System.nanoTime() - startTime)
+					/ 1_000_000;
 
 			long virtualWaitTimeMs =
-			        result.getVirtualWaitTimeMillis();
+					result.getVirtualWaitTimeMillis();
 
 			long attackTimeMs =
-			        actualAttackTimeMs
-			        + virtualWaitTimeMs;
+					actualAttackTimeMs
+					+ virtualWaitTimeMs;
 
 			String credential =
 					createMultiStageCredential(
@@ -293,6 +302,10 @@ public class AttackController {
 			String configuration =
 					createMultiStageConfiguration(
 							result);
+
+			// =================================================
+			// 実験結果保存
+			// =================================================
 
 			experimentResultService.addResult(
 					username,
@@ -312,18 +325,22 @@ public class AttackController {
 
 			if ("one-stage".equals(authMethod)) {
 
-				resultTitle = "===== 一段階認証 総当たり攻撃結果 =====";
+				resultTitle =
+						"===== 一段階認証 総当たり攻撃結果 =====";
 
 			} else if ("two-stage".equals(authMethod)) {
 
-				resultTitle = "===== 二段階認証 総当たり攻撃結果 =====";
+				resultTitle =
+						"===== 二段階認証 総当たり攻撃結果 =====";
 
 			} else {
 
-				resultTitle = "===== 三段階認証 総当たり攻撃結果 =====";
+				resultTitle =
+						"===== 三段階認証 総当たり攻撃結果 =====";
 			}
 
-			System.out.println(resultTitle);
+			System.out.println(
+					resultTitle);
 
 			System.out.println(
 					"username = "
@@ -350,25 +367,35 @@ public class AttackController {
 							+ realLoginSuccess);
 
 			System.out.println(
-			        "実処理時間 = "
-			                + actualAttackTimeMs
-			                + " ms");
+					"攻撃処理強制終了 = "
+							+ forceTerminated);
 
 			System.out.println(
-			        "仮想待機時間 = "
-			                + virtualWaitTimeMs
-			                + " ms");
+					"実処理時間 = "
+							+ actualAttackTimeMs
+							+ " ms");
 
 			System.out.println(
-			        "攻撃時間 = "
-			                + attackTimeMs
-			                + " ms");
+					"仮想待機時間 = "
+							+ virtualWaitTimeMs
+							+ " ms");
+
+			System.out.println(
+					"攻撃時間 = "
+							+ attackTimeMs
+							+ " ms");
 
 			System.out.println(
 					"========================================");
 
+			// =================================================
+			// 認証突破成功時
+			// =================================================
+
 			if ("one-stage".equals(authMethod)
+
 					&& result.isSuccess()
+
 					&& realLoginSuccess) {
 
 				model.addAttribute(
@@ -383,7 +410,9 @@ public class AttackController {
 			}
 
 			if ("two-stage".equals(authMethod)
+
 					&& result.isSuccess()
+
 					&& realLoginSuccess) {
 
 				model.addAttribute(
@@ -402,7 +431,9 @@ public class AttackController {
 			}
 
 			if ("three-stage".equals(authMethod)
+
 					&& result.isSuccess()
+
 					&& realLoginSuccess) {
 
 				model.addAttribute(
@@ -423,6 +454,10 @@ public class AttackController {
 
 				return "three-stage-login-redirect";
 			}
+
+			// =================================================
+			// 結果画面へ渡す
+			// =================================================
 
 			redirectAttributes.addFlashAttribute(
 					"authMethod",
@@ -464,11 +499,36 @@ public class AttackController {
 					"attackTimeMs",
 					attackTimeMs);
 
+			// 試行制限による強制終了かどうか
+			redirectAttributes.addFlashAttribute(
+					"forceTerminated",
+					forceTerminated);
+
+			// =================================================
+			// 結果メッセージ
+			// =================================================
+
+			String message;
+
+			if (forceTerminated) {
+
+				message =
+						"試行制限により攻撃処理を強制終了しました。";
+
+			} else if (result.isSuccess()) {
+
+				message =
+						"認証突破に成功しました。";
+
+			} else {
+
+				message =
+						"認証突破に失敗しました。";
+			}
+
 			redirectAttributes.addFlashAttribute(
 					"message",
-					result.isSuccess()
-					? "認証突破に成功しました。"
-							: "認証突破に失敗しました。");
+					message);
 
 			return "redirect:/result";
 
@@ -488,9 +548,7 @@ public class AttackController {
 	// 一段階認証
 	// ランダム攻撃
 	// =========================================================
-
 	@PostMapping("/attack/random-stage")
-
 	public String attackRandomStage(
 
 			@RequestParam("username") String username,
@@ -506,19 +564,15 @@ public class AttackController {
 			Model model) {
 
 		long startTime =
-
 				System.nanoTime();
 
 		final String authMethod =
-
 				"one-stage-random";
 
 		try {
 
 			maxAttemptsPassword =
-
 					clampPasswordAttempts(
-
 							maxAttemptsPassword);
 
 			// =================================================
@@ -526,38 +580,34 @@ public class AttackController {
 			// =================================================
 
 			System.out.println(
-
 					"===== 一段階認証 ランダム攻撃開始 =====");
 
 			System.out.println(
-
 					"username = "
-
 							+ username);
 
 			System.out.println(
-
 					"最大試行回数 = "
-
 							+ maxAttemptsPassword);
 
 			System.out.println(
+					"試行制限 = 1000回ごと");
 
+			System.out.println(
+					"待機時間 = 1分 → 5分 → 10分 → 20分 → 30分 → 60分");
+
+			System.out.println(
+					"7000回失敗で攻撃処理を強制終了");
+
+			System.out.println(
 					"========================================");
 
-
 			AttackService.RandomOneStageLoginResult
-
 			randomResult =
-
-			attackService
-
-			.executeRandomOneStageWithLogin(
-
-					username,
-
-					maxAttemptsPassword);
-
+					attackService
+							.executeRandomOneStageWithLogin(
+									username,
+									maxAttemptsPassword);
 
 			// =================================================
 			// 実際にかかった処理時間
@@ -566,24 +616,24 @@ public class AttackController {
 			// =================================================
 
 			long actualAttackTimeMs =
-
 					(System.nanoTime() - startTime)
-
 					/ 1_000_000;
-
 
 			// =================================================
 			// 仮想待機時間
 			//
 			// 実際には一切待機しない。
-			// 1000回ごとに1分を攻撃時間へ加算する。
+			//
+			// 1000回失敗するごとに
+			// 1分 → 5分 → 10分 → 20分 → 30分 → 60分
+			// の仮想待機時間を攻撃時間へ加算する。
+			//
+			// 7000回失敗した場合は強制終了する。
 			// =================================================
 
 			long virtualWaitTimeMs =
-
 					randomResult
 							.getVirtualWaitTimeMillis();
-
 
 			// =================================================
 			// 実験上の攻撃時間
@@ -594,110 +644,85 @@ public class AttackController {
 			// =================================================
 
 			long attackTimeMs =
-
 					actualAttackTimeMs
-
 							+ virtualWaitTimeMs;
 
-
 			boolean attackSuccess =
-
 					randomResult.isSuccess();
 
-
 			boolean realLoginSuccess =
-
 					randomResult.isLoginSuccess();
 
+			/**
+			 * 試行制限による強制終了
+			 *
+			 * 7000回失敗した場合 true
+			 */
+			boolean forceTerminated =
+					randomResult.isForceTerminated();
 
 			String password =
-
 					randomResult.getPassword();
 
-
 			int attemptCount =
-
 					randomResult.getAttemptCount();
-
 
 			// =================================================
 			// 最終結果ログ
 			// =================================================
 
 			System.out.println(
-
 					"===== 一段階ランダム攻撃結果 =====");
 
 			System.out.println(
-
 					"username = "
-
 							+ username);
 
 			System.out.println(
-
 					"password = "
-
 							+ password);
 
 			System.out.println(
-
 					"最大試行回数 = "
-
 							+ maxAttemptsPassword);
 
 			System.out.println(
-
 					"実攻撃試行回数 = "
-
 							+ attemptCount);
 
 			System.out.println(
-
 					"ランダム攻撃成功 = "
-
 							+ attackSuccess);
 
 			System.out.println(
-
 					"実ログイン成功 = "
-
 							+ realLoginSuccess);
 
 			System.out.println(
+					"攻撃処理強制終了 = "
+							+ forceTerminated);
 
+			System.out.println(
 					"Final URL = "
-
 							+ randomResult.getFinalUrl());
 
 			System.out.println(
-
 					"実処理時間 = "
-
 							+ actualAttackTimeMs
-
 							+ " ms");
 
 			System.out.println(
-
 					"仮想待機時間 = "
-
 							+ virtualWaitTimeMs
-
 							+ " ms");
 
 			System.out.println(
-
 					"攻撃時間 = "
-
 							+ attackTimeMs
-
 							+ " ms");
 
 			System.out.println(
-
 					"========================================");
-
 
 			// =================================================
 			// 実験結果保存
@@ -708,118 +733,85 @@ public class AttackController {
 			// =================================================
 
 			experimentResultService.addResult(
-
 					username,
-
 					authMethod,
-
 					"ID + Password",
-
 					String.valueOf(
-
 							maxAttemptsPassword),
-
 					attemptCount,
-
 					attackSuccess,
-
 					password,
-
 					attackTimeMs);
-
 
 			// =================================================
 			// 攻撃成功
+			//
+			// 強制終了の場合は成功にはならないため、
+			// この条件には入らない。
 			// =================================================
 
 			if (attackSuccess
-
 					&& realLoginSuccess) {
 
 				model.addAttribute(
-
 						"username",
-
 						username);
 
 				model.addAttribute(
-
 						"password",
-
 						password);
 
 				return "login-redirect";
 			}
-
 
 			// =================================================
 			// 結果画面へ渡す
 			// =================================================
 
 			redirectAttributes.addFlashAttribute(
-
 					"authMethod",
-
 					authMethod);
 
-
 			redirectAttributes.addFlashAttribute(
-
 					"attemptCount",
-
 					attemptCount);
 
-
 			redirectAttributes.addFlashAttribute(
-
 					"success",
-
 					attackSuccess);
 
-
 			redirectAttributes.addFlashAttribute(
-
 					"password",
-
 					password);
 
-
 			redirectAttributes.addFlashAttribute(
-
 					"password2",
-
 					null);
 
-
 			redirectAttributes.addFlashAttribute(
-
 					"password3",
-
 					null);
 
-
 			redirectAttributes.addFlashAttribute(
-
 					"otp",
-
 					null);
 
-
 			redirectAttributes.addFlashAttribute(
-
 					"realLoginSuccess",
-
 					realLoginSuccess);
 
+			// =================================================
+			// 強制終了状態
+			// =================================================
 
 			redirectAttributes.addFlashAttribute(
+					"forceTerminated",
+					forceTerminated);
 
+			redirectAttributes.addFlashAttribute(
 					"maxAttemptCount",
-
 					String.valueOf(
-
 							maxAttemptsPassword));
-
 
 			// =================================================
 			// 結果画面に渡す攻撃時間
@@ -828,39 +820,47 @@ public class AttackController {
 			// =================================================
 
 			redirectAttributes.addFlashAttribute(
-
 					"attackTimeMs",
-
 					attackTimeMs);
 
+			// =================================================
+			// 結果メッセージ
+			//
+			// 強制終了を最優先する。
+			// =================================================
+
+			String message;
+
+			if (forceTerminated) {
+
+				message =
+						"試行制限により一段階ランダム攻撃処理を強制終了しました。";
+
+			} else if (attackSuccess) {
+
+				message =
+						"一段階ランダム攻撃の突破に成功しました。";
+
+			} else {
+
+				message =
+						"一段階ランダム攻撃の突破に失敗しました。";
+			}
 
 			redirectAttributes.addFlashAttribute(
-
 					"message",
-
-					attackSuccess
-
-					? "一段階ランダム攻撃の突破に成功しました。"
-
-							: "一段階ランダム攻撃の突破に失敗しました。");
-
+					message);
 
 			return "redirect:/result";
-
 
 		} catch (Exception e) {
 
 			e.printStackTrace();
 
-
 			redirectAttributes.addFlashAttribute(
-
 					"error",
-
 					"ランダム攻撃中にエラーが発生しました: "
-
 							+ e.getMessage());
-
 
 			return "redirect:/result";
 		}
@@ -871,10 +871,8 @@ public class AttackController {
 	// 二段階認証
 	// ランダム攻撃
 	// =========================================================
-
 	@PostMapping("/attack/random-two-stage")
 	public String attackRandomTwoStage(
-
 			@RequestParam("username") String username,
 
 			@RequestParam(
@@ -967,11 +965,22 @@ public class AttackController {
 					actualAttackTimeMs
 					+ virtualWaitTimeMs;
 
+			// =================================================
+			// 攻撃結果
+			// =================================================
+
 			boolean attackSuccess =
 					randomResult.isSuccess();
 
 			boolean realLoginSuccess =
 					randomResult.isLoginSuccess();
+
+			// =================================================
+			// 強制終了状態
+			// =================================================
+
+			boolean forceTerminated =
+					randomResult.isForceTerminated();
 
 			String password =
 					randomResult.getPassword();
@@ -994,6 +1003,10 @@ public class AttackController {
 					createRandomTwoStageCredential(
 							password,
 							password2);
+
+			// =================================================
+			// 結果保存
+			// =================================================
 
 			experimentResultService.addResult(
 					username,
@@ -1025,6 +1038,14 @@ public class AttackController {
 							+ maxAttemptCount);
 
 			System.out.println(
+					"Password実攻撃試行回数 = "
+							+ passwordAttemptCount);
+
+			System.out.println(
+					"Password2実攻撃試行回数 = "
+							+ password2AttemptCount);
+
+			System.out.println(
 					"実攻撃試行回数 = "
 							+ attemptCount);
 
@@ -1035,6 +1056,10 @@ public class AttackController {
 			System.out.println(
 					"実ログイン成功 = "
 							+ realLoginSuccess);
+
+			System.out.println(
+					"強制終了 = "
+							+ forceTerminated);
 
 			System.out.println(
 					"実際の攻撃処理時間 = "
@@ -1054,6 +1079,13 @@ public class AttackController {
 			System.out.println(
 					"========================================");
 
+			// =================================================
+			// 攻撃成功 ＆ 実ログイン成功
+			//
+			// 強制終了の場合は success=false なので
+			// ここには入らない。
+			// =================================================
+
 			if (attackSuccess
 					&& realLoginSuccess) {
 
@@ -1071,6 +1103,10 @@ public class AttackController {
 
 				return "two-stage-login-redirect";
 			}
+
+			// =================================================
+			// 結果画面へ渡す
+			// =================================================
 
 			redirectAttributes.addFlashAttribute(
 					"authMethod",
@@ -1120,11 +1156,40 @@ public class AttackController {
 					"attackTimeMs",
 					attackTimeMs);
 
+			// =================================================
+			// 強制終了状態を結果画面へ渡す
+			// =================================================
+
+			redirectAttributes.addFlashAttribute(
+					"forceTerminated",
+					forceTerminated);
+
+			// =================================================
+			// メッセージ
+			// =================================================
+
+			String message;
+
+			if (forceTerminated) {
+
+				message =
+						"試行制限により二段階認証（ランダム）"
+						+ "の攻撃処理を強制終了しました。";
+
+			} else if (attackSuccess) {
+
+				message =
+						"二段階認証（ランダム）の突破に成功しました。";
+
+			} else {
+
+				message =
+						"二段階認証（ランダム）の突破に失敗しました。";
+			}
+
 			redirectAttributes.addFlashAttribute(
 					"message",
-					attackSuccess
-					? "二段階認証（ランダム）の突破に成功しました。"
-					: "二段階認証（ランダム）の突破に失敗しました。");
+					message);
 
 			return "redirect:/result";
 
@@ -1176,88 +1241,58 @@ public class AttackController {
 			Model model) {
 
 		long startTime =
-
 				System.nanoTime();
 
 		final String authMethod =
-
 				"three-stage-random";
 
 		try {
 
 			maxAttemptsPassword =
-
 					clampPasswordAttempts(
-
 							maxAttemptsPassword);
 
 			maxAttemptsPassword2 =
-
 					clampPasswordAttempts(
-
 							maxAttemptsPassword2);
 
 			maxAttemptsPassword3 =
-
 					clampPasswordAttempts(
-
 							maxAttemptsPassword3);
 
-
 			String maxAttemptCount =
-
 					maxAttemptsPassword
-
 					+ " → "
-
 					+ maxAttemptsPassword2
-
 					+ " → "
-
 					+ maxAttemptsPassword3;
-
 
 			// =================================================
 			// 攻撃開始ログ
 			// =================================================
 
 			System.out.println(
-
 					"===== 三段階認証 ランダム攻撃開始 =====");
 
 			System.out.println(
-
 					"username = "
-
 							+ username);
 
 			System.out.println(
-
 					"最大試行回数 = "
-
 							+ maxAttemptCount);
 
 			System.out.println(
-
 					"========================================");
 
-
 			AttackService.RandomThreeStageLoginResult
-
 			randomResult =
-
-			attackService
-
-			.executeRandomThreeStageWithLogin(
-
-					username,
-
-					maxAttemptsPassword,
-
-					maxAttemptsPassword2,
-
-					maxAttemptsPassword3);
-
+					attackService
+					.executeRandomThreeStageWithLogin(
+							username,
+							maxAttemptsPassword,
+							maxAttemptsPassword2,
+							maxAttemptsPassword3);
 
 			// =================================================
 			// 実際にかかった処理時間
@@ -1267,11 +1302,8 @@ public class AttackController {
 			// =================================================
 
 			long actualAttackTimeMs =
-
 					(System.nanoTime() - startTime)
-
 					/ 1_000_000;
-
 
 			// =================================================
 			// 仮想待機時間
@@ -1280,14 +1312,22 @@ public class AttackController {
 			// Password2
 			// Password3
 			//
-			// 各段階の1000回ごとに1分を加算する。
+			// 各段階で
+			//
+			// 1000回  → 1分
+			// 2000回  → 5分
+			// 3000回  → 10分
+			// 4000回  → 20分
+			// 5000回  → 30分
+			// 6000回  → 60分
+			// 7000回  → 強制終了
+			//
+			// 強制終了時の追加待機時間は0。
 			// =================================================
 
 			long virtualWaitTimeMs =
-
 					randomResult
 							.getVirtualWaitTimeMillis();
-
 
 			// =================================================
 			// 実験上の攻撃時間
@@ -1298,73 +1338,51 @@ public class AttackController {
 			// =================================================
 
 			long attackTimeMs =
-
 					actualAttackTimeMs
-
-							+ virtualWaitTimeMs;
-
+					+ virtualWaitTimeMs;
 
 			boolean attackSuccess =
-
 					randomResult.isSuccess();
 
-
 			boolean realLoginSuccess =
-
 					randomResult.isLoginSuccess();
 
+			// =================================================
+			// 試行制限による強制終了
+			// =================================================
+
+			boolean forceTerminated =
+					randomResult.isForceTerminated();
 
 			String password =
-
 					randomResult.getPassword();
 
-
 			String password2 =
-
 					randomResult.getPassword2();
 
-
 			String password3 =
-
 					randomResult.getPassword3();
 
-
 			int passwordAttemptCount =
-
 					randomResult
-
 					.getPasswordAttemptCount();
 
-
 			int password2AttemptCount =
-
 					randomResult
-
 					.getPassword2AttemptCount();
 
-
 			int password3AttemptCount =
-
 					randomResult
-
 					.getPassword3AttemptCount();
 
-
 			int attemptCount =
-
 					randomResult.getAttemptCount();
 
-
 			String credential =
-
 					createRandomThreeStageCredential(
-
 							password,
-
 							password2,
-
 							password3);
-
 
 			// =================================================
 			// 実験結果保存
@@ -1375,274 +1393,214 @@ public class AttackController {
 			// =================================================
 
 			experimentResultService.addResult(
-
 					username,
-
 					authMethod,
-
 					"ID + Password → Password2 → Password3",
-
 					maxAttemptCount,
-
 					attemptCount,
-
 					attackSuccess,
-
 					credential,
-
 					attackTimeMs);
-
 
 			// =================================================
 			// 最終結果ログ
 			// =================================================
 
 			System.out.println(
-
 					"===== 三段階ランダム攻撃結果 =====");
 
 			System.out.println(
-
 					"username = "
-
 							+ username);
 
 			System.out.println(
-
 					"password = "
-
 							+ credential);
 
 			System.out.println(
-
 					"最大試行回数 = "
-
 							+ maxAttemptCount);
 
 			System.out.println(
-
 					"Password試行回数 = "
-
 							+ passwordAttemptCount);
 
 			System.out.println(
-
 					"Password2試行回数 = "
-
 							+ password2AttemptCount);
 
 			System.out.println(
-
 					"Password3試行回数 = "
-
 							+ password3AttemptCount);
 
 			System.out.println(
-
 					"実攻撃試行回数 = "
-
 							+ attemptCount);
 
 			System.out.println(
-
 					"ランダム攻撃成功 = "
-
 							+ attackSuccess);
 
 			System.out.println(
-
 					"実ログイン成功 = "
-
 							+ realLoginSuccess);
 
 			System.out.println(
+					"強制終了 = "
+							+ forceTerminated);
 
+			System.out.println(
 					"実処理時間 = "
-
 							+ actualAttackTimeMs
-
 							+ " ms");
 
 			System.out.println(
-
 					"仮想待機時間 = "
-
 							+ virtualWaitTimeMs
-
 							+ " ms");
 
 			System.out.println(
-
 					"攻撃時間 = "
-
 							+ attackTimeMs
-
 							+ " ms");
 
 			System.out.println(
-
 					"========================================");
-
 
 			// =================================================
 			// 攻撃成功
+			//
+			// 強制終了の場合は success=false なので
+			// ここには入らない。
 			// =================================================
 
 			if (attackSuccess
-
 					&& realLoginSuccess) {
 
 				model.addAttribute(
-
 						"username",
-
 						username);
 
 				model.addAttribute(
-
 						"password",
-
 						password);
 
 				model.addAttribute(
-
 						"password2",
-
 						password2);
 
 				model.addAttribute(
-
 						"password3",
-
 						password3);
 
 				return "three-stage-login-redirect";
 			}
-
 
 			// =================================================
 			// 結果画面へ渡す
 			// =================================================
 
 			redirectAttributes.addFlashAttribute(
-
 					"authMethod",
-
 					authMethod);
 
-
 			redirectAttributes.addFlashAttribute(
-
 					"attemptCount",
-
 					attemptCount);
 
-
 			redirectAttributes.addFlashAttribute(
-
 					"success",
-
 					attackSuccess);
 
-
 			redirectAttributes.addFlashAttribute(
-
 					"password",
-
 					password);
 
-
 			redirectAttributes.addFlashAttribute(
-
 					"password2",
-
 					password2);
 
-
 			redirectAttributes.addFlashAttribute(
-
 					"password3",
-
 					password3);
 
-
 			redirectAttributes.addFlashAttribute(
-
 					"otp",
-
 					null);
 
-
 			redirectAttributes.addFlashAttribute(
-
 					"realLoginSuccess",
-
 					realLoginSuccess);
 
-
 			redirectAttributes.addFlashAttribute(
-
 					"maxAttemptCount",
-
 					maxAttemptCount);
 
-
 			redirectAttributes.addFlashAttribute(
-
 					"passwordAttemptCount",
-
 					passwordAttemptCount);
 
-
 			redirectAttributes.addFlashAttribute(
-
 					"password2AttemptCount",
-
 					password2AttemptCount);
 
-
 			redirectAttributes.addFlashAttribute(
-
 					"password3AttemptCount",
-
 					password3AttemptCount);
 
+			// =================================================
+			// 強制終了フラグ
+			// =================================================
+
+			redirectAttributes.addFlashAttribute(
+					"forceTerminated",
+					forceTerminated);
 
 			// =================================================
 			// 仮想待機時間込みの攻撃時間
 			// =================================================
 
 			redirectAttributes.addFlashAttribute(
-
 					"attackTimeMs",
-
 					attackTimeMs);
 
+			// =================================================
+			// 結果メッセージ
+			//
+			// 強制終了を最優先する。
+			// =================================================
+
+			String message;
+
+			if (forceTerminated) {
+
+				message =
+						"試行制限により三段階認証（ランダム）攻撃処理を強制終了しました。";
+
+			} else if (attackSuccess) {
+
+				message =
+						"三段階認証（ランダム）の突破に成功しました。";
+
+			} else {
+
+				message =
+						"三段階認証（ランダム）の突破に失敗しました。";
+			}
 
 			redirectAttributes.addFlashAttribute(
-
 					"message",
-
-					attackSuccess
-
-					? "三段階認証（ランダム）の突破に成功しました。"
-
-							: "三段階認証（ランダム）の突破に失敗しました。");
-
+					message);
 
 			return "redirect:/result";
-
 
 		} catch (Exception e) {
 
 			e.printStackTrace();
 
 			redirectAttributes.addFlashAttribute(
-
 					"error",
-
 					"三段階ランダム攻撃中にエラーが発生しました: "
-
 							+ e.getMessage());
 
 			return "redirect:/result";
@@ -2995,7 +2953,11 @@ public class AttackController {
 							+ maxAttemptsPassword);
 
 			System.out.println(
-					"仮想待機条件 = 10回失敗ごとに1分");
+					"試行制限 = 10回失敗ごとに適用");
+			System.out.println(
+					"制限時間 = 1分 → 5分 → 10分 → 20分 → 30分 → 60分");
+			System.out.println(
+					"70回失敗で攻撃処理を強制終了");
 
 			System.out.println(
 					"========================================");
@@ -3046,6 +3008,9 @@ public class AttackController {
 
 			boolean realLoginSuccess =
 					result.isLoginSuccess();
+
+			boolean forceTerminated =
+					result.isForceTerminated();
 
 			String password =
 					result.getPassword();
@@ -3219,12 +3184,32 @@ public class AttackController {
 			redirectAttributes.addFlashAttribute(
 					"virtualWaitTimeMs",
 					virtualWaitTimeMs);
+			
+			redirectAttributes.addFlashAttribute(
+					"forceTerminated",
+					forceTerminated);
+
+			String message;
+
+			if (forceTerminated) {
+
+				message =
+						"試行制限により辞書攻撃の処理を強制終了しました。";
+
+			} else if (attackSuccess) {
+
+				message =
+						"辞書攻撃による認証突破に成功しました。";
+
+			} else {
+
+				message =
+						"辞書攻撃による認証突破に失敗しました。";
+			}
 
 			redirectAttributes.addFlashAttribute(
 					"message",
-					attackSuccess
-					? "辞書攻撃による認証突破に成功しました。"
-					: "辞書攻撃による認証突破に失敗しました。");
+					message);
 
 			return "redirect:/result";
 
