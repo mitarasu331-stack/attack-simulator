@@ -4,6 +4,9 @@ import java.security.SecureRandom;
 
 import org.springframework.stereotype.Component;
 
+import com.example.attacksimulator.client.NewAuthLabLoginClient;
+import com.example.attacksimulator.state.AttackState;
+
 @Component
 public class RandomEmailOtpAttack {
 
@@ -13,6 +16,23 @@ public class RandomEmailOtpAttack {
 
 	private static final int OTP_COUNT = 1_000_000;
 
+
+	private final NewAuthLabLoginClient newAuthLabLoginClient;
+	
+	private final AttackState attackState;
+
+	public RandomEmailOtpAttack(
+	        NewAuthLabLoginClient newAuthLabLoginClient,
+	        AttackState attackState) {
+
+	    this.newAuthLabLoginClient =
+	            newAuthLabLoginClient;
+
+	    this.attackState =
+	            attackState;
+	}
+
+	// ==============
 	private final SecureRandom secureRandom =
 			new SecureRandom();
 
@@ -55,7 +75,8 @@ public class RandomEmailOtpAttack {
 		String otp = null;
 
 		boolean success = false;
-
+		//有効期限が切れてるかどうか判定する変数をfalseにする_なぎ
+		attackState.setOtpTimedOut(false);
 		for (int candidate : candidates) {
 
 			if (attemptCount
@@ -63,7 +84,16 @@ public class RandomEmailOtpAttack {
 
 				break;
 			}
+			//有効期限確認_なぎ
+		newAuthLabLoginClient.checkOtpExpiration();
 
+
+		//もし有効期限が切れていたら_なぎ
+		if(attackState.isOtpTimedOut()) {
+			System.out.println(	"!!!TIME UP!!!"	);
+			//終了
+			break;
+		}
 			attemptCount++;
 
 			String candidateOtp =

@@ -4,17 +4,24 @@ import org.springframework.stereotype.Component;
 
 import com.example.attacksimulator.client.NewAuthLabLoginClient;
 import com.example.attacksimulator.client.NewAuthLabLoginClient.LoginResult;
+import com.example.attacksimulator.state.AttackState;
 
 @Component
 public class EmailOtpBruteForceAttack {
 
 	private final NewAuthLabLoginClient newAuthLabLoginClient;
+	
+	private final AttackState attackState;
 
 	public EmailOtpBruteForceAttack(
-			NewAuthLabLoginClient newAuthLabLoginClient) {
+	        NewAuthLabLoginClient newAuthLabLoginClient,
+	        AttackState attackState) {
 
-		this.newAuthLabLoginClient =
-				newAuthLabLoginClient;
+	    this.newAuthLabLoginClient =
+	            newAuthLabLoginClient;
+
+	    this.attackState =
+	            attackState;
 	}
 
 	// =========================================================
@@ -110,6 +117,11 @@ public class EmailOtpBruteForceAttack {
 				"newauthlabからOTPが発行されました。");
 
 		int attemptCount = 0;
+		
+		//有効期限が切れてるかどうか判定する変数をfalseにする_なぎ
+		attackState.setOtpTimedOut(false);
+		
+
 
 		/*
 		 * 000000 ～ 999999 を総当たり
@@ -121,7 +133,17 @@ public class EmailOtpBruteForceAttack {
 			if (attemptCount >= actualMaxAttempts) {
 				break;
 			}
+				//有効期限確認_なぎ
+			newAuthLabLoginClient.checkOtpExpiration();
 
+
+			//もし有効期限が切れていたら_なぎ
+			if(attackState.isOtpTimedOut()) {
+				System.out.println(	"!!!TIME UP!!!"	);
+				//終了
+				break;
+			}
+			
 			String candidate =
 					String.format(
 							"%06d",
@@ -130,7 +152,7 @@ public class EmailOtpBruteForceAttack {
 			attemptCount++;
 
 			// OTP候補を1件ずつ表示
-			System.out.println(
+		System.out.println(
 					"Email OTP総当たり 試行 "
 							+ attemptCount
 							+ " / "
@@ -256,7 +278,8 @@ public class EmailOtpBruteForceAttack {
 		// =====================================================
 
 		int attemptCount = 0;
-
+		//有効期限が切れてるかどうか判定する変数をfalseにする_なぎ
+		attackState.setOtpTimedOut(false);
 		for (int i = 0;
 				i < 1_000_000;
 				i++) {
@@ -264,8 +287,18 @@ public class EmailOtpBruteForceAttack {
 			if (attemptCount >= actualMaxAttempts) {
 				break;
 			}
-
-			String candidate =
+				//有効期限確認_なぎ
+			newAuthLabLoginClient.checkOtpExpiration();
+	
+	
+			//もし有効期限が切れていたら_なぎ
+			if(attackState.isOtpTimedOut()) {
+				System.out.println(	"!!!TIME UP!!!"	);
+				//終了
+				break;
+			}
+			
+				String candidate =
 					String.format(
 							"%06d",
 							i);
