@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.attacksimulator.attack.FactorAuthenticationAttack;
@@ -21,6 +22,7 @@ import com.example.attacksimulator.model.ExperimentResult;
 import com.example.attacksimulator.service.AttackService;
 import com.example.attacksimulator.service.ExperimentResultService;
 import com.example.attacksimulator.service.NewAuthLabUserService;
+import com.example.attacksimulator.state.AttackState;
 
 @Controller
 public class AttackController {
@@ -32,12 +34,15 @@ public class AttackController {
 	private final NewAuthLabUserService newAuthLabUserService;
 
 	private final NewAuthLabLoginClient newAuthLabLoginClient;
-
+	
+	public boolean otpTime_out = false;//有効期限が切れたことをフラグする
+	private final AttackState attackState;
 	public AttackController(
 			AttackService attackService,
 			ExperimentResultService experimentResultService,
 			NewAuthLabUserService newAuthLabUserService,
-			NewAuthLabLoginClient newAuthLabLoginClient) {
+			NewAuthLabLoginClient newAuthLabLoginClient,
+			AttackState attackState) {
 
 		this.attackService =
 				attackService;
@@ -50,7 +55,11 @@ public class AttackController {
 
 		this.newAuthLabLoginClient =
 				newAuthLabLoginClient;
+		
+		 this.attackState = attackState;
 	}
+
+
 
 	// =========================================================
 	// 攻撃実験画面
@@ -4394,4 +4403,16 @@ public class AttackController {
 
 		return null;
 	}
+	
+	// =========================================================
+	// OTPで有効期限が切れたことをおーすコントローラーから受け取る＿なぎ
+	// =========================================================
+	@PostMapping("/attack/otp-timeout")
+	@ResponseBody
+	public String otpTimeout() {
+	    System.out.println("OTPが期限切れになりました");
+	    attackState.setOtpTimedOut(true);
+	    return "OK";
+	}
+	
 }

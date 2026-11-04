@@ -1656,4 +1656,35 @@ public class NewAuthLabLoginClient {
 			return sessionCookie;
 		}
 	}
+	
+	//有効期限確認＿なぎ
+	public void checkOtpExpiration() {
+
+		HttpRequest request =
+		        HttpRequest.newBuilder()
+		        .uri(URI.create(
+		                "http://localhost:8080/attack/check-otp-expiration"))
+		        .GET()
+		        .build();
+
+	    try {
+
+	        HttpResponse<String> response =
+	                noRedirectHttpClient.send(
+	                        request,
+	                        HttpResponse.BodyHandlers.ofString());
+
+	        System.out.println(
+	                "期限チェック Status = "
+	                + response.statusCode());
+
+	    } catch (IOException e) {
+
+	        e.printStackTrace();
+
+	    } catch (InterruptedException e) {
+
+	        Thread.currentThread().interrupt();
+	    }
+	}
 }
