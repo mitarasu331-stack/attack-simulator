@@ -522,7 +522,7 @@ public class AttackController {
 			if (forceTerminated) {
 
 				message =
-						"試行制限により攻撃処理を強制終了しました。";
+						"タイムアウトしました。";
 
 			} else if (result.isSuccess()) {
 
@@ -843,7 +843,7 @@ public class AttackController {
 			if (forceTerminated) {
 
 				message =
-						"試行制限により一段階ランダム攻撃処理を強制終了しました。";
+						"タイムアウトしました。";
 
 			} else if (attackSuccess) {
 
@@ -1182,8 +1182,7 @@ public class AttackController {
 			if (forceTerminated) {
 
 				message =
-						"試行制限により二段階認証（ランダム）"
-						+ "の攻撃処理を強制終了しました。";
+						"タイムアウトしました。";
 
 			} else if (attackSuccess) {
 
@@ -1582,7 +1581,7 @@ public class AttackController {
 			if (forceTerminated) {
 
 				message =
-						"試行制限により三段階認証（ランダム）攻撃処理を強制終了しました。";
+						"タイムアウトしました。";
 
 			} else if (attackSuccess) {
 
@@ -3201,7 +3200,7 @@ public class AttackController {
 			if (forceTerminated) {
 
 				message =
-						"試行制限により辞書攻撃の処理を強制終了しました。";
+						"タイムアウトしました。";
 
 			} else if (attackSuccess) {
 
