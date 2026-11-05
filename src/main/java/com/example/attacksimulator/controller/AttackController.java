@@ -2661,7 +2661,7 @@ public class AttackController {
 						"message",
 						attackSuccess
 						? "Email OTPの認証突破に成功しました。"
-								: "Email OTPの認証突破に失敗しました。");
+								: "タイムアウトしました。");
 
 				return "redirect:/result";
 			}
