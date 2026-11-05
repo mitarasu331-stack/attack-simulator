@@ -532,7 +532,7 @@ public class AttackController {
 			} else {
 
 				message =
-						"認証突破に失敗しました。";
+						"タイムアウトしました。";
 			}
 
 			redirectAttributes.addFlashAttribute(
@@ -853,7 +853,7 @@ public class AttackController {
 			} else {
 
 				message =
-						"一段階ランダム攻撃の突破に失敗しました。";
+						"タイムアウトしました。";
 			}
 
 			redirectAttributes.addFlashAttribute(
@@ -1192,7 +1192,7 @@ public class AttackController {
 			} else {
 
 				message =
-						"二段階認証（ランダム）の突破に失敗しました。";
+						"タイムアウトしました。";
 			}
 
 			redirectAttributes.addFlashAttribute(
@@ -1591,7 +1591,7 @@ public class AttackController {
 			} else {
 
 				message =
-						"三段階認証（ランダム）の突破に失敗しました。";
+						"タイムアウトしました。";
 			}
 
 			redirectAttributes.addFlashAttribute(
@@ -2050,7 +2050,7 @@ public class AttackController {
 					"message",
 					attackSuccess
 					? "二要素認証（ランダム）の突破に成功しました。"
-							: "二要素認証（ランダム）の突破に失敗しました。");
+							: "タイムアウトしました。");
 
 			return "redirect:/result";
 
@@ -2287,7 +2287,7 @@ public class AttackController {
 						"message",
 						attackSuccess
 						? "認証突破に成功しました。"
-								: "認証突破に失敗しました。");
+								: "タイムアウトしました。");
 
 				return "redirect:/result";
 			}
@@ -2487,7 +2487,7 @@ public class AttackController {
 						"message",
 						attackSuccess
 						? "一要素Password（ランダム）の認証突破に成功しました。"
-								: "一要素Password（ランダム）の認証突破に失敗しました。");
+								: "タイムアウトしました。");
 
 				return "redirect:/result";
 			}
@@ -2845,7 +2845,7 @@ public class AttackController {
 						"message",
 						attackSuccess
 						? "二要素認証の突破に成功しました。"
-								: "二要素認証の突破に失敗しました。");
+								: "タイムアウトしました。");
 
 				return "redirect:/result";
 			}
@@ -3210,7 +3210,7 @@ public class AttackController {
 			} else {
 
 				message =
-						"辞書攻撃による認証突破に失敗しました。";
+						"タイムアウトしました。";
 			}
 
 			redirectAttributes.addFlashAttribute(
