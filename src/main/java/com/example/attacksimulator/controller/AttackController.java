@@ -1797,7 +1797,7 @@ public class AttackController {
 					"message",
 					attackSuccess
 					? "一要素 Email OTP（ランダム）の突破に成功しました。"
-							: "一要素 Email OTP（ランダム）の突破に失敗しました。");
+							: "タイムアウトしました。");
 
 			return "redirect:/result";
 
