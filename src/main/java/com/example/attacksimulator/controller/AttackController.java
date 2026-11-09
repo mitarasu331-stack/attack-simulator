@@ -2667,6 +2667,7 @@ public class AttackController {
 			}
 
 
+
 			// =====================================================
 			// 二要素認証
 			// Password → Email OTP
@@ -2689,9 +2690,7 @@ public class AttackController {
 				System.out.println(
 						"===== 二要素認証 総当たり攻撃開始 =====");
 
-				System.out.println(
-						"username = "
-								+ username);
+				System.out.println("username = " + username);
 
 				System.out.println(
 						"最大試行回数 = "
@@ -2702,9 +2701,11 @@ public class AttackController {
 				System.out.println(
 						"========================================");
 
+				// =================================================
+				// 二要素認証攻撃実行
+				// =================================================
 				FactorAuthenticationAttack.FactorAttackResult twoFactorResult =
-						attackService
-						.executeTwoFactorPasswordEmailOtp(
+						attackService.executeTwoFactorPasswordEmailOtp(
 								username,
 								maxAttemptsPassword,
 								maxAttempts);
@@ -2732,13 +2733,40 @@ public class AttackController {
 						twoFactorResult.getFinalUrl();
 
 				// =================================================
+				// ログイン引き継ぎURLの確認
+				// =================================================
+				boolean validRedirectUrl = false;
+
+				if (finalUrl != null
+						&& !finalUrl.isBlank()) {
+
+					try {
+						URI redirectUri = URI.create(finalUrl);
+
+						validRedirectUrl =
+								"http".equals(redirectUri.getScheme())
+								&& "localhost".equals(
+										redirectUri.getHost())
+								&& redirectUri.getPort() == 8080
+								&& "/attack-login".equals(
+										redirectUri.getPath())
+								&& redirectUri.getQuery() != null
+								&& redirectUri.getQuery()
+										.startsWith("ticket=");
+
+					} catch (IllegalArgumentException e) {
+						validRedirectUrl = false;
+					}
+				}
+
+				// =================================================
 				// 実験結果保存
 				// =================================================
 				experimentResultService.addResult(
 						username,
 						twoFactorResult.getAuthMethod(),
 						twoFactorResult
-						.getAuthenticationConfiguration(),
+								.getAuthenticationConfiguration(),
 						maxAttemptCount,
 						twoFactorResult.getAttemptCount(),
 						attackSuccess,
@@ -2751,49 +2779,41 @@ public class AttackController {
 				System.out.println(
 						"===== 二要素認証 総当たり攻撃結果 =====");
 
-				System.out.println(
-						"username = "
-								+ username);
+				System.out.println("username = " + username);
 
 				System.out.println(
-						"password = "
-								+ credential);
-
-				System.out.println(
-						"最大試行回数 = "
-								+ maxAttemptCount);
+						"最大試行回数 = " + maxAttemptCount);
 
 				System.out.println(
 						"実攻撃試行回数 = "
 								+ twoFactorResult.getAttemptCount());
 
 				System.out.println(
-						"総当たり攻撃成功 = "
-								+ attackSuccess);
+						"総当たり攻撃成功 = " + attackSuccess);
 
 				System.out.println(
-						"実ログイン成功 = "
+						"ログイン引き継ぎ準備成功 = "
 								+ realLoginSuccess);
 
 				System.out.println(
-						"Final URL = "
-								+ finalUrl);
+						"ブラウザ遷移URL確認 = "
+								+ validRedirectUrl);
 
 				System.out.println(
-						"攻撃時間 = "
-								+ attackTimeMs
-								+ " ms");
+						"攻撃時間 = " + attackTimeMs + " ms");
 
 				System.out.println(
 						"========================================");
 
 				// =================================================
-				// ログイン成功
+				// ブラウザでNewAuthLabへログイン引き継ぎ
 				// =================================================
 				if (attackSuccess
 						&& realLoginSuccess
-						&& finalUrl != null
-						&& !finalUrl.isBlank()) {
+						&& validRedirectUrl) {
+
+					System.out.println(
+							"ブラウザをNewAuthLabへリダイレクトします。");
 
 					return "redirect:" + finalUrl;
 				}
@@ -2845,10 +2865,11 @@ public class AttackController {
 						"message",
 						attackSuccess
 						? "二要素認証の突破に成功しました。"
-								: "タイムアウトしました。");
+						: "タイムアウトしました。");
 
 				return "redirect:/result";
 			}
+
 
 
 			// =====================================================
