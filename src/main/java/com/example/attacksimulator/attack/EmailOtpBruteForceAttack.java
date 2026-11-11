@@ -129,7 +129,7 @@ public class EmailOtpBruteForceAttack {
 		for (int i = 0;
 				i < 1_000_000;
 				i++) {
-
+		
 			if (attemptCount >= actualMaxAttempts) {
 				break;
 			}

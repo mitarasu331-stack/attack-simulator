@@ -1045,10 +1045,13 @@ public class NewAuthLabLoginClient {
 					location.contains(
 							"/attack-login?ticket=");
 
+			
 			boolean success =
 					redirectStatus
 					&& attackLoginRedirect;
 
+
+			
 			System.out.println(
 					"【DEBUG】redirectStatus = "
 							+ redirectStatus);

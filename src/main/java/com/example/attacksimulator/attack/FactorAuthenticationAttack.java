@@ -17,6 +17,8 @@ public class FactorAuthenticationAttack {
 	private final RandomEmailOtpAttack randomEmailOtpAttack;
 
 	private final NewAuthLabLoginClient newAuthLabLoginClient;
+	
+
 
 	public FactorAuthenticationAttack(
 			PasswordBruteForceAttack passwordBruteForceAttack,
@@ -39,7 +41,10 @@ public class FactorAuthenticationAttack {
 
 		this.newAuthLabLoginClient =
 				newAuthLabLoginClient;
+		
+		
 	}
+
 
 	// =========================================================
 	// 一要素認証：Password総当たり
@@ -194,11 +199,13 @@ public class FactorAuthenticationAttack {
 				randomEmailOtpAttack.execute(
 						candidateOtp -> {
 
+							
+							
 							LoginResult verifyResult =
 									newAuthLabLoginClient
 											.verifyEmailOtp(
 													candidateOtp);
-
+							
 							if (verifyResult != null
 									&& verifyResult.isSuccess()) {
 
@@ -251,7 +258,8 @@ public class FactorAuthenticationAttack {
 
 		if (!passwordResult.isSuccess()) {
 
-			return new FactorAttackResult(
+			//return new FactorAttackResult(　わしが消した
+		    FactorAttackResult result = new FactorAttackResult(
 					"two-factor-password-email-otp",
 					"ID + Password → Email OTP",
 					false,
@@ -259,6 +267,13 @@ public class FactorAuthenticationAttack {
 					null,
 					passwordResult.getAttemptCount(),
 					null);
+		    result.setForceTerminated(
+		            passwordResult.isForceTerminated());
+
+		    return result;
+			
+
+
 		}
 
 		String foundPassword =
@@ -317,7 +332,8 @@ public class FactorAuthenticationAttack {
 
 		if (!passwordResult.isSuccess()) {
 
-			return new FactorAttackResult(
+		//	return new FactorAttackResult(　わしが消した
+			FactorAttackResult result = new FactorAttackResult(
 					"two-factor-password-email-otp-random",
 					"ID + Random Password → Random Email OTP",
 					false,
@@ -325,6 +341,11 @@ public class FactorAuthenticationAttack {
 					null,
 					passwordResult.getAttemptCount(),
 					null);
+			///わしが追加	
+			result.setForceTerminated(
+            passwordResult.isForceTerminated());
+
+		 	return result;
 		}
 
 		String foundPassword =
@@ -492,6 +513,8 @@ public class FactorAuthenticationAttack {
 		private final int attemptCount;
 
 		private final LoginResult loginResult;
+		
+		private boolean forceTerminated = false;
 
 		public FactorAttackResult(
 				String authMethod,
@@ -522,6 +545,8 @@ public class FactorAuthenticationAttack {
 
 			this.loginResult =
 					loginResult;
+			
+
 		}
 
 		public String getAuthMethod() {
@@ -575,5 +600,18 @@ public class FactorAuthenticationAttack {
 
 			return loginResult.getSessionCookie();
 		}
+		
+		
+		/// =========================================================
+		/// 試行制限による強制終了かどうか なぎ
+		public boolean isForceTerminated() {
+		    return forceTerminated;
+		}
+
+		public void setForceTerminated(boolean forceTerminated) {
+		    this.forceTerminated = forceTerminated;
+		
+		}
+		///=========================================================
 	}
 }
