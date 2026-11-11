@@ -167,8 +167,7 @@ public class FactorAuthenticationAttack {
 
 		LoginResult sendResult =
 				newAuthLabLoginClient.sendEmailOtp(
-						username,
-						email);
+						username);
 
 		if (sendResult == null
 				|| !sendResult.isRequestSuccess()) {

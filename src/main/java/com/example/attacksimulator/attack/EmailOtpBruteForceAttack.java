@@ -72,8 +72,7 @@ public class EmailOtpBruteForceAttack {
 
         LoginResult sendOtpResult =
                 newAuthLabLoginClient.sendEmailOtp(
-                        username,
-                        email);
+                        username);
 
         if (!sendOtpResult.isRequestSuccess()) {
 
