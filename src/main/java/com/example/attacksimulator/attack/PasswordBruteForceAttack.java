@@ -112,8 +112,8 @@ public class PasswordBruteForceAttack {
 				Math.min(
 						maxAttempts,
 						PASSWORD_MAX
-								- PASSWORD_MIN
-								+ 1);
+						- PASSWORD_MIN
+						+ 1);
 
 		int attemptCount = 0;
 
@@ -180,7 +180,7 @@ public class PasswordBruteForceAttack {
 
 				int restrictionCount =
 						attemptCount
-								/ WAIT_INTERVAL;
+						/ WAIT_INTERVAL;
 
 				// -------------------------------------------------
 				// 5回目
@@ -235,7 +235,7 @@ public class PasswordBruteForceAttack {
 
 				long waitTimeMillis =
 						WAIT_TIMES[
-								restrictionCount - 1];
+						           restrictionCount - 1];
 
 				virtualWaitTimeMillis +=
 						waitTimeMillis;

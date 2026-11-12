@@ -187,7 +187,7 @@ public class DictionaryPasswordAttack {
 
 				long waitTimeMillis =
 						WAIT_TIMES[
-								restrictionCount - 1];
+						           restrictionCount - 1];
 
 				virtualWaitTimeMillis +=
 						waitTimeMillis;

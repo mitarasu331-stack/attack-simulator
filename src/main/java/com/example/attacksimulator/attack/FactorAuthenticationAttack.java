@@ -195,8 +195,8 @@ public class FactorAuthenticationAttack {
 
 							LoginResult verifyResult =
 									newAuthLabLoginClient
-											.verifyEmailOtp(
-													candidateOtp);
+									.verifyEmailOtp(
+											candidateOtp);
 
 							if (verifyResult != null
 									&& verifyResult.isSuccess()) {
@@ -275,7 +275,7 @@ public class FactorAuthenticationAttack {
 
 		int totalAttemptCount =
 				passwordResult.getAttemptCount()
-						+ otpResult.getAttemptCount();
+				+ otpResult.getAttemptCount();
 
 		return new FactorAttackResult(
 				"two-factor-password-email-otp",
@@ -336,9 +336,9 @@ public class FactorAuthenticationAttack {
 
 		LoginResult passwordLoginResult =
 				newAuthLabLoginClient
-						.loginTwoFactorPassword(
-								username,
-								foundPassword);
+				.loginTwoFactorPassword(
+						username,
+						foundPassword);
 
 		if (passwordLoginResult == null
 				|| !passwordLoginResult.isRequestSuccess()) {
@@ -375,8 +375,8 @@ public class FactorAuthenticationAttack {
 
 							LoginResult verifyResult =
 									newAuthLabLoginClient
-											.verifyTwoFactorOtp(
-													candidateOtp);
+									.verifyTwoFactorOtp(
+											candidateOtp);
 
 							if (verifyResult != null
 									&& verifyResult.isSuccess()) {
@@ -397,7 +397,7 @@ public class FactorAuthenticationAttack {
 
 		int totalAttemptCount =
 				passwordResult.getAttemptCount()
-						+ otpResult.getAttemptCount();
+				+ otpResult.getAttemptCount();
 
 		System.out.println(
 				"Password試行回数 = "

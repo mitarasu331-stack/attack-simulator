@@ -34,7 +34,7 @@ public class AttackController {
 	private final NewAuthLabUserService newAuthLabUserService;
 
 	private final NewAuthLabLoginClient newAuthLabLoginClient;
-	
+
 	public boolean otpTime_out = false;//有効期限が切れたことをフラグする
 	private final AttackState attackState;
 	public AttackController(
@@ -55,8 +55,8 @@ public class AttackController {
 
 		this.newAuthLabLoginClient =
 				newAuthLabLoginClient;
-		
-		 this.attackState = attackState;
+
+		this.attackState = attackState;
 	}
 
 
@@ -205,10 +205,10 @@ public class AttackController {
 
 				AttackService.OneStageLoginResult
 				oneStageResult =
-						attackService
-								.executeOneStageWithLogin(
-										username,
-										maxAttemptsPassword);
+				attackService
+				.executeOneStageWithLogin(
+						username,
+						maxAttemptsPassword);
 
 				result =
 						oneStageResult.getAttackResult();
@@ -229,11 +229,11 @@ public class AttackController {
 
 				AttackService.TwoStageLoginResult
 				twoStageResult =
-						attackService
-								.executeTwoStageWithLogin(
-										username,
-										maxAttemptsPassword,
-										maxAttemptsPassword2);
+				attackService
+				.executeTwoStageWithLogin(
+						username,
+						maxAttemptsPassword,
+						maxAttemptsPassword2);
 
 				result =
 						twoStageResult.getAttackResult();
@@ -255,12 +255,12 @@ public class AttackController {
 
 				AttackService.ThreeStageLoginResult
 				threeStageResult =
-						attackService
-								.executeThreeStageWithLogin(
-										username,
-										maxAttemptsPassword,
-										maxAttemptsPassword2,
-										maxAttemptsPassword3);
+				attackService
+				.executeThreeStageWithLogin(
+						username,
+						maxAttemptsPassword,
+						maxAttemptsPassword2,
+						maxAttemptsPassword3);
 
 				result =
 						threeStageResult.getAttackResult();
@@ -613,10 +613,10 @@ public class AttackController {
 
 			AttackService.RandomOneStageLoginResult
 			randomResult =
-					attackService
-							.executeRandomOneStageWithLogin(
-									username,
-									maxAttemptsPassword);
+			attackService
+			.executeRandomOneStageWithLogin(
+					username,
+					maxAttemptsPassword);
 
 			// =================================================
 			// 実際にかかった処理時間
@@ -642,7 +642,7 @@ public class AttackController {
 
 			long virtualWaitTimeMs =
 					randomResult
-							.getVirtualWaitTimeMillis();
+					.getVirtualWaitTimeMillis();
 
 			// =================================================
 			// 実験上の攻撃時間
@@ -654,7 +654,7 @@ public class AttackController {
 
 			long attackTimeMs =
 					actualAttackTimeMs
-							+ virtualWaitTimeMs;
+					+ virtualWaitTimeMs;
 
 			boolean attackSuccess =
 					randomResult.isSuccess();
@@ -940,11 +940,11 @@ public class AttackController {
 
 			AttackService.RandomTwoStageLoginResult
 			randomResult =
-					attackService
-					.executeRandomTwoStageWithLogin(
-							username,
-							maxAttemptsPassword,
-							maxAttemptsPassword2);
+			attackService
+			.executeRandomTwoStageWithLogin(
+					username,
+					maxAttemptsPassword,
+					maxAttemptsPassword2);
 
 			// =================================================
 			// 実際にかかった攻撃処理時間
@@ -1295,12 +1295,12 @@ public class AttackController {
 
 			AttackService.RandomThreeStageLoginResult
 			randomResult =
-					attackService
-					.executeRandomThreeStageWithLogin(
-							username,
-							maxAttemptsPassword,
-							maxAttemptsPassword2,
-							maxAttemptsPassword3);
+			attackService
+			.executeRandomThreeStageWithLogin(
+					username,
+					maxAttemptsPassword,
+					maxAttemptsPassword2,
+					maxAttemptsPassword3);
 
 			// =================================================
 			// 実際にかかった処理時間
@@ -1333,7 +1333,7 @@ public class AttackController {
 
 			long virtualWaitTimeMs =
 					randomResult
-							.getVirtualWaitTimeMillis();
+					.getVirtualWaitTimeMillis();
 
 			// =================================================
 			// 実験上の攻撃時間
@@ -2752,7 +2752,7 @@ public class AttackController {
 										redirectUri.getPath())
 								&& redirectUri.getQuery() != null
 								&& redirectUri.getQuery()
-										.startsWith("ticket=");
+								.startsWith("ticket=");
 
 					} catch (IllegalArgumentException e) {
 						validRedirectUrl = false;
@@ -2766,7 +2766,7 @@ public class AttackController {
 						username,
 						twoFactorResult.getAuthMethod(),
 						twoFactorResult
-								.getAuthenticationConfiguration(),
+						.getAuthenticationConfiguration(),
 						maxAttemptCount,
 						twoFactorResult.getAttemptCount(),
 						attackSuccess,
@@ -2865,7 +2865,7 @@ public class AttackController {
 						"message",
 						attackSuccess
 						? "二要素認証の突破に成功しました。"
-						: "タイムアウトしました。");
+								: "タイムアウトしました。");
 
 				return "redirect:/result";
 			}
@@ -3211,7 +3211,7 @@ public class AttackController {
 			redirectAttributes.addFlashAttribute(
 					"virtualWaitTimeMs",
 					virtualWaitTimeMs);
-			
+
 			redirectAttributes.addFlashAttribute(
 					"forceTerminated",
 					forceTerminated);
@@ -4423,16 +4423,16 @@ public class AttackController {
 
 		return null;
 	}
-	
+
 	// =========================================================
 	// OTPで有効期限が切れたことをおーすコントローラーから受け取る＿なぎ
 	// =========================================================
 	@PostMapping("/attack/otp-timeout")
 	@ResponseBody
 	public String otpTimeout() {
-	    System.out.println("OTPが期限切れになりました");
-	    attackState.setOtpTimedOut(true);
-	    return "OK";
+		System.out.println("OTPが期限切れになりました");
+		attackState.setOtpTimedOut(true);
+		return "OK";
 	}
-	
+
 }
