@@ -1,5 +1,7 @@
 package com.example.attacksimulator.client;
 
+
+//TODO: DEBUGの削除（コンソール出力を整える）
 import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -355,6 +357,10 @@ public class NewAuthLabLoginClient {
 
 			System.out.println(
 					"===== 二段階認証 2段階目 =====");
+			
+			System.out.println(
+					"username = "
+							+ username);
 
 			System.out.println(
 					"Password2 = "
@@ -541,6 +547,10 @@ public class NewAuthLabLoginClient {
 
 			System.out.println(
 					"===== 三段階認証 2段階目 =====");
+			
+			System.out.println(
+					"username = "
+							+ username);
 
 			System.out.println(
 					"Password2 = "
@@ -616,6 +626,10 @@ public class NewAuthLabLoginClient {
 
 			System.out.println(
 					"===== 三段階認証 3段階目 =====");
+			
+			System.out.println(
+					"username = "
+							+ username);
 
 			System.out.println(
 					"Password3 = "

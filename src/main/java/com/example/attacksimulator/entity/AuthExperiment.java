@@ -11,77 +11,49 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "auth_experiments")
+@Table(name = "auth_experiment_logs")
 public class AuthExperiment {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	/**
-	 * 実験ID
-	 */
+	// 実験ID
 	@Column(name = "experiment_id", nullable = false, length = 50)
 	private String experimentId;
 
-	/**
-	 * 使用する認証要素
-	 * 例：Password
-	 * 例：Password+Email OTP
-	 */
+	// 何回目の試行か
+	@Column(name = "attempt_number", nullable = false)
+	private Integer attemptNumber;
+
+	// 認証方式
 	@Column(name = "auth_method", nullable = false, length = 100)
 	private String authMethod;
 
-	/**
-	 * 段階数または要素数
-	 * 1～3
-	 */
-	@Column(name = "auth_count", nullable = false)
-	private Integer authCount;
-
-	/**
-	 * 認証方式の種類
-	 * 例：段階認証
-	 * 例：要素認証
-	 */
+	// 認証タイプ
 	@Column(name = "auth_type", nullable = false, length = 100)
 	private String authType;
 
-	/**
-	 * 攻撃方法
-	 * 例：password-bruteforce-attack
-	 */
+	// 攻撃方法
 	@Column(name = "attack_type", nullable = false, length = 100)
 	private String attackType;
 
-	/**
-	 * 突破試行回数
-	 */
-	@Column(name = "total_count", nullable = false)
-	private Integer totalCount;
+	// 試した値
+	@Column(name = "candidate", nullable = false, length = 100)
+	private String candidate;
 
-	/**
-	 * 突破成功回数
-	 */
-	@Column(name = "success_count", nullable = false)
-	private Integer successCount;
+	// 成功したか
+	@Column(name = "success", nullable = false)
+	private Boolean success;
 
-	/**
-	 * 実行時間合計（ms）
-	 */
-	@Column(name = "total_duration_ms", nullable = false, precision = 10, scale = 2)
-	private BigDecimal totalDurationMs;
+	// 1回の試行にかかった時間
+	@Column(name = "duration_ms", nullable = false, precision = 10, scale = 2)
+	private BigDecimal durationMs;
 
-	/**
-	 * 実験日時
-	 */
-	@Column(name = "auth_time", nullable = false)
-	private LocalDateTime authTime;
+	// 試行日時
+	@Column(name = "execution_time", nullable = false)
+	private LocalDateTime executionTime;
 
-
-	// =========================
-	// Getter / Setter
-	// =========================
 
 	public Long getId() {
 		return id;
@@ -95,20 +67,20 @@ public class AuthExperiment {
 		this.experimentId = experimentId;
 	}
 
+	public Integer getAttemptNumber() {
+		return attemptNumber;
+	}
+
+	public void setAttemptNumber(Integer attemptNumber) {
+		this.attemptNumber = attemptNumber;
+	}
+
 	public String getAuthMethod() {
 		return authMethod;
 	}
 
 	public void setAuthMethod(String authMethod) {
 		this.authMethod = authMethod;
-	}
-
-	public Integer getAuthCount() {
-		return authCount;
-	}
-
-	public void setAuthCount(Integer authCount) {
-		this.authCount = authCount;
 	}
 
 	public String getAuthType() {
@@ -127,35 +99,35 @@ public class AuthExperiment {
 		this.attackType = attackType;
 	}
 
-	public Integer getTotalCount() {
-		return totalCount;
+	public String getCandidate() {
+		return candidate;
 	}
 
-	public void setTotalCount(Integer totalCount) {
-		this.totalCount = totalCount;
+	public void setCandidate(String candidate) {
+		this.candidate = candidate;
 	}
 
-	public Integer getSuccessCount() {
-		return successCount;
+	public Boolean getSuccess() {
+		return success;
 	}
 
-	public void setSuccessCount(Integer successCount) {
-		this.successCount = successCount;
+	public void setSuccess(Boolean success) {
+		this.success = success;
 	}
 
-	public BigDecimal getTotalDurationMs() {
-		return totalDurationMs;
+	public BigDecimal getDurationMs() {
+		return durationMs;
 	}
 
-	public void setTotalDurationMs(BigDecimal totalDurationMs) {
-		this.totalDurationMs = totalDurationMs;
+	public void setDurationMs(BigDecimal durationMs) {
+		this.durationMs = durationMs;
 	}
 
-	public LocalDateTime getAuthTime() {
-		return authTime;
+	public LocalDateTime getExecutionTime() {
+		return executionTime;
 	}
 
-	public void setAuthTime(LocalDateTime authTime) {
-		this.authTime = authTime;
+	public void setExecutionTime(LocalDateTime executionTime) {
+		this.executionTime = executionTime;
 	}
 }

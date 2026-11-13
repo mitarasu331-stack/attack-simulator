@@ -2,13 +2,14 @@ package com.example.attacksimulator.attack;
 
 import org.springframework.stereotype.Component;
 
+import com.example.attacksimulator.attack.MultiStagePasswordBruteForceAttack.AttackResult;
 import com.example.attacksimulator.client.NewAuthLabLoginClient;
 import com.example.attacksimulator.client.NewAuthLabLoginClient.LoginResult;
 
 @Component
 public class FactorAuthenticationAttack {
 
-	private final PasswordBruteForceAttack passwordBruteForceAttack;
+	private final MultiStagePasswordBruteForceAttack MultiStagepasswordBruteForceAttack;
 
 	private final EmailOtpBruteForceAttack emailOtpBruteForceAttack;
 
@@ -19,26 +20,21 @@ public class FactorAuthenticationAttack {
 	private final NewAuthLabLoginClient newAuthLabLoginClient;
 
 	public FactorAuthenticationAttack(
-			PasswordBruteForceAttack passwordBruteForceAttack,
+			MultiStagePasswordBruteForceAttack MultiStagepasswordBruteForceAttack,
 			EmailOtpBruteForceAttack emailOtpBruteForceAttack,
 			RandomPasswordAttack randomPasswordAttack,
 			RandomEmailOtpAttack randomEmailOtpAttack,
 			NewAuthLabLoginClient newAuthLabLoginClient) {
 
-		this.passwordBruteForceAttack =
-				passwordBruteForceAttack;
+		this.MultiStagepasswordBruteForceAttack = MultiStagepasswordBruteForceAttack;
 
-		this.emailOtpBruteForceAttack =
-				emailOtpBruteForceAttack;
+		this.emailOtpBruteForceAttack = emailOtpBruteForceAttack;
 
-		this.randomPasswordAttack =
-				randomPasswordAttack;
+		this.randomPasswordAttack = randomPasswordAttack;
 
-		this.randomEmailOtpAttack =
-				randomEmailOtpAttack;
+		this.randomEmailOtpAttack = randomEmailOtpAttack;
 
-		this.newAuthLabLoginClient =
-				newAuthLabLoginClient;
+		this.newAuthLabLoginClient = newAuthLabLoginClient;
 	}
 
 	// =========================================================
@@ -49,22 +45,22 @@ public class FactorAuthenticationAttack {
 			String passwordHash,
 			int maxAttemptsPassword) {
 
-		int actualMaxAttempts =
-				clampPasswordAttempts(
-						maxAttemptsPassword);
+		int actualMaxAttempts = clampPasswordAttempts(
+				maxAttemptsPassword);
 
-		PasswordBruteForceAttack.AttackResult result =
-				passwordBruteForceAttack.execute(
-						passwordHash,
-						actualMaxAttempts);
+		AttackResult result = MultiStagepasswordBruteForceAttack.executeOneStage(
+				passwordHash,
+				actualMaxAttempts);
 
 		return new FactorAttackResult(
 				"one-factor-password",
 				"ID + Password",
 				result.isSuccess(),
 				result.getPassword(),
-				null,
+				null, 
 				result.getAttemptCount(),
+				result.getVirtualWaitTimeMillis(),
+				result.isForceTerminated(),
 				null);
 	}
 
@@ -84,15 +80,14 @@ public class FactorAuthenticationAttack {
 			String passwordHash,
 			int maxAttemptsPassword) {
 
-		int actualMaxAttempts =
-				clampPasswordAttempts(
-						maxAttemptsPassword);
+		int actualMaxAttempts = clampPasswordAttempts(
+				maxAttemptsPassword);
 
-		RandomPasswordAttack.AttackResult result =
-				randomPasswordAttack.execute(
-						passwordHash,
-						actualMaxAttempts);
+		RandomPasswordAttack.AttackResult result = randomPasswordAttack.execute(
+				passwordHash,
+				actualMaxAttempts);
 
+		//TODO:resultに修正、項目の修正
 		return new FactorAttackResult(
 				"one-factor-password-random",
 				"ID + Random Password",
@@ -100,7 +95,7 @@ public class FactorAuthenticationAttack {
 				result.getPassword(),
 				null,
 				result.getAttemptCount(),
-				null);
+				actualMaxAttempts, false, null);
 	}
 
 	// =========================================================
@@ -116,15 +111,14 @@ public class FactorAuthenticationAttack {
 				username,
 				email);
 
-		int actualMaxAttempts =
-				clampOtpAttempts(maxAttempts);
+		int actualMaxAttempts = clampOtpAttempts(maxAttempts);
 
-		EmailOtpBruteForceAttack.AttackResult result =
-				emailOtpBruteForceAttack.execute(
-						username,
-						email,
-						actualMaxAttempts);
+		EmailOtpBruteForceAttack.AttackResult result = emailOtpBruteForceAttack.execute(
+				username,
+				email,
+				actualMaxAttempts);
 
+		//TODO:resultに修正、項目の修正
 		return new FactorAttackResult(
 				"one-factor-email-otp",
 				"ID + Email OTP",
@@ -132,7 +126,7 @@ public class FactorAuthenticationAttack {
 				null,
 				result.getOtp(),
 				result.getAttemptCount(),
-				result.getLoginResult());
+				actualMaxAttempts, false, result.getLoginResult());
 	}
 
 	// =========================================================
@@ -158,21 +152,20 @@ public class FactorAuthenticationAttack {
 				username,
 				email);
 
-		int actualMaxAttempts =
-				clampOtpAttempts(maxAttempts);
+		int actualMaxAttempts = clampOtpAttempts(maxAttempts);
 
 		// =====================================================
 		// OTPを送信する
 		// =====================================================
 
-		LoginResult sendResult =
-				newAuthLabLoginClient.sendEmailOtp(
-						username,
-						email);
+		LoginResult sendResult = newAuthLabLoginClient.sendEmailOtp(
+				username,
+				email);
 
 		if (sendResult == null
 				|| !sendResult.isRequestSuccess()) {
 
+			//TODO:resultに修正、項目の修正
 			return new FactorAttackResult(
 					"one-factor-email-otp-random",
 					"ID + Random Email OTP",
@@ -180,38 +173,35 @@ public class FactorAuthenticationAttack {
 					null,
 					null,
 					0,
-					sendResult);
+					actualMaxAttempts, false, sendResult);
 		}
 
 		// =====================================================
 		// ランダムOTP攻撃
 		// =====================================================
 
-		final LoginResult[] successfulLogin =
-				new LoginResult[1];
+		final LoginResult[] successfulLogin = new LoginResult[1];
 
-		RandomEmailOtpAttack.AttackResult result =
-				randomEmailOtpAttack.execute(
-						candidateOtp -> {
+		RandomEmailOtpAttack.AttackResult result = randomEmailOtpAttack.execute(
+				candidateOtp -> {
 
-							LoginResult verifyResult =
-									newAuthLabLoginClient
-											.verifyEmailOtp(
-													candidateOtp);
+					LoginResult verifyResult = newAuthLabLoginClient
+							.verifyEmailOtp(
+									candidateOtp);
 
-							if (verifyResult != null
-									&& verifyResult.isSuccess()) {
+					if (verifyResult != null
+							&& verifyResult.isSuccess()) {
 
-								successfulLogin[0] =
-										verifyResult;
+						successfulLogin[0] = verifyResult;
 
-								return true;
-							}
+						return true;
+					}
 
-							return false;
-						},
-						actualMaxAttempts);
+					return false;
+				},
+				actualMaxAttempts);
 
+		//TODO:resultの修正、項目の修正
 		return new FactorAttackResult(
 				"one-factor-email-otp-random",
 				"ID + Random Email OTP",
@@ -219,7 +209,7 @@ public class FactorAuthenticationAttack {
 				null,
 				result.getOtp(),
 				result.getAttemptCount(),
-				successfulLogin[0]);
+				actualMaxAttempts, false, successfulLogin[0]);
 	}
 
 	// =========================================================
@@ -232,25 +222,24 @@ public class FactorAuthenticationAttack {
 			int maxAttemptsPassword,
 			int maxAttemptsOtp) {
 
-		int actualMaxPasswordAttempts =
-				clampPasswordAttempts(
-						maxAttemptsPassword);
+		int actualMaxPasswordAttempts = clampPasswordAttempts(
+				maxAttemptsPassword);
 
-		int actualMaxOtpAttempts =
-				clampOtpAttempts(
-						maxAttemptsOtp);
+		int actualMaxOtpAttempts = clampOtpAttempts(
+				maxAttemptsOtp);
 
 		// =====================================================
 		// 第1要素：Password総当たり
 		// =====================================================
 
-		PasswordBruteForceAttack.AttackResult passwordResult =
-				passwordBruteForceAttack.execute(
-						passwordHash,
-						actualMaxPasswordAttempts);
+		AttackResult passwordResult = MultiStagepasswordBruteForceAttack.executeOneStage(
+				passwordHash,
+				actualMaxPasswordAttempts);
 
+		//失敗の場合
 		if (!passwordResult.isSuccess()) {
 
+			//TODO:resultの修正、項目の修正
 			return new FactorAttackResult(
 					"two-factor-password-email-otp",
 					"ID + Password → Email OTP",
@@ -258,26 +247,24 @@ public class FactorAuthenticationAttack {
 					null,
 					null,
 					passwordResult.getAttemptCount(),
-					null);
-		}
+					actualMaxOtpAttempts, false, null);
+		}//if
 
-		String foundPassword =
-				passwordResult.getPassword();
+		String foundPassword = passwordResult.getPassword();
 
 		// =====================================================
 		// 第2要素：Email OTP総当たり
 		// =====================================================
 
-		EmailOtpBruteForceAttack.AttackResult otpResult =
-				emailOtpBruteForceAttack.executeTwoFactor(
-						username,
-						foundPassword,
-						actualMaxOtpAttempts);
+		EmailOtpBruteForceAttack.AttackResult otpResult = emailOtpBruteForceAttack.executeTwoFactor(
+				username,
+				foundPassword,
+				actualMaxOtpAttempts);
 
-		int totalAttemptCount =
-				passwordResult.getAttemptCount()
-						+ otpResult.getAttemptCount();
+		int totalAttemptCount = passwordResult.getAttemptCount()
+				+ otpResult.getAttemptCount();
 
+		//resultに修正、項目の修正
 		return new FactorAttackResult(
 				"two-factor-password-email-otp",
 				"ID + Password → Email OTP",
@@ -285,7 +272,7 @@ public class FactorAuthenticationAttack {
 				foundPassword,
 				otpResult.getOtp(),
 				totalAttemptCount,
-				otpResult.getLoginResult());
+				totalAttemptCount, false, otpResult.getLoginResult());
 	}
 
 	// =========================================================
@@ -298,25 +285,23 @@ public class FactorAuthenticationAttack {
 			int maxAttemptsPassword,
 			int maxAttemptsOtp) {
 
-		int actualMaxPasswordAttempts =
-				clampPasswordAttempts(
-						maxAttemptsPassword);
+		int actualMaxPasswordAttempts = clampPasswordAttempts(
+				maxAttemptsPassword);
 
-		int actualMaxOtpAttempts =
-				clampOtpAttempts(
-						maxAttemptsOtp);
+		int actualMaxOtpAttempts = clampOtpAttempts(
+				maxAttemptsOtp);
 
 		// =====================================================
 		// 第1要素：Passwordランダム攻撃
 		// =====================================================
 
-		RandomPasswordAttack.AttackResult passwordResult =
-				randomPasswordAttack.execute(
-						passwordHash,
-						actualMaxPasswordAttempts);
+		RandomPasswordAttack.AttackResult passwordResult = randomPasswordAttack.execute(
+				passwordHash,
+				actualMaxPasswordAttempts);
 
 		if (!passwordResult.isSuccess()) {
 
+			//TODO:resultに修正、項目の修正
 			return new FactorAttackResult(
 					"two-factor-password-email-otp-random",
 					"ID + Random Password → Random Email OTP",
@@ -324,22 +309,20 @@ public class FactorAuthenticationAttack {
 					null,
 					null,
 					passwordResult.getAttemptCount(),
-					null);
+					actualMaxOtpAttempts, false, null);
 		}
 
-		String foundPassword =
-				passwordResult.getPassword();
+		String foundPassword = passwordResult.getPassword();
 
 		// =====================================================
 		// 第2要素へ進む
 		// 正しいPasswordでNewAuthLabにログイン
 		// =====================================================
 
-		LoginResult passwordLoginResult =
-				newAuthLabLoginClient
-						.loginTwoFactorPassword(
-								username,
-								foundPassword);
+		LoginResult passwordLoginResult = newAuthLabLoginClient
+				.loginTwoFactorPassword(
+						username,
+						foundPassword);
 
 		if (passwordLoginResult == null
 				|| !passwordLoginResult.isRequestSuccess()) {
@@ -347,6 +330,7 @@ public class FactorAuthenticationAttack {
 			System.out.println(
 					"二要素認証のPasswordログインに失敗しました。");
 
+			//TODO:resultに修正、項目の修正
 			return new FactorAttackResult(
 					"two-factor-password-email-otp-random",
 					"ID + Random Password → Random Email OTP",
@@ -354,7 +338,7 @@ public class FactorAuthenticationAttack {
 					foundPassword,
 					null,
 					passwordResult.getAttemptCount(),
-					passwordLoginResult);
+					actualMaxOtpAttempts, false, passwordLoginResult);
 		}
 
 		System.out.println(
@@ -367,38 +351,33 @@ public class FactorAuthenticationAttack {
 		// 第2要素：Email OTPランダム攻撃
 		// =====================================================
 
-		final LoginResult[] successfulLogin =
-				new LoginResult[1];
+		final LoginResult[] successfulLogin = new LoginResult[1];
 
-		RandomEmailOtpAttack.AttackResult otpResult =
-				randomEmailOtpAttack.execute(
-						candidateOtp -> {
+		RandomEmailOtpAttack.AttackResult otpResult = randomEmailOtpAttack.execute(
+				candidateOtp -> {
 
-							LoginResult verifyResult =
-									newAuthLabLoginClient
-											.verifyTwoFactorOtp(
-													candidateOtp);
+					LoginResult verifyResult = newAuthLabLoginClient
+							.verifyTwoFactorOtp(
+									candidateOtp);
 
-							if (verifyResult != null
-									&& verifyResult.isSuccess()) {
+					if (verifyResult != null
+							&& verifyResult.isSuccess()) {
 
-								successfulLogin[0] =
-										verifyResult;
+						successfulLogin[0] = verifyResult;
 
-								return true;
-							}
+						return true;
+					}
 
-							return false;
-						},
-						actualMaxOtpAttempts);
+					return false;
+				},
+				actualMaxOtpAttempts);
 
 		// =====================================================
 		// 総試行回数
 		// =====================================================
 
-		int totalAttemptCount =
-				passwordResult.getAttemptCount()
-						+ otpResult.getAttemptCount();
+		int totalAttemptCount = passwordResult.getAttemptCount()
+				+ otpResult.getAttemptCount();
 
 		System.out.println(
 				"Password試行回数 = "
@@ -416,6 +395,7 @@ public class FactorAuthenticationAttack {
 		// 結果
 		// =====================================================
 
+		//TODO:resultに修正、項目の修正
 		return new FactorAttackResult(
 				"two-factor-password-email-otp-random",
 				"ID + Random Password → Random Email OTP",
@@ -423,7 +403,7 @@ public class FactorAuthenticationAttack {
 				foundPassword,
 				otpResult.getOtp(),
 				totalAttemptCount,
-				successfulLogin[0]);
+				totalAttemptCount, false, successfulLogin[0]);
 	}
 
 	// =========================================================
@@ -490,6 +470,10 @@ public class FactorAuthenticationAttack {
 		private final String otp;
 
 		private final int attemptCount;
+		
+		private final long virtualWaitTimeMillis;
+
+		private final boolean forceTerminated;
 
 		private final LoginResult loginResult;
 
@@ -500,28 +484,27 @@ public class FactorAuthenticationAttack {
 				String password,
 				String otp,
 				int attemptCount,
+				long virtualWaitTimeMillis,
+				boolean forceTerminated,
 				LoginResult loginResult) {
 
-			this.authMethod =
-					authMethod;
+			this.authMethod = authMethod;
 
-			this.authenticationConfiguration =
-					authenticationConfiguration;
+			this.authenticationConfiguration = authenticationConfiguration;
 
-			this.success =
-					success;
+			this.success = success;
 
-			this.password =
-					password;
+			this.password = password;
 
-			this.otp =
-					otp;
+			this.otp = otp;
 
-			this.attemptCount =
-					attemptCount;
+			this.attemptCount = attemptCount;
+			
+			this.virtualWaitTimeMillis = virtualWaitTimeMillis;
+	
+			this.forceTerminated = forceTerminated;
 
-			this.loginResult =
-					loginResult;
+			this.loginResult = loginResult;
 		}
 
 		public String getAuthMethod() {
@@ -546,6 +529,26 @@ public class FactorAuthenticationAttack {
 
 		public int getAttemptCount() {
 			return attemptCount;
+		}
+		
+		/**
+		 * 試行制限によって
+		 * 攻撃処理が強制終了されたかどうか
+		 *
+		 * 実際のアカウントロックではない。
+		 */
+		public long getVirtualWaitTimeMillis() {
+			return virtualWaitTimeMillis;
+		}
+
+		/**
+		 * 試行制限によって
+		 * 攻撃処理が強制終了されたかどうか
+		 *
+		 * 実際のアカウントロックではない。
+		 */
+		public boolean isForceTerminated() {
+			return forceTerminated;
 		}
 
 		public LoginResult getLoginResult() {

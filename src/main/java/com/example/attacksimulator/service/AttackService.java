@@ -6,6 +6,7 @@ import com.example.attacksimulator.attack.DictionaryPasswordAttack;
 import com.example.attacksimulator.attack.EmailOtpBruteForceAttack;
 import com.example.attacksimulator.attack.FactorAuthenticationAttack;
 import com.example.attacksimulator.attack.MultiStagePasswordBruteForceAttack;
+import com.example.attacksimulator.attack.MultiStagePasswordBruteForceAttack.AttackResult;
 import com.example.attacksimulator.attack.RandomEmailOtpAttack;
 import com.example.attacksimulator.attack.RandomPasswordAttack;
 import com.example.attacksimulator.attack.RandomThreeStagePasswordAttack;
@@ -114,27 +115,29 @@ public class AttackService {
 	// Password総当たり
 	// =========================================================
 
-	public MultiStagePasswordBruteForceAttack.AttackResult
+	//TODO:オーバーロード？後で削除
+	/*
+		public MultiStagePasswordBruteForceAttack.BruteForceStageResult
+	
+		executeOneStage(
+	
+				String username) {
+	
+			return executeOneStage(
+	
+					username,
+	
+					10_000);
+	
+		}
+	*/
+	public AttackResult
 
-	executeOneStage(
+			executeOneStage(
 
-			String username) {
+					String username,
 
-		return executeOneStage(
-
-				username,
-
-				10_000);
-
-	}
-
-	public MultiStagePasswordBruteForceAttack.AttackResult
-
-	executeOneStage(
-
-			String username,
-
-			int maxAttemptsPassword) {
+					int maxAttemptsPassword) {
 
 		NewAuthLabUser user =
 
@@ -155,64 +158,53 @@ public class AttackService {
 	// Password総当たり＋実ログイン
 	// =========================================================
 
+	//TODO:オーバーロード？後で削除
+	/*	public OneStageLoginResult
+	
+		executeOneStageWithLogin(
+	
+				String username) {
+	
+			return executeOneStageWithLogin(
+	
+					username,
+	
+					10_000);
+	
+		}*/
+
 	public OneStageLoginResult
 
-	executeOneStageWithLogin(
+			executeOneStageWithLogin(
 
-			String username) {
+					String username,
 
-		return executeOneStageWithLogin(
+					int maxAttemptsPassword) {
 
+		AttackResult
+
+		attackResult = executeOneStage(
 				username,
-
-				10_000);
-
-	}
-
-	public OneStageLoginResult
-
-	executeOneStageWithLogin(
-
-			String username,
-
-			int maxAttemptsPassword) {
-
-		MultiStagePasswordBruteForceAttack.AttackResult
-
-		attackResult =
-
-		executeOneStage(
-
-				username,
-
 				maxAttemptsPassword);
 
 		if (!attackResult.isSuccess()) {
 
 			return new OneStageLoginResult(
-
 					attackResult,
-
 					false,
-
 					null);
 
-		}
+		} //if
 
 		LoginResult loginResult =
 
 				newAuthLabLoginClient.loginOneStage(
-
 						username,
-
 						attackResult.getPassword());
 
 		return new OneStageLoginResult(
-
 				attackResult,
-
 				loginResult.isSuccess(),
-
 				loginResult);
 
 	}
@@ -224,9 +216,9 @@ public class AttackService {
 
 	public RandomPasswordAttack.AttackResult
 
-	executeRandomOneStage(
+			executeRandomOneStage(
 
-			String username) {
+					String username) {
 
 		return executeRandomOneStage(
 
@@ -238,11 +230,11 @@ public class AttackService {
 
 	public RandomPasswordAttack.AttackResult
 
-	executeRandomOneStage(
+			executeRandomOneStage(
 
-			String username,
+					String username,
 
-			int maxAttemptsPassword) {
+					int maxAttemptsPassword) {
 
 		NewAuthLabUser user =
 
@@ -265,9 +257,9 @@ public class AttackService {
 
 	public RandomOneStageLoginResult
 
-	executeRandomOneStageWithLogin(
+			executeRandomOneStageWithLogin(
 
-			String username) {
+					String username) {
 
 		return executeRandomOneStageWithLogin(
 
@@ -279,21 +271,21 @@ public class AttackService {
 
 	public RandomOneStageLoginResult
 
-	executeRandomOneStageWithLogin(
+			executeRandomOneStageWithLogin(
 
-			String username,
+					String username,
 
-			int maxAttemptsPassword) {
+					int maxAttemptsPassword) {
 
 		RandomPasswordAttack.AttackResult
 
 		attackResult =
 
-		executeRandomOneStage(
+				executeRandomOneStage(
 
-				username,
+						username,
 
-				maxAttemptsPassword);
+						maxAttemptsPassword);
 
 		if (!attackResult.isSuccess()) {
 
@@ -333,9 +325,9 @@ public class AttackService {
 
 	public MultiStagePasswordBruteForceAttack.AttackResult
 
-	executeTwoStage(
+			executeTwoStage(
 
-			String username) {
+					String username) {
 
 		return executeTwoStage(
 
@@ -349,13 +341,13 @@ public class AttackService {
 
 	public MultiStagePasswordBruteForceAttack.AttackResult
 
-	executeTwoStage(
+			executeTwoStage(
 
-			String username,
+					String username,
 
-			int maxAttemptsPassword,
+					int maxAttemptsPassword,
 
-			int maxAttemptsPassword2) {
+					int maxAttemptsPassword2) {
 
 		NewAuthLabUser user =
 
@@ -382,9 +374,9 @@ public class AttackService {
 
 	public TwoStageLoginResult
 
-	executeTwoStageWithLogin(
+			executeTwoStageWithLogin(
 
-			String username) {
+					String username) {
 
 		return executeTwoStageWithLogin(
 
@@ -398,25 +390,25 @@ public class AttackService {
 
 	public TwoStageLoginResult
 
-	executeTwoStageWithLogin(
+			executeTwoStageWithLogin(
 
-			String username,
+					String username,
 
-			int maxAttemptsPassword,
+					int maxAttemptsPassword,
 
-			int maxAttemptsPassword2) {
+					int maxAttemptsPassword2) {
 
 		MultiStagePasswordBruteForceAttack.AttackResult
 
 		attackResult =
 
-		executeTwoStage(
+				executeTwoStage(
 
-				username,
+						username,
 
-				maxAttemptsPassword,
+						maxAttemptsPassword,
 
-				maxAttemptsPassword2);
+						maxAttemptsPassword2);
 
 		if (!attackResult.isSuccess()) {
 
@@ -458,9 +450,9 @@ public class AttackService {
 
 	public RandomTwoStagePasswordAttack.AttackResult
 
-	executeRandomTwoStage(
+			executeRandomTwoStage(
 
-			String username) {
+					String username) {
 
 		return executeRandomTwoStage(
 
@@ -474,13 +466,13 @@ public class AttackService {
 
 	public RandomTwoStagePasswordAttack.AttackResult
 
-	executeRandomTwoStage(
+			executeRandomTwoStage(
 
-			String username,
+					String username,
 
-			int maxAttemptsPassword,
+					int maxAttemptsPassword,
 
-			int maxAttemptsPassword2) {
+					int maxAttemptsPassword2) {
 
 		NewAuthLabUser user =
 
@@ -507,9 +499,9 @@ public class AttackService {
 
 	public RandomTwoStageLoginResult
 
-	executeRandomTwoStageWithLogin(
+			executeRandomTwoStageWithLogin(
 
-			String username) {
+					String username) {
 
 		return executeRandomTwoStageWithLogin(
 
@@ -523,25 +515,25 @@ public class AttackService {
 
 	public RandomTwoStageLoginResult
 
-	executeRandomTwoStageWithLogin(
+			executeRandomTwoStageWithLogin(
 
-			String username,
+					String username,
 
-			int maxAttemptsPassword,
+					int maxAttemptsPassword,
 
-			int maxAttemptsPassword2) {
+					int maxAttemptsPassword2) {
 
 		RandomTwoStagePasswordAttack.AttackResult
 
 		attackResult =
 
-		executeRandomTwoStage(
+				executeRandomTwoStage(
 
-				username,
+						username,
 
-				maxAttemptsPassword,
+						maxAttemptsPassword,
 
-				maxAttemptsPassword2);
+						maxAttemptsPassword2);
 
 		if (!attackResult.isSuccess()) {
 
@@ -583,9 +575,9 @@ public class AttackService {
 
 	public MultiStagePasswordBruteForceAttack.AttackResult
 
-	executeThreeStage(
+			executeThreeStage(
 
-			String username) {
+					String username) {
 
 		return executeThreeStage(
 
@@ -601,15 +593,15 @@ public class AttackService {
 
 	public MultiStagePasswordBruteForceAttack.AttackResult
 
-	executeThreeStage(
+			executeThreeStage(
 
-			String username,
+					String username,
 
-			int maxAttemptsPassword,
+					int maxAttemptsPassword,
 
-			int maxAttemptsPassword2,
+					int maxAttemptsPassword2,
 
-			int maxAttemptsPassword3) {
+					int maxAttemptsPassword3) {
 
 		NewAuthLabUser user =
 
@@ -640,9 +632,9 @@ public class AttackService {
 
 	public ThreeStageLoginResult
 
-	executeThreeStageWithLogin(
+			executeThreeStageWithLogin(
 
-			String username) {
+					String username) {
 
 		return executeThreeStageWithLogin(
 
@@ -658,29 +650,29 @@ public class AttackService {
 
 	public ThreeStageLoginResult
 
-	executeThreeStageWithLogin(
+			executeThreeStageWithLogin(
 
-			String username,
+					String username,
 
-			int maxAttemptsPassword,
+					int maxAttemptsPassword,
 
-			int maxAttemptsPassword2,
+					int maxAttemptsPassword2,
 
-			int maxAttemptsPassword3) {
+					int maxAttemptsPassword3) {
 
 		MultiStagePasswordBruteForceAttack.AttackResult
 
 		attackResult =
 
-		executeThreeStage(
+				executeThreeStage(
 
-				username,
+						username,
 
-				maxAttemptsPassword,
+						maxAttemptsPassword,
 
-				maxAttemptsPassword2,
+						maxAttemptsPassword2,
 
-				maxAttemptsPassword3);
+						maxAttemptsPassword3);
 
 		if (!attackResult.isSuccess()) {
 
@@ -724,9 +716,9 @@ public class AttackService {
 
 	public RandomThreeStagePasswordAttack.AttackResult
 
-	executeRandomThreeStage(
+			executeRandomThreeStage(
 
-			String username) {
+					String username) {
 
 		return executeRandomThreeStage(
 
@@ -742,15 +734,15 @@ public class AttackService {
 
 	public RandomThreeStagePasswordAttack.AttackResult
 
-	executeRandomThreeStage(
+			executeRandomThreeStage(
 
-			String username,
+					String username,
 
-			int maxAttemptsPassword,
+					int maxAttemptsPassword,
 
-			int maxAttemptsPassword2,
+					int maxAttemptsPassword2,
 
-			int maxAttemptsPassword3) {
+					int maxAttemptsPassword3) {
 
 		NewAuthLabUser user =
 
@@ -781,9 +773,9 @@ public class AttackService {
 
 	public RandomThreeStageLoginResult
 
-	executeRandomThreeStageWithLogin(
+			executeRandomThreeStageWithLogin(
 
-			String username) {
+					String username) {
 
 		return executeRandomThreeStageWithLogin(
 
@@ -799,29 +791,29 @@ public class AttackService {
 
 	public RandomThreeStageLoginResult
 
-	executeRandomThreeStageWithLogin(
+			executeRandomThreeStageWithLogin(
 
-			String username,
+					String username,
 
-			int maxAttemptsPassword,
+					int maxAttemptsPassword,
 
-			int maxAttemptsPassword2,
+					int maxAttemptsPassword2,
 
-			int maxAttemptsPassword3) {
+					int maxAttemptsPassword3) {
 
 		RandomThreeStagePasswordAttack.AttackResult
 
 		attackResult =
 
-		executeRandomThreeStage(
+				executeRandomThreeStage(
 
-				username,
+						username,
 
-				maxAttemptsPassword,
+						maxAttemptsPassword,
 
-				maxAttemptsPassword2,
+						maxAttemptsPassword2,
 
-				maxAttemptsPassword3);
+						maxAttemptsPassword3);
 
 		// =====================================================
 		// 攻撃失敗
@@ -870,9 +862,9 @@ public class AttackService {
 
 	public FactorAuthenticationAttack.FactorAttackResult
 
-	executeOneFactorPassword(
+			executeOneFactorPassword(
 
-			String username) {
+					String username) {
 
 		return executeOneFactorPassword(
 
@@ -884,11 +876,11 @@ public class AttackService {
 
 	public FactorAuthenticationAttack.FactorAttackResult
 
-	executeOneFactorPassword(
+			executeOneFactorPassword(
 
-			String username,
+					String username,
 
-			int maxAttemptsPassword) {
+					int maxAttemptsPassword) {
 
 		NewAuthLabUser user =
 
@@ -912,9 +904,9 @@ public class AttackService {
 
 	public FactorAuthenticationAttack.FactorAttackResult
 
-	executeOneFactorRandomPassword(
+			executeOneFactorRandomPassword(
 
-			String username) {
+					String username) {
 
 		return executeOneFactorRandomPassword(
 
@@ -926,11 +918,11 @@ public class AttackService {
 
 	public FactorAuthenticationAttack.FactorAttackResult
 
-	executeOneFactorRandomPassword(
+			executeOneFactorRandomPassword(
 
-			String username,
+					String username,
 
-			int maxAttemptsPassword) {
+					int maxAttemptsPassword) {
 
 		NewAuthLabUser user =
 
@@ -968,11 +960,11 @@ public class AttackService {
 
 	public FactorAuthenticationAttack.FactorAttackResult
 
-	executeOneFactorEmailOtp(
+			executeOneFactorEmailOtp(
 
-			String username,
+					String username,
 
-			int maxAttempts) {
+					int maxAttempts) {
 
 		NewAuthLabUser user =
 
@@ -1008,11 +1000,11 @@ public class AttackService {
 
 	public FactorAuthenticationAttack.FactorAttackResult
 
-	executeOneFactorEmailOtpWithLogin(
+			executeOneFactorEmailOtpWithLogin(
 
-			String username,
+					String username,
 
-			int maxAttempts) {
+					int maxAttempts) {
 
 		NewAuthLabUser user =
 
@@ -1048,9 +1040,9 @@ public class AttackService {
 
 	public FactorAuthenticationAttack.FactorAttackResult
 
-	executeRandomOneFactorEmailOtp(
+			executeRandomOneFactorEmailOtp(
 
-			String username) {
+					String username) {
 
 		return executeRandomOneFactorEmailOtp(
 
@@ -1062,11 +1054,11 @@ public class AttackService {
 
 	public FactorAuthenticationAttack.FactorAttackResult
 
-	executeRandomOneFactorEmailOtp(
+			executeRandomOneFactorEmailOtp(
 
-			String username,
+					String username,
 
-			int maxAttempts) {
+					int maxAttempts) {
 
 		NewAuthLabUser user =
 
@@ -1102,9 +1094,9 @@ public class AttackService {
 
 	public FactorAuthenticationAttack.FactorAttackResult
 
-	executeTwoFactorPasswordEmailOtp(
+			executeTwoFactorPasswordEmailOtp(
 
-			String username) {
+					String username) {
 
 		return executeTwoFactorPasswordEmailOtp(
 
@@ -1118,13 +1110,13 @@ public class AttackService {
 
 	public FactorAuthenticationAttack.FactorAttackResult
 
-	executeTwoFactorPasswordEmailOtp(
+			executeTwoFactorPasswordEmailOtp(
 
-			String username,
+					String username,
 
-			int maxAttemptsPassword,
+					int maxAttemptsPassword,
 
-			int maxAttemptsOtp) {
+					int maxAttemptsOtp) {
 
 		NewAuthLabUser user =
 
@@ -1168,9 +1160,9 @@ public class AttackService {
 
 	public FactorAuthenticationAttack.FactorAttackResult
 
-	executeRandomTwoFactorPasswordEmailOtp(
+			executeRandomTwoFactorPasswordEmailOtp(
 
-			String username) {
+					String username) {
 
 		return executeRandomTwoFactorPasswordEmailOtp(
 
@@ -1184,13 +1176,13 @@ public class AttackService {
 
 	public FactorAuthenticationAttack.FactorAttackResult
 
-	executeRandomTwoFactorPasswordEmailOtp(
+			executeRandomTwoFactorPasswordEmailOtp(
 
-			String username,
+					String username,
 
-			int maxAttemptsPassword,
+					int maxAttemptsPassword,
 
-			int maxAttemptsOtp) {
+					int maxAttemptsOtp) {
 
 		NewAuthLabUser user =
 
@@ -1241,7 +1233,7 @@ public class AttackService {
 
 	public static class OneStageLoginResult {
 
-		private final MultiStagePasswordBruteForceAttack.AttackResult
+		private final AttackResult
 
 		attackResult;
 
@@ -1251,9 +1243,9 @@ public class AttackService {
 
 		public OneStageLoginResult(
 
-				MultiStagePasswordBruteForceAttack.AttackResult
+				AttackResult
 
-				attackResult,
+				attackResult2,
 
 				boolean loginSuccess,
 
@@ -1261,7 +1253,7 @@ public class AttackService {
 
 			this.attackResult =
 
-					attackResult;
+					attackResult2;
 
 			this.loginSuccess =
 
@@ -1275,7 +1267,7 @@ public class AttackService {
 
 		public MultiStagePasswordBruteForceAttack.AttackResult
 
-		getAttackResult() {
+				getAttackResult() {
 
 			return attackResult;
 
@@ -1370,7 +1362,7 @@ public class AttackService {
 
 		public RandomPasswordAttack.AttackResult
 
-		getAttackResult() {
+				getAttackResult() {
 
 			return attackResult;
 
@@ -1489,7 +1481,7 @@ public class AttackService {
 
 		public MultiStagePasswordBruteForceAttack.AttackResult
 
-		getAttackResult() {
+				getAttackResult() {
 
 			return attackResult;
 
@@ -1582,7 +1574,7 @@ public class AttackService {
 
 		public RandomTwoStagePasswordAttack.AttackResult
 
-		getAttackResult() {
+				getAttackResult() {
 
 			return attackResult;
 
@@ -1723,7 +1715,7 @@ public class AttackService {
 
 		public MultiStagePasswordBruteForceAttack.AttackResult
 
-		getAttackResult() {
+				getAttackResult() {
 
 			return attackResult;
 
@@ -1822,7 +1814,7 @@ public class AttackService {
 
 		public RandomThreeStagePasswordAttack.AttackResult
 
-		getAttackResult() {
+				getAttackResult() {
 
 			return attackResult;
 
@@ -1977,7 +1969,7 @@ public class AttackService {
 
 		public RandomEmailOtpAttack.AttackResult
 
-		getAttackResult() {
+				getAttackResult() {
 
 			return attackResult;
 
@@ -2080,7 +2072,7 @@ public class AttackService {
 
 		public EmailOtpBruteForceAttack.AttackResult
 
-		getAttackResult() {
+				getAttackResult() {
 
 			return attackResult;
 
@@ -2092,9 +2084,9 @@ public class AttackService {
 
 					&& attackResult
 
-					.getLoginResult()
+							.getLoginResult()
 
-					.isSuccess();
+							.isSuccess();
 
 		}
 
@@ -2257,7 +2249,7 @@ public class AttackService {
 
 		public DictionaryPasswordAttack.AttackResult
 
-		getAttackResult() {
+				getAttackResult() {
 
 			return attackResult;
 

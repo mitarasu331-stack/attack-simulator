@@ -1,6 +1,6 @@
 package com.example.attacksimulator.repository;
 
-import java.util.Optional;
+import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -9,5 +9,6 @@ import com.example.attacksimulator.entity.AuthExperiment;
 public interface AuthExperimentRepository
 extends JpaRepository<AuthExperiment, Long> {
 
-	Optional<AuthExperiment> findByExperimentId(String experimentId);
+	List<AuthExperiment> findByExperimentIdOrderByAttemptNumberAsc(
+			String experimentId);
 }

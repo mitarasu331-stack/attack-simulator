@@ -12,8 +12,7 @@ public class DictionaryPasswordAttack {
 	 *
 	 * 10回失敗ごとに制限を適用する。
 	 */
-	private static final int WAIT_INTERVAL =
-			10;
+	private static final int WAIT_INTERVAL = 10;
 
 	/**
 	 * 10回失敗するごとの仮想待機時間
@@ -33,13 +32,13 @@ public class DictionaryPasswordAttack {
 	 */
 	private static final long[] WAIT_TIMES = {
 
-			60_000L,       // 1回目：1分
+			60_000L, // 1回目：1分
 
-			300_000L,      // 2回目：5分
+			300_000L, // 2回目：5分
 
-			600_000L,      // 3回目：10分
+			600_000L, // 3回目：10分
 
-			1_200_000L     // 4回目：20分
+			1_200_000L // 4回目：20分
 	};
 
 	/**
@@ -50,8 +49,7 @@ public class DictionaryPasswordAttack {
 	 *
 	 * 実際のアカウントロックは行わない。
 	 */
-	private static final int FORCE_TERMINATION_RESTRICTION_COUNT =
-			5;
+	private static final int FORCE_TERMINATION_RESTRICTION_COUNT = 5;
 
 	// =========================================================
 	// 一段階認証
@@ -61,8 +59,7 @@ public class DictionaryPasswordAttack {
 			int maxEntries,
 			PasswordVerifier verifier) {
 
-		List<String> dictionary =
-				DictionaryPasswordList.getPasswords(maxEntries);
+		List<String> dictionary = DictionaryPasswordList.getPasswords(maxEntries);
 
 		int attemptCount = 0;
 
@@ -82,8 +79,7 @@ public class DictionaryPasswordAttack {
 							+ " : "
 							+ password);
 
-			boolean success =
-					verifier.verify(password);
+			boolean success = verifier.verify(password);
 
 			// =================================================
 			// 認証成功
@@ -118,8 +114,7 @@ public class DictionaryPasswordAttack {
 
 			if (attemptCount % WAIT_INTERVAL == 0) {
 
-				int restrictionCount =
-						attemptCount / WAIT_INTERVAL;
+				int restrictionCount = attemptCount / WAIT_INTERVAL;
 
 				System.out.println(
 						"----------------------------------------");
@@ -138,8 +133,7 @@ public class DictionaryPasswordAttack {
 				// 5回目 → 攻撃処理を強制終了
 				// =================================================
 
-				if (restrictionCount
-						>= FORCE_TERMINATION_RESTRICTION_COUNT) {
+				if (restrictionCount >= FORCE_TERMINATION_RESTRICTION_COUNT) {
 
 					forceTerminated = true;
 
@@ -185,12 +179,9 @@ public class DictionaryPasswordAttack {
 				// 1～4回目 → 仮想待機時間を加算
 				// =================================================
 
-				long waitTimeMillis =
-						WAIT_TIMES[
-								restrictionCount - 1];
+				long waitTimeMillis = WAIT_TIMES[restrictionCount - 1];
 
-				virtualWaitTimeMillis +=
-						waitTimeMillis;
+				virtualWaitTimeMillis += waitTimeMillis;
 
 				System.out.println(
 						"辞書攻撃が"
@@ -386,38 +377,27 @@ public class DictionaryPasswordAttack {
 				long virtualWaitTimeMillis,
 				boolean forceTerminated) {
 
-			this.stageCount =
-					stageCount;
+			this.stageCount = stageCount;
 
-			this.success =
-					success;
+			this.success = success;
 
-			this.password =
-					password;
+			this.password = password;
 
-			this.password2 =
-					password2;
+			this.password2 = password2;
 
-			this.password3 =
-					password3;
+			this.password3 = password3;
 
-			this.totalAttempts =
-					totalAttempts;
+			this.totalAttempts = totalAttempts;
 
-			this.passwordAttemptCount =
-					passwordAttemptCount;
+			this.passwordAttemptCount = passwordAttemptCount;
 
-			this.password2AttemptCount =
-					password2AttemptCount;
+			this.password2AttemptCount = password2AttemptCount;
 
-			this.password3AttemptCount =
-					password3AttemptCount;
+			this.password3AttemptCount = password3AttemptCount;
 
-			this.virtualWaitTimeMillis =
-					virtualWaitTimeMillis;
+			this.virtualWaitTimeMillis = virtualWaitTimeMillis;
 
-			this.forceTerminated =
-					forceTerminated;
+			this.forceTerminated = forceTerminated;
 		}
 
 		// =====================================================

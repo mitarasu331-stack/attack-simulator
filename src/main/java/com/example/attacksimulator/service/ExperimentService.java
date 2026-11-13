@@ -5,16 +5,16 @@ import java.time.LocalDateTime;
 
 import org.springframework.stereotype.Service;
 
-import com.example.attacksimulator.entity.AuthExperiment;
-import com.example.attacksimulator.repository.AuthExperimentRepository;
+import com.example.attacksimulator.entity.AuthExperiments;
+import com.example.attacksimulator.repository.AuthExperimentsRepository;
 
 @Service
 public class ExperimentService {
 
-	private final AuthExperimentRepository authExperimentRepository;
+	private final AuthExperimentsRepository authExperimentRepository;
 
 	public ExperimentService(
-			AuthExperimentRepository authExperimentRepository) {
+			AuthExperimentsRepository authExperimentRepository) {
 
 		this.authExperimentRepository = authExperimentRepository;
 	}
@@ -22,7 +22,7 @@ public class ExperimentService {
 	/**
 	 * 実験結果を保存する
 	 */
-	public AuthExperiment saveExperiment(
+	public AuthExperiments saveExperiment(
 			String experimentId,
 			String authMethod,
 			int authCount,
@@ -32,7 +32,7 @@ public class ExperimentService {
 			int successCount,
 			BigDecimal totalDurationMs) {
 
-		AuthExperiment experiment = new AuthExperiment();
+		AuthExperiments experiment = new AuthExperiments();
 
 		experiment.setExperimentId(experimentId);
 		experiment.setAuthMethod(authMethod);
@@ -50,7 +50,7 @@ public class ExperimentService {
 	/**
 	 * 実験IDから実験結果を取得する
 	 */
-	public AuthExperiment findExperiment(
+	public AuthExperiments findExperiment(
 			String experimentId) {
 
 		return authExperimentRepository
