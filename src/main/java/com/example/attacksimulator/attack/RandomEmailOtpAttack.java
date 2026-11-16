@@ -1,3 +1,4 @@
+
 package com.example.attacksimulator.attack;
 
 import java.security.SecureRandom;
@@ -5,6 +6,7 @@ import java.security.SecureRandom;
 import org.springframework.stereotype.Component;
 
 import com.example.attacksimulator.client.NewAuthLabLoginClient;
+import com.example.attacksimulator.client.NewAuthLabLoginClient.LoginResult;
 import com.example.attacksimulator.state.AttackState;
 
 @Component
@@ -20,17 +22,15 @@ public class RandomEmailOtpAttack {
 
 	private final AttackState attackState;
 
+	private final SecureRandom secureRandom = new SecureRandom();
+
 	public RandomEmailOtpAttack(
 			NewAuthLabLoginClient newAuthLabLoginClient,
 			AttackState attackState) {
 
 		this.newAuthLabLoginClient = newAuthLabLoginClient;
-
 		this.attackState = attackState;
 	}
-
-	// ==============
-	private final SecureRandom secureRandom = new SecureRandom();
 
 	// =========================================================
 	// Email OTP ランダム攻撃
@@ -39,7 +39,8 @@ public class RandomEmailOtpAttack {
 	// 000000 ～ 999999 をランダムな順番で試行
 	// 同じOTPは二度試行しない
 	//
-	// verifyOtp は呼び出し元から渡してもらう
+	// otpVerifier は呼び出し元から渡してもらう
+	// LoginResult を返すことで認証結果も保持する
 	// =========================================================
 
 	public AttackResult execute(
@@ -49,9 +50,12 @@ public class RandomEmailOtpAttack {
 		maxAttempts = clampAttempts(maxAttempts);
 
 		int attemptCount = 0;
+
 		String otp = null;
+
 		boolean success = false;
 
+		LoginResult loginResult = null;
 
 		// 攻撃開始時にタイムアウト状態をリセット
 		attackState.setOtpTimedOut(false);
@@ -62,11 +66,17 @@ public class RandomEmailOtpAttack {
 		if (newAuthLabLoginClient.checkOtpExpiration()) {
 
 			attackState.setOtpTimedOut(true);
+
 			boolean timeOut = attackState.isOtpTimedOut();
 
 			System.out.println("!!! TIME UP !!!");
 
-			return new AttackResult(false, null, 0,timeOut);
+			return new AttackResult(
+					false,
+					null,
+					0,
+					timeOut,
+					null);
 		}
 
 		// OTP候補を作成
@@ -96,6 +106,7 @@ public class RandomEmailOtpAttack {
 					attackState.setOtpTimedOut(true);
 
 					System.out.println("!!! TIME UP !!!");
+
 					System.out.println(
 							"OTPの有効期限切れにより攻撃を停止しました。");
 
@@ -114,29 +125,42 @@ public class RandomEmailOtpAttack {
 							+ " / "
 							+ maxAttempts);
 
-			boolean verified = otpVerifier.verify(candidateOtp);
+			// OTP検証
+			LoginResult verifyResult =
+					otpVerifier.verify(candidateOtp);
 
-			if (verified) {
+			// 認証結果を保持
+			loginResult = verifyResult;
+
+			// 認証成功判定
+			if (verifyResult != null && verifyResult.isSuccess()) {
 
 				otp = candidateOtp;
+
 				success = true;
 
 				System.out.println("OTP認証成功！");
+
 				break;
 			}
 		}
 
 		boolean timeOut = attackState.isOtpTimedOut();
+
 		System.out.println("===== ランダムOTP攻撃終了 =====");
+
 		System.out.println("試行回数 = " + attemptCount);
+
 		System.out.println("成功 = " + success);
-		System.out.println("タイムアウト = "+ timeOut);
+
+		System.out.println("タイムアウト = " + timeOut);
 
 		return new AttackResult(
 				success,
 				otp,
 				attemptCount,
-				timeOut);
+				timeOut,
+				loginResult);
 	}
 
 	// =========================================================
@@ -159,13 +183,11 @@ public class RandomEmailOtpAttack {
 	// Fisher-Yatesシャッフル
 	// =========================================================
 
-	private void shuffle(
-			int[] array) {
+	private void shuffle(int[] array) {
 
 		for (int i = array.length - 1; i > 0; i--) {
 
-			int j = secureRandom.nextInt(
-					i + 1);
+			int j = secureRandom.nextInt(i + 1);
 
 			int temp = array[i];
 
@@ -180,16 +202,13 @@ public class RandomEmailOtpAttack {
 	// 1～1000000
 	// =========================================================
 
-	private int clampAttempts(
-			int attempts) {
+	private int clampAttempts(int attempts) {
 
 		if (attempts < 1) {
-
 			return 1;
 		}
 
 		if (attempts > 1_000_000) {
-
 			return 1_000_000;
 		}
 
@@ -203,7 +222,7 @@ public class RandomEmailOtpAttack {
 	@FunctionalInterface
 	public interface OtpVerifier {
 
-		boolean verify(String otp);
+		LoginResult verify(String otp);
 	}
 
 	// =========================================================
@@ -220,11 +239,14 @@ public class RandomEmailOtpAttack {
 
 		private final boolean timeOut;
 
+		private final LoginResult loginResult;
+
 		public AttackResult(
 				boolean success,
 				String otp,
 				int attemptCount,
-				boolean timeOut) {
+				boolean timeOut,
+				LoginResult loginResult) {
 
 			this.success = success;
 
@@ -233,25 +255,28 @@ public class RandomEmailOtpAttack {
 			this.attemptCount = attemptCount;
 
 			this.timeOut = timeOut;
+
+			this.loginResult = loginResult;
 		}
 
 		public boolean isSuccess() {
-
 			return success;
 		}
 
 		public String getOtp() {
-
 			return otp;
 		}
 
 		public int getAttemptCount() {
-
 			return attemptCount;
 		}
 
 		public boolean isTimedOut() {
 			return timeOut;
+		}
+
+		public LoginResult getLoginResult() {
+			return loginResult;
 		}
 	}
 }
