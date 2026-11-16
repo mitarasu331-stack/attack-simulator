@@ -496,10 +496,6 @@ public class RandomPasswordAttack {
 					forceTerminated;
 		}
 
-		// =====================================================
-		// Getter
-		// =====================================================
-
 		public boolean isSuccess() {
 
 			return success;

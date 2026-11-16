@@ -1802,10 +1802,6 @@ public class NewAuthLabLoginClient {
 					sessionCookie;
 		}
 
-		// -----------------------------------------------------
-		// Getter
-		// -----------------------------------------------------
-
 		public boolean isSuccess() {
 
 			return success;

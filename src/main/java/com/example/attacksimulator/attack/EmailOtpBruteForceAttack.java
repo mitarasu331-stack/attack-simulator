@@ -58,6 +58,9 @@ public class EmailOtpBruteForceAttack {
         // OTPは000000～999999の6桁
         int actualMaxAttempts =
                 Math.min(maxAttempts, 1_000_000);
+                
+        boolean timeOut=attackState.isOtpTimedOut();
+
 
         System.out.println("========================================");
         System.out.println("Email OTP総当たり攻撃開始");
@@ -85,7 +88,8 @@ public class EmailOtpBruteForceAttack {
                     false,
                     null,
                     0,
-                    null);
+                    null,
+                    false);
         }
 
         System.out.println("newauthlabからOTPが発行されました。");
@@ -193,22 +197,23 @@ public class EmailOtpBruteForceAttack {
                         true,
                         candidate,
                         attemptCount,
-                        verifyResult);
+                        verifyResult,
+                        timeOut);
             }
         }
 
         System.out.println("========================================");
         System.out.println("Email OTP総当たり攻撃終了");
         System.out.println("試行回数 = " + attemptCount);
-        System.out.println(
-                "タイムアウト = " + attackState.isOtpTimedOut());
+        System.out.println( "タイムアウト = " + attackState.isOtpTimedOut());
         System.out.println("========================================");
 
         return new AttackResult(
                 false,
                 null,
                 attemptCount,
-                null);
+                null,
+                timeOut);
     }
 
     // =========================================================
@@ -262,7 +267,8 @@ public class EmailOtpBruteForceAttack {
                     false,
                     null,
                     0,
-                    passwordResult);
+                    passwordResult,
+                    false);
         }
 
         System.out.println("Password認証成功。");
@@ -277,6 +283,8 @@ public class EmailOtpBruteForceAttack {
         attackState.setOtpTimedOut(false);
 
         long lastExpirationCheck = 0;
+        
+        boolean timeOut=attackState.isOtpTimedOut();
 
         for (int i = 0; i < 1_000_000; i++) {
 
@@ -369,20 +377,22 @@ public class EmailOtpBruteForceAttack {
                         true,
                         candidate,
                         attemptCount,
-                        verifyResult);
+                        verifyResult,
+                        timeOut);
             }
         }
 
         System.out.println("二要素OTP総当たり攻撃終了");
         System.out.println("試行回数 = " + attemptCount);
         System.out.println(
-                "タイムアウト = " + attackState.isOtpTimedOut());
+                "タイムアウト = " +timeOut );
 
         return new AttackResult(
                 false,
                 null,
                 attemptCount,
-                null);
+                null,
+                timeOut);
     }
 
     // =========================================================
@@ -398,33 +408,37 @@ public class EmailOtpBruteForceAttack {
         private final int attemptCount;
 
         private final LoginResult loginResult;
+        
+        private final boolean timeOut;
 
         public AttackResult(
                 boolean success,
                 String otp,
                 int attemptCount,
-                LoginResult loginResult) {
+                LoginResult loginResult,
+                boolean timeOut) {
 
             this.success = success;
             this.otp = otp;
             this.attemptCount = attemptCount;
             this.loginResult = loginResult;
+            this.timeOut=timeOut;
         }
 
         /**
          * 旧形式との互換用
          */
-        public AttackResult(
-                boolean success,
-                String otp,
-                int attemptCount) {
-
-            this(
-                    success,
-                    otp,
-                    attemptCount,
-                    null);
-        }
+		/*        public AttackResult(
+		        boolean success,
+		        String otp,
+		        int attemptCount) {
+		
+		    this(
+		            success,
+		            otp,
+		            attemptCount,
+		            null);
+		}*/
 
         public boolean isSuccess() {
             return success;
@@ -440,6 +454,9 @@ public class EmailOtpBruteForceAttack {
 
         public LoginResult getLoginResult() {
             return loginResult;
+        }
+        public boolean isTimeOut() {
+        	return timeOut;
         }
     }
 }

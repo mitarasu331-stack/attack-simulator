@@ -173,17 +173,13 @@ public class AttackService {
 	
 		}*/
 
-	public OneStageLoginResult
+	public OneStageLoginResult executeOneStageWithLogin(
 
-			executeOneStageWithLogin(
+			String username,
 
-					String username,
+			int maxAttemptsPassword) {
 
-					int maxAttemptsPassword) {
-
-		AttackResult
-
-		attackResult = executeOneStage(
+		AttackResult attackResult = executeOneStage(
 				username,
 				maxAttemptsPassword);
 
@@ -214,19 +210,20 @@ public class AttackService {
 	// ランダム攻撃
 	// =========================================================
 
-	public RandomPasswordAttack.AttackResult
-
-			executeRandomOneStage(
-
-					String username) {
-
-		return executeRandomOneStage(
-
-				username,
-
-				10_000);
-
-	}
+	//TODO:削除
+	/*	public RandomPasswordAttack.AttackResult
+	
+				executeRandomOneStage(
+	
+						String username) {
+	
+			return executeRandomOneStage(
+	
+					username,
+	
+					10_000);
+	
+		}*/
 
 	public RandomPasswordAttack.AttackResult
 
@@ -255,19 +252,21 @@ public class AttackService {
 	// 実ログイン付き
 	// =========================================================
 
-	public RandomOneStageLoginResult
-
-			executeRandomOneStageWithLogin(
-
-					String username) {
-
-		return executeRandomOneStageWithLogin(
-
-				username,
-
-				10_000);
-
-	}
+	//TODO:削除
+	/*
+		public RandomOneStageLoginResult
+	
+				executeRandomOneStageWithLogin(
+	
+						String username) {
+	
+			return executeRandomOneStageWithLogin(
+	
+					username,
+	
+					10_000);
+	
+		}*/
 
 	public RandomOneStageLoginResult
 
@@ -323,21 +322,21 @@ public class AttackService {
 	// 総当たり
 	// =========================================================
 
-	public MultiStagePasswordBruteForceAttack.AttackResult
-
-			executeTwoStage(
-
-					String username) {
-
-		return executeTwoStage(
-
-				username,
-
-				10_000,
-
-				10_000);
-
-	}
+	/*	public MultiStagePasswordBruteForceAttack.AttackResult
+	
+				executeTwoStage(
+	
+						String username) {
+	
+			return executeTwoStage(
+	
+					username,
+	
+					10_000,
+	
+					10_000);
+	
+		}*/
 
 	public MultiStagePasswordBruteForceAttack.AttackResult
 
@@ -448,21 +447,21 @@ public class AttackService {
 	// ランダム攻撃
 	// =========================================================
 
-	public RandomTwoStagePasswordAttack.AttackResult
-
-			executeRandomTwoStage(
-
-					String username) {
-
-		return executeRandomTwoStage(
-
-				username,
-
-				10_000,
-
-				10_000);
-
-	}
+	/*	public RandomTwoStagePasswordAttack.AttackResult
+	
+				executeRandomTwoStage(
+	
+						String username) {
+	
+			return executeRandomTwoStage(
+	
+					username,
+	
+					10_000,
+	
+					10_000);
+	
+		}*/
 
 	public RandomTwoStagePasswordAttack.AttackResult
 
@@ -497,21 +496,21 @@ public class AttackService {
 	// ランダム攻撃＋実ログイン
 	// =========================================================
 
-	public RandomTwoStageLoginResult
-
-			executeRandomTwoStageWithLogin(
-
-					String username) {
-
-		return executeRandomTwoStageWithLogin(
-
-				username,
-
-				10_000,
-
-				10_000);
-
-	}
+	/*	public RandomTwoStageLoginResult
+	
+				executeRandomTwoStageWithLogin(
+	
+						String username) {
+	
+			return executeRandomTwoStageWithLogin(
+	
+					username,
+	
+					10_000,
+	
+					10_000);
+	
+		}*/
 
 	public RandomTwoStageLoginResult
 
@@ -523,9 +522,7 @@ public class AttackService {
 
 					int maxAttemptsPassword2) {
 
-		RandomTwoStagePasswordAttack.AttackResult
-
-		attackResult =
+		RandomTwoStagePasswordAttack.AttackResult attackResult =
 
 				executeRandomTwoStage(
 
@@ -630,23 +627,23 @@ public class AttackService {
 	// 実ログイン付き
 	// =========================================================
 
-	public ThreeStageLoginResult
-
-			executeThreeStageWithLogin(
-
-					String username) {
-
-		return executeThreeStageWithLogin(
-
-				username,
-
-				10_000,
-
-				10_000,
-
-				10_000);
-
-	}
+	/*	public ThreeStageLoginResult
+	
+				executeThreeStageWithLogin(
+	
+						String username) {
+	
+			return executeThreeStageWithLogin(
+	
+					username,
+	
+					10_000,
+	
+					10_000,
+	
+					10_000);
+	
+		}*/
 
 	public ThreeStageLoginResult
 
@@ -714,23 +711,23 @@ public class AttackService {
 	// ランダム攻撃
 	// =========================================================
 
-	public RandomThreeStagePasswordAttack.AttackResult
-
-			executeRandomThreeStage(
-
-					String username) {
-
-		return executeRandomThreeStage(
-
-				username,
-
-				10_000,
-
-				10_000,
-
-				10_000);
-
-	}
+	/*	public RandomThreeStagePasswordAttack.AttackResult
+	
+				executeRandomThreeStage(
+	
+						String username) {
+	
+			return executeRandomThreeStage(
+	
+					username,
+	
+					10_000,
+	
+					10_000,
+	
+					10_000);
+	
+		}*/
 
 	public RandomThreeStagePasswordAttack.AttackResult
 
@@ -771,23 +768,23 @@ public class AttackService {
 	// ランダム攻撃＋実ログイン
 	// =========================================================
 
-	public RandomThreeStageLoginResult
-
-			executeRandomThreeStageWithLogin(
-
-					String username) {
-
-		return executeRandomThreeStageWithLogin(
-
-				username,
-
-				10_000,
-
-				10_000,
-
-				10_000);
-
-	}
+	/*	public RandomThreeStageLoginResult
+	
+				executeRandomThreeStageWithLogin(
+	
+						String username) {
+	
+			return executeRandomThreeStageWithLogin(
+	
+					username,
+	
+					10_000,
+	
+					10_000,
+	
+					10_000);
+	
+		}*/
 
 	public RandomThreeStageLoginResult
 
@@ -814,13 +811,6 @@ public class AttackService {
 						maxAttemptsPassword2,
 
 						maxAttemptsPassword3);
-
-		// =====================================================
-		// 攻撃失敗
-		//
-		// 通常失敗でも強制終了でも、
-		// 実ログインは実行しない。
-		// =====================================================
 
 		if (!attackResult.isSuccess()) {
 
@@ -860,19 +850,19 @@ public class AttackService {
 	// Password
 	// =========================================================
 
-	public FactorAuthenticationAttack.FactorAttackResult
-
-			executeOneFactorPassword(
-
-					String username) {
-
-		return executeOneFactorPassword(
-
-				username,
-
-				10_000);
-
-	}
+	/*	public FactorAuthenticationAttack.FactorAttackResult
+	
+				executeOneFactorPassword(
+	
+						String username) {
+	
+			return executeOneFactorPassword(
+	
+					username,
+	
+					10_000);
+	
+		}*/
 
 	public FactorAuthenticationAttack.FactorAttackResult
 
@@ -882,9 +872,7 @@ public class AttackService {
 
 					int maxAttemptsPassword) {
 
-		NewAuthLabUser user =
-
-				getUser(username);
+		NewAuthLabUser user = getUser(username);
 
 		return factorAuthenticationAttack
 
@@ -901,20 +889,20 @@ public class AttackService {
 	// Password
 	// ランダム攻撃
 	// =========================================================
-
-	public FactorAuthenticationAttack.FactorAttackResult
-
-			executeOneFactorRandomPassword(
-
-					String username) {
-
-		return executeOneFactorRandomPassword(
-
-				username,
-
-				10_000);
-
-	}
+	/*
+		public FactorAuthenticationAttack.FactorAttackResult
+	
+				executeOneFactorRandomPassword(
+	
+						String username) {
+	
+			return executeOneFactorRandomPassword(
+	
+					username,
+	
+					10_000);
+	
+		}*/
 
 	public FactorAuthenticationAttack.FactorAttackResult
 
@@ -924,29 +912,13 @@ public class AttackService {
 
 					int maxAttemptsPassword) {
 
-		NewAuthLabUser user =
-
-				getUser(username);
-
-		String passwordHash =
-
-				user.getPassword();
-
-		if (passwordHash == null
-
-				|| passwordHash.isBlank()) {
-
-			throw new IllegalArgumentException(
-
-					"指定されたユーザーのPasswordが登録されていません。");
-
-		}
+		NewAuthLabUser user = getUser(username);
 
 		return factorAuthenticationAttack
 
 				.executeOneFactorRandomPassword(
 
-						passwordHash,
+						user.getPassword(),
 
 						maxAttemptsPassword);
 
@@ -966,19 +938,7 @@ public class AttackService {
 
 					int maxAttempts) {
 
-		NewAuthLabUser user =
-
-				getUser(username);
-
-		if (user.getEmail() == null
-
-				|| user.getEmail().isBlank()) {
-
-			throw new IllegalArgumentException(
-
-					"指定されたユーザーにメールアドレスが登録されていません。");
-
-		}
+		NewAuthLabUser user =getUser(username);
 
 		return factorAuthenticationAttack
 
