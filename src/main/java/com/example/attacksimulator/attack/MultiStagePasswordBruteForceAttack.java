@@ -388,7 +388,7 @@ public class MultiStagePasswordBruteForceAttack {
 
 				virtualWaitTimeMillis += waitTimeMillis;
 
-				System.out.println("----------------------------------------");
+				System.out.println("========================================");
 
 				System.out.println(stageName + " が" + attemptCount + "回失敗");
 
@@ -400,7 +400,7 @@ public class MultiStagePasswordBruteForceAttack {
 
 				System.out.println("※実際には待機していません。");
 
-				System.out.println("----------------------------------------");
+				System.out.println("========================================");
 			} //if
 		} //for
 

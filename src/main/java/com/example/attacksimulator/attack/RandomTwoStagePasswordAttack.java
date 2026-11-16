@@ -24,36 +24,31 @@ public class RandomTwoStagePasswordAttack {
 	 *
 	 * 実際には待機しない。
 	 */
-	private static final int WAIT_INTERVAL =
-			1_000;
+	private static final int WAIT_INTERVAL = 1_000;
 
 	/**
 	 * 制限1回目
 	 * 1000回失敗 → 1分
 	 */
-	private static final long WAIT_TIME_1 =
-			60_000L;
+	private static final long WAIT_TIME_1 = 60_000L;
 
 	/**
 	 * 制限2回目
 	 * 2000回失敗 → 5分
 	 */
-	private static final long WAIT_TIME_2 =
-			300_000L;
+	private static final long WAIT_TIME_2 = 300_000L;
 
 	/**
 	 * 制限3回目
 	 * 3000回失敗 → 10分
 	 */
-	private static final long WAIT_TIME_3 =
-			600_000L;
+	private static final long WAIT_TIME_3 = 600_000L;
 
 	/**
 	 * 制限4回目
 	 * 4000回失敗 → 20分
 	 */
-	private static final long WAIT_TIME_4 =
-			1_200_000L;
+	private static final long WAIT_TIME_4 = 1_200_000L;
 
 	/**
 	 * 5回目の制限
@@ -63,8 +58,7 @@ public class RandomTwoStagePasswordAttack {
 	 *
 	 * 5回目には追加の待機時間を加算しない。
 	 */
-	private static final int FORCE_TERMINATION_RESTRICTION_COUNT =
-			5;
+	private static final int FORCE_TERMINATION_RESTRICTION_COUNT = 5;
 
 	// =========================================================
 	// PasswordEncoder
@@ -75,8 +69,7 @@ public class RandomTwoStagePasswordAttack {
 	/**
 	 * 乱数生成器
 	 */
-	private final SecureRandom secureRandom =
-			new SecureRandom();
+	private final SecureRandom secureRandom = new SecureRandom();
 
 	// =========================================================
 	// コンストラクタ
@@ -85,8 +78,7 @@ public class RandomTwoStagePasswordAttack {
 	public RandomTwoStagePasswordAttack(
 			PasswordEncoder passwordEncoder) {
 
-		this.passwordEncoder =
-				passwordEncoder;
+		this.passwordEncoder = passwordEncoder;
 	}
 
 	/**
@@ -122,30 +114,23 @@ public class RandomTwoStagePasswordAttack {
 		// 攻撃回数を 1 ～ 10000 に制限
 		// =====================================================
 
-		maxAttemptsPassword =
-				clampAttempts(
-						maxAttemptsPassword);
+		maxAttemptsPassword = clampAttempts(
+				maxAttemptsPassword);
 
-		maxAttemptsPassword2 =
-				clampAttempts(
-						maxAttemptsPassword2);
-
-		// =====================================================
-		// 仮想待機時間
-		// =====================================================
-
-		long virtualWaitTimeMillis = 0L;
+		maxAttemptsPassword2 = clampAttempts(
+				maxAttemptsPassword2);
 
 		// =====================================================
 		// Stage 1 : Password
 		// =====================================================
 
-		List<String> passwordCandidates =
-				createRandomCandidates();
+		List<String> passwordCandidates = createRandomCandidates();
 
 		int passwordAttemptCount = 0;
 
 		String password = null;
+
+		long virtualWaitTimeMillis = 0L;
 
 		int passwordRestrictionCount = 0;
 
@@ -153,9 +138,7 @@ public class RandomTwoStagePasswordAttack {
 
 		for (String candidate : passwordCandidates) {
 
-			if (passwordAttemptCount
-					>= maxAttemptsPassword) {
-
+			if (passwordAttemptCount >= maxAttemptsPassword) {
 				break;
 			}
 
@@ -199,28 +182,23 @@ public class RandomTwoStagePasswordAttack {
 				// 5000回失敗
 				// ---------------------------------------------
 
-				if (passwordRestrictionCount
-						>= FORCE_TERMINATION_RESTRICTION_COUNT) {
+				if (passwordRestrictionCount >= FORCE_TERMINATION_RESTRICTION_COUNT) {
 
 					forceTerminated = true;
 
-					System.out.println(
-							"----------------------------------------");
+					System.out.println("========================================");
 
-					System.out.println(
-							"ランダムPasswordが"
-									+ passwordAttemptCount
-									+ "回失敗しました。");
+					System.out.println(passwordAttemptCount + "回失敗");
 
-					System.out.println(
-							"5回目の試行制限に到達したため、"
-									+ "攻撃処理を強制終了します。");
+					System.out.println("試行制限 " + passwordRestrictionCount + "回目");
 
-					System.out.println(
-							"実際のアカウントはロックしません。");
+					System.out.println("攻撃処理を強制終了します。");
 
-					System.out.println(
-							"----------------------------------------");
+					System.out.println("※実際のアカウントロックは行いません。");
+
+					System.out.println("累積仮想待機時間 = " + virtualWaitTimeMillis + " ms");
+
+					System.out.println("========================================");
 
 					return new AttackResult(
 							false,
@@ -230,44 +208,31 @@ public class RandomTwoStagePasswordAttack {
 							0,
 							passwordAttemptCount,
 							virtualWaitTimeMillis,
-							true);
+							forceTerminated);
 				}
 
 				// ---------------------------------------------
 				// 1～4回目の制限
 				// ---------------------------------------------
 
-				long waitTime =
-						getWaitTime(
-								passwordRestrictionCount);
+				long waitTimeMillis = getWaitTime(
+						passwordRestrictionCount);
 
-				virtualWaitTimeMillis +=
-						waitTime;
+				virtualWaitTimeMillis += waitTimeMillis;
 
-				System.out.println(
-						"----------------------------------------");
+				System.out.println("========================================");
 
-				System.out.println(
-						"ランダムPassword "
-								+ passwordAttemptCount
-								+ "回失敗");
+				System.out.println(passwordAttemptCount + "回失敗");
 
-				System.out.println(
-						passwordRestrictionCount
-						+ "回目の試行制限");
+				System.out.println("試行制限 " + passwordRestrictionCount + "回目");
 
-				System.out.println(
-						"仮想待機時間 = "
-								+ waitTime
-								+ " ms");
+				System.out.println("仮想待機時間 " + waitTimeMillis + " ms を加算");
 
-				System.out.println(
-						"累積仮想待機時間 = "
-								+ virtualWaitTimeMillis
-								+ " ms");
+				System.out.println("累積仮想待機時間 = " + virtualWaitTimeMillis + " ms");
 
-				System.out.println(
-						"----------------------------------------");
+				System.out.println("※実際には待機していません。");
+
+				System.out.println("========================================");
 			}
 		}
 
@@ -278,8 +243,7 @@ public class RandomTwoStagePasswordAttack {
 
 		if (password == null) {
 
-			int totalAttemptCount =
-					passwordAttemptCount;
+			int totalAttemptCount = passwordAttemptCount;
 
 			return new AttackResult(
 					false,
@@ -296,8 +260,7 @@ public class RandomTwoStagePasswordAttack {
 		// Stage 2 : Password2
 		// =====================================================
 
-		List<String> password2Candidates =
-				createRandomCandidates();
+		List<String> password2Candidates = createRandomCandidates();
 
 		int password2AttemptCount = 0;
 
@@ -307,8 +270,7 @@ public class RandomTwoStagePasswordAttack {
 
 		for (String candidate : password2Candidates) {
 
-			if (password2AttemptCount
-					>= maxAttemptsPassword2) {
+			if (password2AttemptCount >= maxAttemptsPassword2) {
 
 				break;
 			}
@@ -354,31 +316,25 @@ public class RandomTwoStagePasswordAttack {
 				// 5000回失敗
 				// ---------------------------------------------
 
-				if (password2RestrictionCount
-						>= FORCE_TERMINATION_RESTRICTION_COUNT) {
+				if (password2RestrictionCount >= FORCE_TERMINATION_RESTRICTION_COUNT) {
 
 					forceTerminated = true;
 
-					System.out.println(
-							"----------------------------------------");
+					System.out.println("========================================");
 
-					System.out.println(
-							"ランダムPassword2が"
-									+ password2AttemptCount
-									+ "回失敗しました。");
+					System.out.println(password2AttemptCount + "回失敗");
 
-					System.out.println(
-							"5回目の試行制限に到達したため、"
-									+ "攻撃処理を強制終了します。");
+					System.out.println("試行制限 " + password2RestrictionCount + "回目");
 
-					System.out.println(
-							"実際のアカウントはロックしません。");
+					System.out.println("攻撃処理を強制終了します。");
 
-					System.out.println(
-							"----------------------------------------");
+					System.out.println("※実際のアカウントロックは行いません。");
 
-					int totalAttemptCount =
-							passwordAttemptCount
+					System.out.println("累積仮想待機時間 = " + virtualWaitTimeMillis + " ms");
+
+					System.out.println("========================================");
+
+					int totalAttemptCount = passwordAttemptCount
 							+ password2AttemptCount;
 
 					return new AttackResult(
@@ -389,44 +345,31 @@ public class RandomTwoStagePasswordAttack {
 							password2AttemptCount,
 							totalAttemptCount,
 							virtualWaitTimeMillis,
-							true);
+							forceTerminated);
 				}
 
 				// ---------------------------------------------
 				// 1～4回目の制限
 				// ---------------------------------------------
 
-				long waitTime =
-						getWaitTime(
-								password2RestrictionCount);
+				long waitTimeMillis = getWaitTime(
+						password2RestrictionCount);
 
-				virtualWaitTimeMillis +=
-						waitTime;
+				virtualWaitTimeMillis += waitTimeMillis;
 
-				System.out.println(
-						"----------------------------------------");
+				System.out.println("========================================");
 
-				System.out.println(
-						"ランダムPassword2 "
-								+ password2AttemptCount
-								+ "回失敗");
+				System.out.println(password2AttemptCount + "回失敗");
 
-				System.out.println(
-						password2RestrictionCount
-						+ "回目の試行制限");
+				System.out.println("試行制限 " + password2RestrictionCount + "回目");
 
-				System.out.println(
-						"仮想待機時間 = "
-								+ waitTime
-								+ " ms");
+				System.out.println("仮想待機時間 " + waitTimeMillis + " ms を加算");
 
-				System.out.println(
-						"累積仮想待機時間 = "
-								+ virtualWaitTimeMillis
-								+ " ms");
+				System.out.println("累積仮想待機時間 = " + virtualWaitTimeMillis + " ms");
 
-				System.out.println(
-						"----------------------------------------");
+				System.out.println("※実際には待機していません。");
+
+				System.out.println("========================================");
 			}
 		}
 
@@ -434,12 +377,10 @@ public class RandomTwoStagePasswordAttack {
 		// 結果
 		// =====================================================
 
-		boolean success =
-				password != null
+		boolean success = password != null
 				&& password2 != null;
 
-		int totalAttemptCount =
-				passwordAttemptCount
+		int totalAttemptCount = passwordAttemptCount
 				+ password2AttemptCount;
 
 		return new AttackResult(
@@ -486,12 +427,9 @@ public class RandomTwoStagePasswordAttack {
 	 */
 	private List<String> createRandomCandidates() {
 
-		List<String> candidates =
-				new ArrayList<>(10_000);
+		List<String> candidates = new ArrayList<>(10_000);
 
-		for (int i = MIN_PASSWORD;
-				i <= MAX_PASSWORD;
-				i++) {
+		for (int i = MIN_PASSWORD; i <= MAX_PASSWORD; i++) {
 
 			candidates.add(
 					String.format(
@@ -552,25 +490,25 @@ public class RandomTwoStagePasswordAttack {
 		// コンストラクタ
 		// =====================================================
 
-		public AttackResult(
-				boolean success,
-				String password,
-				String password2,
-				int passwordAttemptCount,
-				int password2AttemptCount,
-				int attemptCount,
-				long virtualWaitTimeMillis) {
-
-			this(
-					success,
-					password,
-					password2,
-					passwordAttemptCount,
-					password2AttemptCount,
-					attemptCount,
-					virtualWaitTimeMillis,
-					false);
-		}
+		/*		public AttackResult(
+						boolean success,
+						String password,
+						String password2,
+						int passwordAttemptCount,
+						int password2AttemptCount,
+						int attemptCount,
+						long virtualWaitTimeMillis) {
+		
+					this(
+							success,
+							password,
+							password2,
+							passwordAttemptCount,
+							password2AttemptCount,
+							attemptCount,
+							virtualWaitTimeMillis,
+							false);
+				}*/
 
 		// =====================================================
 		// forceTerminated対応コンストラクタ
@@ -586,29 +524,21 @@ public class RandomTwoStagePasswordAttack {
 				long virtualWaitTimeMillis,
 				boolean forceTerminated) {
 
-			this.success =
-					success;
+			this.success = success;
 
-			this.password =
-					password;
+			this.password = password;
 
-			this.password2 =
-					password2;
+			this.password2 = password2;
 
-			this.passwordAttemptCount =
-					passwordAttemptCount;
+			this.passwordAttemptCount = passwordAttemptCount;
 
-			this.password2AttemptCount =
-					password2AttemptCount;
+			this.password2AttemptCount = password2AttemptCount;
 
-			this.attemptCount =
-					attemptCount;
+			this.attemptCount = attemptCount;
 
-			this.virtualWaitTimeMillis =
-					virtualWaitTimeMillis;
+			this.virtualWaitTimeMillis = virtualWaitTimeMillis;
 
-			this.forceTerminated =
-					forceTerminated;
+			this.forceTerminated = forceTerminated;
 		}
 
 		// =====================================================

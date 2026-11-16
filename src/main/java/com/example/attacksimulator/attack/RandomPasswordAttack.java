@@ -20,8 +20,7 @@ public class RandomPasswordAttack {
 	 *
 	 * 0000 ～ 9999
 	 */
-	private static final int TOTAL_PASSWORD_COUNT =
-			10_000;
+	private static final int TOTAL_PASSWORD_COUNT = 10_000;
 
 	/**
 	 * 仮想待機時間
@@ -33,16 +32,14 @@ public class RandomPasswordAttack {
 	 *
 	 * 60秒 = 60000ms
 	 */
-	private static final long FIRST_WAIT_TIME_MILLIS =
-			60_000L;
+	private static final long FIRST_WAIT_TIME_MILLIS = 60_000L;
 
 	/**
 	 * 仮想待機が発生する間隔
 	 *
 	 * 1000回失敗するごとに制限が発生する。
 	 */
-	private static final int WAIT_INTERVAL =
-			1_000;
+	private static final int WAIT_INTERVAL = 1_000;
 
 	/**
 	 * 制限回数ごとの仮想待機時間
@@ -57,10 +54,10 @@ public class RandomPasswordAttack {
 	 */
 	private static final long[] WAIT_TIMES = {
 
-			60_000L,       // 1分
-			300_000L,      // 5分
-			600_000L,      // 10分
-			1_200_000L     // 20分
+			60_000L, // 1分
+			300_000L, // 5分
+			600_000L, // 10分
+			1_200_000L // 20分
 	};
 
 	/**
@@ -74,8 +71,7 @@ public class RandomPasswordAttack {
 	 *
 	 * 実際のアカウントロックは行わない。
 	 */
-	private static final int FORCE_TERMINATION_RESTRICTION_COUNT =
-			5;
+	private static final int FORCE_TERMINATION_RESTRICTION_COUNT = 5;
 
 	// =========================================================
 	// PasswordEncoder
@@ -95,11 +91,9 @@ public class RandomPasswordAttack {
 	public RandomPasswordAttack(
 			PasswordEncoder passwordEncoder) {
 
-		this.passwordEncoder =
-				passwordEncoder;
+		this.passwordEncoder = passwordEncoder;
 
-		this.secureRandom =
-				new SecureRandom();
+		this.secureRandom = new SecureRandom();
 	}
 
 	// =========================================================
@@ -139,21 +133,19 @@ public class RandomPasswordAttack {
 		// 最大試行回数を制限
 		// =====================================================
 
-		int actualMaxAttempts =
-				clampAttempts(
-						maxAttempts);
+		int actualMaxAttempts = clampAttempts(
+				maxAttempts);
 
 		// =====================================================
 		// 0000～9999を作成
 		// =====================================================
 
-		List<Integer> candidates =
-				new ArrayList<>(
-						TOTAL_PASSWORD_COUNT);
+		List<Integer> candidates = new ArrayList<>(
+				TOTAL_PASSWORD_COUNT);
+		
+		boolean passwordForceTerminated = false;
 
-		for (int i = 0;
-				i < TOTAL_PASSWORD_COUNT;
-				i++) {
+		for (int i = 0; i < TOTAL_PASSWORD_COUNT; i++) {
 
 			candidates.add(i);
 		}
@@ -197,22 +189,18 @@ public class RandomPasswordAttack {
 		 */
 		long virtualWaitTimeMillis = 0L;
 
-		for (int i = 0;
-				i < candidates.size();
-				i++) {
+		for (int i = 0; i < candidates.size(); i++) {
 
 			// -------------------------------------------------
 			// 最大試行回数に到達
 			// -------------------------------------------------
 
-			if (attemptCount
-					>= actualMaxAttempts) {
+			if (attemptCount >= actualMaxAttempts) {
 
 				break;
 			}
 
-			int candidateNumber =
-					candidates.get(i);
+			int candidateNumber = candidates.get(i);
 
 			// -------------------------------------------------
 			// 4桁に変換
@@ -222,10 +210,9 @@ public class RandomPasswordAttack {
 			// 1234 → 1234
 			// -------------------------------------------------
 
-			String candidate =
-					String.format(
-							"%04d",
-							candidateNumber);
+			String candidate = String.format(
+					"%04d",
+					candidateNumber);
 
 			// -------------------------------------------------
 			// 試行回数を増やす
@@ -249,10 +236,9 @@ public class RandomPasswordAttack {
 			// BCrypt照合
 			// -------------------------------------------------
 
-			boolean matched =
-					passwordEncoder.matches(
-							candidate,
-							passwordHash);
+			boolean matched = passwordEncoder.matches(
+					candidate,
+					passwordHash);
 
 			// -------------------------------------------------
 			// 突破成功
@@ -288,95 +274,66 @@ public class RandomPasswordAttack {
 				// 5回目には追加待機時間を加算しない。
 				// -------------------------------------------------
 
-				if (restrictionCount
-						>= FORCE_TERMINATION_RESTRICTION_COUNT) {
+				if (restrictionCount >= FORCE_TERMINATION_RESTRICTION_COUNT) {
 
-					System.out.println(
-							"========================================");
+					passwordForceTerminated = true;
 
-					System.out.println(
-							"ランダムPassword攻撃を強制終了します。");
+					System.out.println("========================================");
 
-					System.out.println(
-							"試行回数 = "
-									+ attemptCount);
+					System.out.println(attemptCount + "回失敗");
 
-					System.out.println(
-							"制限回数 = "
-									+ restrictionCount);
+					System.out.println("試行制限" + restrictionCount + "回目");
 
-					System.out.println(
-							"強制終了条件 = "
-									+ WAIT_INTERVAL
-									+ "回 × "
-									+ FORCE_TERMINATION_RESTRICTION_COUNT
-									+ "回");
+					System.out.println("攻撃処理を強制終了します。");
 
-					System.out.println(
-							"実際のユーザーアカウントはロックしません。");
+					System.out.println("※実際のアカウントロックは行いません。");
 
-					System.out.println(
-							"========================================");
+					System.out.println("累積仮想待機時間 = " + virtualWaitTimeMillis + " ms");
+
+					System.out.println("========================================");
 
 					return new AttackResult(
 							false,
 							null,
 							attemptCount,
 							virtualWaitTimeMillis,
-							true);
-				}
+							passwordForceTerminated);
+				} //if 強制終了
 
 				// -------------------------------------------------
 				// 1～4回目の制限
 				// -------------------------------------------------
 
-				long waitTime =
-						WAIT_TIMES[
-						           restrictionCount - 1];
+				long waitTimeMillis = WAIT_TIMES[restrictionCount - 1];
 
-				virtualWaitTimeMillis +=
-						waitTime;
+				virtualWaitTimeMillis += waitTimeMillis;
 
-				System.out.println(
-						"----------------------------------------");
+				System.out.println("========================================");
 
-				System.out.println(
-						"ランダムPassword攻撃が"
-								+ attemptCount
-								+ "回失敗しました。");
+				System.out.println(attemptCount + "回失敗");
 
-				System.out.println(
-						"制限回数 = "
-								+ restrictionCount);
+				System.out.println("試行制限 " + restrictionCount + "回目");
 
-				System.out.println(
-						"今回の仮想待機時間 = "
-								+ formatWaitTime(
-										waitTime));
+				System.out.println("仮想待機時間 " + waitTimeMillis + " ms を加算");
 
-				System.out.println(
-						"累積仮想待機時間 = "
-								+ formatWaitTime(
-										virtualWaitTimeMillis));
+				System.out.println("累積仮想待機時間 = " + virtualWaitTimeMillis + " ms");
 
-				System.out.println(
-						"※実際には待機しません。");
+				System.out.println("※実際には待機していません。");
 
-				System.out.println(
-						"----------------------------------------");
+				System.out.println("========================================");
 			}
 		}
 
 		// =====================================================
 		// 最大試行回数までに突破できなかった
 		// =====================================================
-
+		
 		return new AttackResult(
 				false,
 				null,
 				attemptCount,
 				virtualWaitTimeMillis,
-				false);
+				passwordForceTerminated);
 	}
 
 	// =========================================================
@@ -397,19 +354,6 @@ public class RandomPasswordAttack {
 		}
 
 		return maxAttempts;
-	}
-
-	// =========================================================
-	// 待機時間表示
-	// =========================================================
-
-	private String formatWaitTime(
-			long waitTimeMillis) {
-
-		long minutes =
-				waitTimeMillis / 60_000L;
-
-		return minutes + "分";
 	}
 
 	// =========================================================
@@ -480,20 +424,15 @@ public class RandomPasswordAttack {
 				long virtualWaitTimeMillis,
 				boolean forceTerminated) {
 
-			this.success =
-					success;
+			this.success = success;
 
-			this.password =
-					password;
+			this.password = password;
 
-			this.attemptCount =
-					attemptCount;
+			this.attemptCount = attemptCount;
 
-			this.virtualWaitTimeMillis =
-					virtualWaitTimeMillis;
+			this.virtualWaitTimeMillis = virtualWaitTimeMillis;
 
-			this.forceTerminated =
-					forceTerminated;
+			this.forceTerminated = forceTerminated;
 		}
 
 		public boolean isSuccess() {
