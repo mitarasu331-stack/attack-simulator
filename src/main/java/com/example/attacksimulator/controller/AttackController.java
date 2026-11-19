@@ -36,6 +36,8 @@ public class AttackController {
 	private final NewAuthLabLoginClient newAuthLabLoginClient;
 	
 	public boolean otpTime_out = false;//有効期限が切れたことをフラグする
+										//このフラグがtrueになっているとタイムアウトしました　falseなら認証に失敗しました。
+	
 	private final AttackState attackState;
 	public AttackController(
 			AttackService attackService,
@@ -67,7 +69,7 @@ public class AttackController {
 
 	@GetMapping("/")
 	public String index(Model model) {
-
+		 otpTime_out = false;//有効期限が切れてないようにする＿なぎ
 		List<String> usernames =
 				newAuthLabUserService
 				.getAllUsernames();
@@ -110,7 +112,7 @@ public class AttackController {
 
 			RedirectAttributes redirectAttributes,
 			Model model) {
-
+		
 		long startTime =
 				System.nanoTime();
 
@@ -131,7 +133,7 @@ public class AttackController {
 			// =================================================
 			// 攻撃開始ログ
 			// =================================================
-
+			 otpTime_out = false;//有効期限が切れてないようにする＿なぎ
 			String attackStartTitle;
 
 			if ("one-stage".equals(authMethod)) {
@@ -488,8 +490,11 @@ public class AttackController {
 
 			if (forceTerminated) {
 
-				message =
-						"アカウントロックしました。";
+					message =
+							"アカウントがロックされました。";
+				
+				
+
 
 			} else if (result.isSuccess()) {
 
@@ -554,7 +559,7 @@ public class AttackController {
 			// =================================================
 			// 攻撃開始ログ
 			// =================================================
-
+			 otpTime_out = false;//有効期限が切れてないようにする＿なぎ
 			System.out.println(
 					"===== 一段階認証 ランダム攻撃開始 =====");
 
@@ -818,17 +823,17 @@ public class AttackController {
 			if (forceTerminated) {
 
 				message =
-						"タイムアウトしました。";
+						"アカウントがロックされました。";
 
 			} else if (attackSuccess) {
 
 				message =
-						"一段階ランダム攻撃の突破に成功しました。";
+						"認証突破に成功しました。";
 
 			} else {
 
 				message =
-						"タイムアウトしました。";
+						"認証突破に失敗しました。";
 			}
 
 			redirectAttributes.addFlashAttribute(
@@ -898,7 +903,7 @@ public class AttackController {
 			// =================================================
 			// 攻撃開始ログ
 			// =================================================
-
+			 otpTime_out = false;//有効期限が切れてないようにする＿なぎ
 			System.out.println(
 					"===== 二段階認証 ランダム攻撃開始 =====");
 
@@ -1165,17 +1170,17 @@ public class AttackController {
 			if (forceTerminated) {
 
 				message =
-						"タイムアウトしました。";
+						"アカウントがロックされました。";
 
 			} else if (attackSuccess) {
 
 				message =
-						"二段階認証（ランダム）の突破に成功しました。";
+						"認証突破に成功しました。";
 
 			} else {
 
 				message =
-						"タイムアウトしました。";
+						"認証突破に失敗しました。";
 			}
 
 			redirectAttributes.addFlashAttribute(
@@ -1190,7 +1195,7 @@ public class AttackController {
 
 			redirectAttributes.addFlashAttribute(
 					"error",
-					"二段階ランダム攻撃中にエラーが発生しました: "
+					"ランダム攻撃中にエラーが発生しました: "
 							+ e.getMessage());
 
 			return "redirect:/result";
@@ -1261,7 +1266,7 @@ public class AttackController {
 			// =================================================
 			// 攻撃開始ログ
 			// =================================================
-
+			 otpTime_out = false;//有効期限が切れてないようにする＿なぎ
 			System.out.println(
 					"===== 三段階認証 ランダム攻撃開始 =====");
 
@@ -1571,17 +1576,17 @@ public class AttackController {
 			if (forceTerminated) {
 
 				message =
-						"タイムアウトしました。";
+						"アカウントがロックされました。";
 
 			} else if (attackSuccess) {
 
 				message =
-						"三段階認証（ランダム）の突破に成功しました。";
+						"認証突破に成功しました。";
 
 			} else {
 
 				message =
-						"タイムアウトしました。";
+						"認証突破に失敗しました。";
 			}
 
 			redirectAttributes.addFlashAttribute(
@@ -1596,7 +1601,7 @@ public class AttackController {
 
 			redirectAttributes.addFlashAttribute(
 					"error",
-					"三段階ランダム攻撃中にエラーが発生しました: "
+					"ランダム攻撃中にエラーが発生しました: "
 							+ e.getMessage());
 
 			return "redirect:/result";
@@ -1636,6 +1641,7 @@ public class AttackController {
 			// =====================================================
 			// 攻撃開始ログ
 			// =====================================================
+			 otpTime_out = false;//有効期限が切れてないようにする＿なぎ
 			System.out.println(
 					"===== 一要素 Email OTP ランダム攻撃開始 =====");
 
@@ -1786,8 +1792,10 @@ public class AttackController {
 			redirectAttributes.addFlashAttribute(
 					"message",
 					attackSuccess
-					? "一要素 Email OTP（ランダム）の突破に成功しました。"
-							: "タイムアウトしました。");
+					? "認証突破に成功しました。"
+							: otpTime_out
+				            ? "タイムアウトしました。"
+				            : "認証突破に失敗しました。");
 
 			return "redirect:/result";
 
@@ -1853,6 +1861,7 @@ public class AttackController {
 			// =====================================================
 			// 攻撃開始ログ
 			// =====================================================
+			 otpTime_out = false;//有効期限が切れてないようにする＿なぎ
 			System.out.println(
 					"===== 二要素認証 ランダム攻撃開始 =====");
 
@@ -1884,6 +1893,11 @@ public class AttackController {
 			// =====================================================
 			// 結果
 			// =====================================================
+
+
+			boolean forceTerminated =
+					result.isForceTerminated();
+			
 			boolean attackSuccess =
 					result.isSuccess();
 
@@ -2035,12 +2049,18 @@ public class AttackController {
 			redirectAttributes.addFlashAttribute(
 					"attackTimeMs",
 					attackTimeMs);
-
+			redirectAttributes.addFlashAttribute(
+			        "forceTerminated",
+			        forceTerminated);
 			redirectAttributes.addFlashAttribute(
 					"message",
-					attackSuccess
-					? "二要素認証（ランダム）の突破に成功しました。"
-							: "タイムアウトしました。");
+			        forceTerminated
+			        ? "アカウントがロックされました。"
+			        : attackSuccess
+			        ? "認証突破に成功しました。"
+			        		: otpTime_out
+				            ? "タイムアウトしました。"
+				            : "認証突破に失敗しました。");
 
 			return "redirect:/result";
 
@@ -2050,7 +2070,7 @@ public class AttackController {
 
 			redirectAttributes.addFlashAttribute(
 					"error",
-					"二要素認証（ランダム攻撃）中にエラーが発生しました: "
+					"ランダム攻撃中にエラーが発生しました: "
 							+ e.getMessage());
 
 			return "redirect:/result";
@@ -2101,6 +2121,7 @@ public class AttackController {
 				// =================================================
 				// 攻撃開始ログ
 				// =================================================
+				 otpTime_out = false;//有効期限が切れてないようにする＿なぎ
 				System.out.println(
 						"===== 一要素 Password 総当たり攻撃開始 =====");
 
@@ -2293,7 +2314,12 @@ public class AttackController {
 				}
 
 				redirectAttributes.addFlashAttribute(
-						"message",message);
+
+						"message",
+						attackSuccess
+						? "認証突破に成功しました。"
+								: "認証突破に失敗しました。");//アカウントをロックしました。
+
 
 				return "redirect:/result";
 			}
@@ -2313,6 +2339,7 @@ public class AttackController {
 				// =================================================
 				// 攻撃開始ログ
 				// =================================================
+				 otpTime_out = false;//有効期限が切れてないようにする＿なぎ
 				System.out.println(
 						"===== 一要素 Password ランダム攻撃開始 =====");
 
@@ -2492,8 +2519,8 @@ public class AttackController {
 				redirectAttributes.addFlashAttribute(
 						"message",
 						attackSuccess
-						? "一要素Password（ランダム）の認証突破に成功しました。"
-								: "タイムアウトしました。");
+						? "認証突破に成功しました。"
+								: "認証突破に失敗しました。");//アカウントをロックしました。
 
 				return "redirect:/result";
 			}
@@ -2513,6 +2540,7 @@ public class AttackController {
 				// =================================================
 				// 攻撃開始ログ
 				// =================================================
+				 otpTime_out = false;//有効期限が切れてないようにする＿なぎ
 				System.out.println(
 						"===== 一要素 Email OTP 総当たり攻撃開始 =====");
 
@@ -2666,8 +2694,10 @@ public class AttackController {
 				redirectAttributes.addFlashAttribute(
 						"message",
 						attackSuccess
-						? "Email OTPの認証突破に成功しました。"
-								: "タイムアウトしました。");
+						? "認証突破に成功しました。"
+								: otpTime_out
+					            ? "タイムアウトしました。"
+					            : "認証突破に失敗しました。");
 
 				return "redirect:/result";
 			}
@@ -2693,6 +2723,7 @@ public class AttackController {
 				// =================================================
 				// 攻撃開始ログ
 				// =================================================
+				 otpTime_out = false;//有効期限が切れてないようにする＿なぎ
 				System.out.println(
 						"===== 二要素認証 総当たり攻撃開始 =====");
 
@@ -2729,6 +2760,9 @@ public class AttackController {
 						createFactorCredential(
 								twoFactorResult);
 
+				boolean forceTerminated =
+						twoFactorResult.isForceTerminated();
+				
 				boolean attackSuccess =
 						twoFactorResult.isSuccess();
 
@@ -2866,12 +2900,20 @@ public class AttackController {
 				redirectAttributes.addFlashAttribute(
 						"attackTimeMs",
 						attackTimeMs);
+				// 試行制限による強制終了かどうか
+				redirectAttributes.addFlashAttribute(
+						"forceTerminated",
+						forceTerminated);
 
 				redirectAttributes.addFlashAttribute(
 						"message",
-						attackSuccess
-						? "二要素認証の突破に成功しました。"
-						: "タイムアウトしました。");
+				        forceTerminated
+				        ? "アカウントがロックされました。"
+				        : attackSuccess
+				        ? "認証突破に成功しました。"
+				        		: otpTime_out
+					            ? "タイムアウトしました。"
+					            : "認証突破に失敗しました。");
 
 				return "redirect:/result";
 			}
@@ -3224,20 +3266,15 @@ public class AttackController {
 
 			String message;
 
-			if (forceTerminated) {
+			if (attackSuccess) {
 
 				message =
-						"タイムアウトしました。";
-
-			} else if (attackSuccess) {
-
-				message =
-						"辞書攻撃による認証突破に成功しました。";
+						"認証突破に成功しました。";
 
 			} else {
 
 				message =
-						"タイムアウトしました。";
+						"認証突破に失敗しました。";
 			}
 
 			redirectAttributes.addFlashAttribute(
@@ -4436,6 +4473,7 @@ public class AttackController {
 	@PostMapping("/attack/otp-timeout")
 	@ResponseBody
 	public String otpTimeout() {
+		otpTime_out = true;
 	    System.out.println("OTPが期限切れになりました");
 	    attackState.setOtpTimedOut(true);
 	    return "OK";
