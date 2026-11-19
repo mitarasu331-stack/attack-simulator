@@ -36,6 +36,8 @@ public class AttackController {
 	private final NewAuthLabLoginClient newAuthLabLoginClient;
 
 	public boolean otpTime_out = false;//有効期限が切れたことをフラグする
+										//このフラグがtrueになっているとタイムアウトしました　falseなら認証に失敗しました。
+	
 	private final AttackState attackState;
 
 	public AttackController(
@@ -109,7 +111,7 @@ public class AttackController {
 			// =================================================
 			// 攻撃開始ログ
 			// =================================================
-
+			 otpTime_out = false;//有効期限が切れてないようにする＿なぎ
 			String attackStartTitle;
 
 			if ("one-stage".equals(authMethod)) {
@@ -498,7 +500,7 @@ public class AttackController {
 			// =================================================
 			// 攻撃開始ログ
 			// =================================================
-
+			 otpTime_out = false;//有効期限が切れてないようにする＿なぎ
 			System.out.println(
 					"===== 一段階認証 ランダム攻撃開始 =====");
 
@@ -522,10 +524,20 @@ public class AttackController {
 			System.out.println(
 					"========================================");
 
-			AttackService.RandomOneStageLoginResult randomResult = attackService
-					.executeRandomOneStageWithLogin(
-							username,
-							maxAttemptsPassword);
+			/*AttackService.RandomOneStageLoginResult　コメントアウトした犯人はなぎ
+			randomResult =
+					attackService
+							.executeRandomOneStageWithLogin(
+									username,
+									maxAttemptsPassword);*/
+			
+			AttackService.RandomPasswordAttacksResult randomResult =
+			        attackService.executePasswordsWithLogin(
+			                username,
+			                maxAttemptsPassword,
+			                1000,
+			                1000,
+			                1);
 
 			// =================================================
 			// 実際にかかった処理時間
@@ -797,7 +809,7 @@ public class AttackController {
 			// =================================================
 			// 攻撃開始ログ
 			// =================================================
-
+			 otpTime_out = false;//有効期限が切れてないようにする＿なぎ
 			System.out.println(
 					"===== 二段階認証 ランダム攻撃開始 =====");
 
@@ -812,11 +824,21 @@ public class AttackController {
 			System.out.println(
 					"========================================");
 
-			AttackService.RandomTwoStageLoginResult randomResult = attackService
+		/*	AttackService.RandomTwoStageLoginResult コメントアウトした犯人はなぎ
+			randomResult =
+					attackService
 					.executeRandomTwoStageWithLogin(
 							username,
 							maxAttemptsPassword,
-							maxAttemptsPassword2);
+							maxAttemptsPassword2);*/
+			
+			AttackService.RandomPasswordAttacksResult randomResult =
+			        attackService.executePasswordsWithLogin(
+			                username,
+			                maxAttemptsPassword,
+			                maxAttemptsPassword2,
+			                1000,
+			                2);
 
 			// =================================================
 			// 実際にかかった攻撃処理時間
@@ -1117,7 +1139,7 @@ public class AttackController {
 			// =================================================
 			// 攻撃開始ログ
 			// =================================================
-
+			 otpTime_out = false;//有効期限が切れてないようにする＿なぎ
 			System.out.println(
 					"===== 三段階認証 ランダム攻撃開始 =====");
 
@@ -1132,12 +1154,21 @@ public class AttackController {
 			System.out.println(
 					"========================================");
 
-			AttackService.RandomThreeStageLoginResult randomResult = attackService
+	/*		AttackService.RandomThreeStageLoginResult コメントアウトした犯人はなぎ
+			randomResult =
+					attackService
 					.executeRandomThreeStageWithLogin(
 							username,
 							maxAttemptsPassword,
 							maxAttemptsPassword2,
-							maxAttemptsPassword3);
+							maxAttemptsPassword3);*/
+			AttackService.RandomPasswordAttacksResult randomResult =
+			        attackService.executePasswordsWithLogin(
+			                username,
+			                maxAttemptsPassword,
+			                maxAttemptsPassword2,
+			                maxAttemptsPassword3,
+			                3);
 
 			// =================================================
 			// 実際にかかった処理時間
@@ -1456,6 +1487,7 @@ public class AttackController {
 			// =====================================================
 			// 攻撃開始ログ
 			// =====================================================
+			 otpTime_out = false;//有効期限が切れてないようにする＿なぎ
 			System.out.println(
 					"===== 一要素 Email OTP ランダム攻撃開始 =====");
 
@@ -1653,6 +1685,7 @@ public class AttackController {
 			// =====================================================
 			// 攻撃開始ログ
 			// =====================================================
+			 otpTime_out = false;//有効期限が切れてないようにする＿なぎ
 			System.out.println(
 					"===== 二要素認証 ランダム攻撃開始 =====");
 
@@ -1824,7 +1857,9 @@ public class AttackController {
 			redirectAttributes.addFlashAttribute(
 					"attackTimeMs",
 					attackTimeMs);
-
+			redirectAttributes.addFlashAttribute(
+			        "forceTerminated",
+			        forceTerminated);
 			redirectAttributes.addFlashAttribute(
 					"message",
 					attackSuccess
@@ -1839,7 +1874,7 @@ public class AttackController {
 
 			redirectAttributes.addFlashAttribute(
 					"error",
-					"二要素認証（ランダム攻撃）中にエラーが発生しました: "
+					"ランダム攻撃中にエラーが発生しました: "
 							+ e.getMessage());
 
 			return "redirect:/result";
@@ -1879,6 +1914,7 @@ public class AttackController {
 				// =================================================
 				// 攻撃開始ログ
 				// =================================================
+				 otpTime_out = false;//有効期限が切れてないようにする＿なぎ
 				System.out.println(
 						"===== 一要素 Password 総当たり攻撃開始 =====");
 
@@ -2083,6 +2119,7 @@ public class AttackController {
 				// =================================================
 				// 攻撃開始ログ
 				// =================================================
+				 otpTime_out = false;//有効期限が切れてないようにする＿なぎ
 				System.out.println(
 						"===== 一要素 Password ランダム攻撃開始 =====");
 
@@ -2272,6 +2309,7 @@ public class AttackController {
 				// =================================================
 				// 攻撃開始ログ
 				// =================================================
+				 otpTime_out = false;//有効期限が切れてないようにする＿なぎ
 				System.out.println(
 						"===== 一要素 Email OTP 総当たり攻撃開始 =====");
 
@@ -2441,6 +2479,7 @@ public class AttackController {
 				// =================================================
 				// 攻撃開始ログ
 				// =================================================
+				 otpTime_out = false;//有効期限が切れてないようにする＿なぎ
 				System.out.println(
 						"===== 二要素認証 総当たり攻撃開始 =====");
 
@@ -2607,6 +2646,10 @@ public class AttackController {
 				redirectAttributes.addFlashAttribute(
 						"attackTimeMs",
 						attackTimeMs);
+				// 試行制限による強制終了かどうか
+				redirectAttributes.addFlashAttribute(
+						"forceTerminated",
+						forceTerminated);
 
 				redirectAttributes.addFlashAttribute(
 						"message",
@@ -2937,7 +2980,7 @@ public class AttackController {
 
 			String message;
 
-			if (forceTerminated) {
+			if (attackSuccess) {
 
 				message = "タイムアウトしました。";
 

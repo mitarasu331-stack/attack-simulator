@@ -19,6 +19,8 @@ public class FactorAuthenticationAttack {
 	private final RandomEmailOtpAttack randomEmailOtpAttack;
 
 	private final NewAuthLabLoginClient newAuthLabLoginClient;
+	
+
 
 	public FactorAuthenticationAttack(
 			MultiStagePasswordBruteForceAttack MultiStagepasswordBruteForceAttack,
@@ -35,8 +37,14 @@ public class FactorAuthenticationAttack {
 
 		this.randomEmailOtpAttack = randomEmailOtpAttack;
 
-		this.newAuthLabLoginClient = newAuthLabLoginClient;
+
+		this.newAuthLabLoginClient =
+				newAuthLabLoginClient;
+		
+		
+
 	}
+
 
 	// =========================================================
 	// 一要素認証：Password総当たり
@@ -448,9 +456,10 @@ public class FactorAuthenticationAttack {
 
 		private final long virtualWaitTimeMillis;
 
-		private final boolean forceTerminated;
 
 		private final LoginResult loginResult;
+		
+		private boolean forceTerminated = false;
 
 		public FactorAttackResult(
 				String authMethod,
@@ -479,7 +488,12 @@ public class FactorAuthenticationAttack {
 
 			this.forceTerminated = forceTerminated;
 
-			this.loginResult = loginResult;
+
+			this.loginResult =
+					loginResult;
+			
+
+
 		}
 
 		public String getAuthMethod() {
@@ -549,5 +563,16 @@ public class FactorAuthenticationAttack {
 
 			return loginResult.getSessionCookie();
 		}
+		
+		
+		/// =========================================================
+		/// 試行制限による強制終了かどうか なぎ
+
+
+		public void setForceTerminated(boolean forceTerminated) {
+		    this.forceTerminated = forceTerminated;
+		
+		}
+		///=========================================================
 	}
 }

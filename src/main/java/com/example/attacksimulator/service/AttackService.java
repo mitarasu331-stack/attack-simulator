@@ -9,8 +9,7 @@ import com.example.attacksimulator.attack.MultiStagePasswordBruteForceAttack;
 import com.example.attacksimulator.attack.MultiStagePasswordBruteForceAttack.AttackResult;
 import com.example.attacksimulator.attack.RandomEmailOtpAttack;
 import com.example.attacksimulator.attack.RandomPasswordAttack;
-import com.example.attacksimulator.attack.RandomThreeStagePasswordAttack;
-import com.example.attacksimulator.attack.RandomTwoStagePasswordAttack;
+import com.example.attacksimulator.attack.RandomPasswordAttacks;
 import com.example.attacksimulator.client.NewAuthLabLoginClient;
 import com.example.attacksimulator.client.NewAuthLabLoginClient.LoginResult;
 import com.example.attacksimulator.model.NewAuthLabUser;
@@ -25,10 +24,12 @@ public class AttackService {
 	private final FactorAuthenticationAttack factorAuthenticationAttack;
 
 	private final RandomPasswordAttack randomPasswordAttack;
+	
+	private final RandomPasswordAttacks randomPassrordAttacks;
 
-	private final RandomTwoStagePasswordAttack randomTwoStagePasswordAttack;
+//	private final RandomTwoStagePasswordAttack randomTwoStagePasswordAttack;
 
-	private final RandomThreeStagePasswordAttack randomThreeStagePasswordAttack;
+	//private final RandomThreeStagePasswordAttack randomThreeStagePasswordAttack;
 
 	private final NewAuthLabUserRepository newAuthLabUserRepository;
 
@@ -44,9 +45,11 @@ public class AttackService {
 
 			RandomPasswordAttack randomPasswordAttack,
 
-			RandomTwoStagePasswordAttack randomTwoStagePasswordAttack,
+//			RandomTwoStagePasswordAttack randomTwoStagePasswordAttack,
 
-			RandomThreeStagePasswordAttack randomThreeStagePasswordAttack,
+	//		RandomThreeStagePasswordAttack randomThreeStagePasswordAttack,
+			
+			RandomPasswordAttacks randomPassrordAttacks,
 
 			NewAuthLabUserRepository newAuthLabUserRepository,
 
@@ -66,13 +69,18 @@ public class AttackService {
 
 				randomPasswordAttack;
 
-		this.randomTwoStagePasswordAttack =
+	/*	this.randomTwoStagePasswordAttack =
 
-				randomTwoStagePasswordAttack;
+				randomTwoStagePasswordAttack;*/
 
-		this.randomThreeStagePasswordAttack =
+		this.randomPassrordAttacks =
 
-				randomThreeStagePasswordAttack;
+				randomPassrordAttacks;
+		
+		
+	/*	this.randomThreeStagePasswordAttack =
+
+				randomThreeStagePasswordAttack;*/
 
 		this.newAuthLabUserRepository =
 
@@ -447,21 +455,21 @@ public class AttackService {
 	// ランダム攻撃
 	// =========================================================
 
-	/*	public RandomTwoStagePasswordAttack.AttackResult
-	
-				executeRandomTwoStage(
-	
-						String username) {
-	
-			return executeRandomTwoStage(
-	
-					username,
-	
-					10_000,
-	
-					10_000);
-	
-		}*/
+	/*public RandomTwoStagePasswordAttack.AttackResult
+
+			executeRandomTwoStage(
+
+					String username) {
+
+		return executeRandomTwoStage(
+
+				username,
+
+				10_000,
+
+				10_000);
+
+	}*/
 
 	public RandomTwoStagePasswordAttack.AttackResult
 
@@ -510,7 +518,7 @@ public class AttackService {
 	
 					10_000);
 	
-		}*/
+		}
 
 	public RandomTwoStageLoginResult
 
@@ -563,7 +571,7 @@ public class AttackService {
 				loginResult);
 
 	}
-
+*/
 	// =========================================================
 	// 三段階認証
 	// Password → Password2 → Password3
@@ -704,30 +712,223 @@ public class AttackService {
 				loginResult);
 
 	}
+	// =========================================================
+	// ???段階認証
+	// ランダム攻撃
+	// =========================================================
+
+	public RandomPasswordAttacks.AttackResult
+
+			executeRandomLogins(
+
+					String username,int step) {
+
+		return executeRandomLogins(
+
+				username,
+
+				10_000,
+
+				10_000,
+
+				10_000,
+				
+				step//何段階認証ですか
+				);
+
+	}
+	public RandomPasswordAttacks.AttackResult
+
+			executeRandomLogins(
+
+					String username,
+
+					int maxAttemptsPassword,
+
+					int maxAttemptsPassword2,
+
+					int maxAttemptsPassword3,
+					
+					int step//何段階認証ですか
+					) {
+
+		NewAuthLabUser user =
+
+				getUser(username);
+		
+
+
+		String[] passwords = new String[] {
+				user.getPassword(),
+				user.getPassword2(),
+				user.getPassword3()
+		};
+		int[] maxAttempts = new int[] {
+				maxAttemptsPassword,
+				maxAttemptsPassword2,
+				maxAttemptsPassword3
+		};
+
+
+		return randomPassrordAttacks 
+
+				.execute(
+						passwords,
+						maxAttempts
+						,step
+						);
+
+	}
+	// =========================================================
+	// ???段階認証
+	// ランダム攻撃＋実ログイン
+	// =========================================================
+	public RandomPasswordAttacksResult
+	
+		executeRandomWithLogin(
+	
+				String username,int step) {
+	
+	return executePasswordsWithLogin(
+	
+			username,
+	
+			10_000,
+	
+			10_000,
+	
+			10_000,
+			
+			step);
+	
+	}
+	
+	public RandomPasswordAttacksResult
+	
+		executePasswordsWithLogin(
+	
+				String username,
+	
+				int maxAttemptsPassword,
+	
+				int maxAttemptsPassword2,
+	
+				int maxAttemptsPassword3,
+				
+				int step//何段階認証ですか
+				) {
+	
+		RandomPasswordAttacks.AttackResult
+	
+	attackResult =
+	
+	executeRandomLogins(
+	
+					username,
+	
+					maxAttemptsPassword,
+	
+					maxAttemptsPassword2,
+	
+					maxAttemptsPassword3,
+					
+					step
+					);
+	
+	
+	
+	// =====================================================
+	// 攻撃失敗
+	//
+	// 通常失敗でも強制終了でも、
+	// 実ログインは実行しない。
+	// =====================================================
+	
+	if (!attackResult.isSuccess()) {
+	
+		return new RandomPasswordAttacksResult(
+	
+				attackResult,
+	
+				false,
+	
+				null,
+				step
+				);
+	}
+	  LoginResult loginResult;
+
+	  //段階数に応じたログイン処理を実行
+	    switch (step) {
+	        case 1:
+	            loginResult = newAuthLabLoginClient.loginOneStage(
+	                    username,
+	                    attackResult.getPassword());
+	            break;
+
+	        case 2:
+	            loginResult = newAuthLabLoginClient.loginTwoStage(
+	                    username,
+	                    attackResult.getPassword(),
+	                    attackResult.getPassword2());
+	            break;
+
+	        case 3:
+	            loginResult = newAuthLabLoginClient.loginThreeStage(
+	                    username,
+	                    attackResult.getPassword(),
+	                    attackResult.getPassword2(),
+	                    attackResult.getPassword3());
+	            break;
+
+	        default:
+	            throw new IllegalArgumentException(
+	                    "対応していない段階数です");
+	    }
+
+	
+	return new RandomPasswordAttacksResult(
+	
+			attackResult,
+	
+			loginResult.isSuccess(),
+	
+			loginResult,
+			step
+			);
+	
+	}
+
+
+
+
 
 	// =========================================================
 	// 三段階認証
 	// Password → Password2 → Password3
 	// ランダム攻撃
 	// =========================================================
+/*
+	public RandomThreeStagePasswordAttack.AttackResult
 
-	/*	public RandomThreeStagePasswordAttack.AttackResult
+			executeRandomThreeStage(
+
+					String username) {
+
+		return executeRandomThreeStage(
+
+				username,
+
+				10_000,
+
+				10_000,
+
+				10_000);
+
+	}
 	
-				executeRandomThreeStage(
-	
-						String username) {
-	
-			return executeRandomThreeStage(
-	
-					username,
-	
-					10_000,
-	
-					10_000,
-	
-					10_000);
-	
-		}*/
+
+
 
 	public RandomThreeStagePasswordAttack.AttackResult
 
@@ -745,7 +946,8 @@ public class AttackService {
 
 				getUser(username);
 
-		return randomThreeStagePasswordAttack
+
+		return randomThreeStagePasswordAttack 
 
 				.execute(
 
@@ -762,6 +964,7 @@ public class AttackService {
 						maxAttemptsPassword3);
 
 	}
+
 
 	// =========================================================
 	// 三段階認証
@@ -845,6 +1048,9 @@ public class AttackService {
 
 	}
 
+	
+	*/
+	
 	// =========================================================
 	// 一要素認証
 	// Password
@@ -1498,7 +1704,7 @@ public class AttackService {
 	// ランダム攻撃
 	// =========================================================
 
-	public static class RandomTwoStageLoginResult {
+/*	public static class RandomTwoStageLoginResult {
 
 		private final RandomTwoStagePasswordAttack.AttackResult
 
@@ -1632,7 +1838,7 @@ public class AttackService {
 
 		}
 
-	}
+	}*/
 
 	// =========================================================
 	// 三段階ログイン結果
@@ -1737,7 +1943,7 @@ public class AttackService {
 	// 三段階ログイン結果
 	// ランダム攻撃
 	// =========================================================
-
+/*
 	public static class RandomThreeStageLoginResult {
 
 		private final RandomThreeStagePasswordAttack.AttackResult
@@ -1852,6 +2058,179 @@ public class AttackService {
 
 					.getVirtualWaitTimeMillis();
 
+		}
+
+		// =====================================================
+		// 攻撃処理強制終了
+		//
+		// 5000回失敗した場合、
+		// 実際のアカウントはロックせず、
+		// 攻撃処理のみを強制終了する。
+		// =====================================================
+
+		public boolean isForceTerminated() {
+
+			return attackResult != null
+
+					&& attackResult.isForceTerminated();
+
+		}
+
+		public String getFinalUrl() {
+
+			if (loginResult == null) {
+
+				return null;
+
+			}
+
+			return loginResult.getFinalUrl();
+
+		}
+
+		public String getSessionCookie() {
+
+			if (loginResult == null) {
+
+				return null;
+
+			}
+
+			return loginResult.getSessionCookie();
+
+		}
+
+	}
+*/
+	// =========================================================
+	// ???段階ログイン結果   なぎが追加
+	// ランダム攻撃
+	// =========================================================
+
+	public static class RandomPasswordAttacksResult {
+
+		private final RandomPasswordAttacks.AttackResult
+
+		attackResult;
+
+		private final boolean loginSuccess;
+
+		private final LoginResult loginResult;
+		
+		private final int step;
+
+		public RandomPasswordAttacksResult(
+
+				RandomPasswordAttacks.AttackResult
+
+				attackResult,
+
+				boolean loginSuccess,
+
+				LoginResult loginResult,
+				
+				int step) {
+
+			this.attackResult =
+
+					attackResult;
+
+			this.loginSuccess =
+
+					loginSuccess;
+
+			this.loginResult =
+
+					loginResult;
+			
+			this.step = step;
+
+		}
+
+		public RandomPasswordAttacks.AttackResult
+
+				getAttackResult() {
+
+			return attackResult;
+
+		}
+
+		public boolean isLoginSuccess() {
+
+			return loginSuccess;
+
+		}
+
+		public LoginResult getLoginResult() {
+
+			return loginResult;
+
+		}
+
+		public boolean isSuccess() {
+
+			return attackResult.isSuccess();
+
+		}
+
+		public String getPassword() {
+
+			return attackResult.getPassword();
+
+		}
+
+		public String getPassword2() {
+
+			return attackResult.getPassword2();
+
+		}
+
+		public String getPassword3() {
+
+			return attackResult.getPassword3();
+
+		}
+
+		public int getPasswordAttemptCount() {
+
+			return attackResult
+
+					.getPasswordAttemptCount();
+
+		}
+
+		public int getPassword2AttemptCount() {
+
+			return attackResult
+
+					.getPassword2AttemptCount();
+
+		}
+
+		public int getPassword3AttemptCount() {
+
+			return attackResult
+
+					.getPassword3AttemptCount();
+
+		}
+
+		public int getAttemptCount() {
+
+			return attackResult.getAttemptCount();
+
+		}
+
+		public long getVirtualWaitTimeMillis() {
+
+			return attackResult
+
+					.getVirtualWaitTimeMillis();
+
+		}
+		
+		public int getStep() {//段階認証数を取得
+		    return step;
 		}
 
 		// =====================================================
