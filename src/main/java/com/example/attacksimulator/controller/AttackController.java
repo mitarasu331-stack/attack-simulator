@@ -578,12 +578,20 @@ public class AttackController {
 			System.out.println(
 					"========================================");
 
-			AttackService.RandomOneStageLoginResult
+			/*AttackService.RandomOneStageLoginResult　コメントアウトした犯人はなぎ
 			randomResult =
 					attackService
 							.executeRandomOneStageWithLogin(
 									username,
-									maxAttemptsPassword);
+									maxAttemptsPassword);*/
+			
+			AttackService.RandomPasswordAttacksResult randomResult =
+			        attackService.executePasswordsWithLogin(
+			                username,
+			                maxAttemptsPassword,
+			                1000,
+			                1000,
+			                1);
 
 			// =================================================
 			// 実際にかかった処理時間
@@ -905,13 +913,21 @@ public class AttackController {
 			System.out.println(
 					"========================================");
 
-			AttackService.RandomTwoStageLoginResult
+		/*	AttackService.RandomTwoStageLoginResult コメントアウトした犯人はなぎ
 			randomResult =
 					attackService
 					.executeRandomTwoStageWithLogin(
 							username,
 							maxAttemptsPassword,
-							maxAttemptsPassword2);
+							maxAttemptsPassword2);*/
+			
+			AttackService.RandomPasswordAttacksResult randomResult =
+			        attackService.executePasswordsWithLogin(
+			                username,
+			                maxAttemptsPassword,
+			                maxAttemptsPassword2,
+			                1000,
+			                2);
 
 			// =================================================
 			// 実際にかかった攻撃処理時間
@@ -1260,14 +1276,21 @@ public class AttackController {
 			System.out.println(
 					"========================================");
 
-			AttackService.RandomThreeStageLoginResult
+	/*		AttackService.RandomThreeStageLoginResult コメントアウトした犯人はなぎ
 			randomResult =
 					attackService
 					.executeRandomThreeStageWithLogin(
 							username,
 							maxAttemptsPassword,
 							maxAttemptsPassword2,
-							maxAttemptsPassword3);
+							maxAttemptsPassword3);*/
+			AttackService.RandomPasswordAttacksResult randomResult =
+			        attackService.executePasswordsWithLogin(
+			                username,
+			                maxAttemptsPassword,
+			                maxAttemptsPassword2,
+			                maxAttemptsPassword3,
+			                3);
 
 			// =================================================
 			// 実際にかかった処理時間
