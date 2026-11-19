@@ -1007,6 +1007,10 @@ public class NewAuthLabLoginClient {
 					.firstValue("Location")
 					.orElse("");
 
+			String redirectUrl = location.isBlank()
+			        ? ""
+			        : response.uri().resolve(location).toString();
+			
 			String responseBody =
 					response.body() == null
 					? ""
@@ -1122,11 +1126,11 @@ public class NewAuthLabLoginClient {
 			}
 
 			return new LoginResult(
-					success,
-					statusCode,
-					location,
-					responseBody,
-					getSessionCookie());
+			        success,
+			        statusCode,
+			        redirectUrl,
+			        responseBody,
+			        getSessionCookie());
 
 		} catch (IOException e) {
 
@@ -1804,10 +1808,6 @@ public class NewAuthLabLoginClient {
 			this.sessionCookie =
 					sessionCookie;
 		}
-
-		// -----------------------------------------------------
-		// Getter
-		// -----------------------------------------------------
 
 		public boolean isSuccess() {
 
