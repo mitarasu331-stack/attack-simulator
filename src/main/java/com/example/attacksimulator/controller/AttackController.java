@@ -1518,6 +1518,8 @@ public class AttackController {
 			int attemptCount = randomResult.getAttemptCount();
 
 			String finalUrl = randomResult.getFinalUrl();
+			
+			boolean forceTerminated = randomResult.isForceTerminated();
 
 			// =====================================================
 			// 実験結果保存
@@ -1727,7 +1729,9 @@ public class AttackController {
 
 			String finalUrl = result.getFinalUrl();
 			
-			boolean forceTerminated=result.isForceTerminated();
+
+			boolean forceTerminated = result.isForceTerminated();
+
 
 			// =====================================================
 			// 認証方式
@@ -1816,6 +1820,7 @@ public class AttackController {
 
 				return "redirect:" + finalUrl;
 			}
+			
 
 			// =====================================================
 			// 結果画面
@@ -2521,7 +2526,9 @@ public class AttackController {
 
 				String finalUrl = twoFactorResult.getFinalUrl();
 				
-				boolean forceTerminated=twoFactorResult.isForceTerminated();
+
+				boolean forceTerminated = twoFactorResult.isForceTerminated();
+
 
 				// =================================================
 				// ログイン引き継ぎURLの確認
