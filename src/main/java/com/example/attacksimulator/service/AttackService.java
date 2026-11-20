@@ -471,7 +471,7 @@ public class AttackService {
 
 	}*/
 
-	public RandomTwoStagePasswordAttack.AttackResult
+	/* public RandomTwoStagePasswordAttack.AttackResult
 
 			executeRandomTwoStage(
 
@@ -987,7 +987,7 @@ public class AttackService {
 	
 					10_000);
 	
-		}*/
+		}
 
 	public RandomThreeStageLoginResult
 

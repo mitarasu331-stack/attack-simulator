@@ -1726,6 +1726,8 @@ public class AttackController {
 			int totalAttemptCount = result.getAttemptCount();
 
 			String finalUrl = result.getFinalUrl();
+			
+			boolean forceTerminated=result.isForceTerminated();
 
 			// =====================================================
 			// 認証方式
@@ -2518,6 +2520,8 @@ public class AttackController {
 				boolean realLoginSuccess = twoFactorResult.isLoginSuccess();
 
 				String finalUrl = twoFactorResult.getFinalUrl();
+				
+				boolean forceTerminated=twoFactorResult.isForceTerminated();
 
 				// =================================================
 				// ログイン引き継ぎURLの確認
