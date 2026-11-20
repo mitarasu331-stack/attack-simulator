@@ -7,8 +7,11 @@ import java.util.List;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+
 @Component
 public class RandomPasswordAttacks {
+
+	private final FactorAuthenticationAttack factorAuthenticationAttack;
 	private static final int MIN_PASSWORD = 0;
 
 	private static final int MAX_PASSWORD = 9999;
@@ -20,8 +23,7 @@ public class RandomPasswordAttacks {
 	/**
 	 * 1000回失敗ごとの制限回数
 	 */
-	private static final int WAIT_INTERVAL =
-			1_000;
+	private static final int WAIT_INTERVAL = 1_000;
 
 	/**
 	 * 制限ごとの仮想待機時間
@@ -31,7 +33,7 @@ public class RandomPasswordAttacks {
 	 * 3回目   → 10分
 	 * 4回目   → 20分
 	 */
-	private static final long[] WAIT_TIMES = {//要素が５こ以上あるのはなぎのせい
+	private static final long[] WAIT_TIMES = { //要素が５こ以上あるのはなぎのせい
 			60_000L,
 			300_000L,
 			600_000L,
@@ -50,19 +52,18 @@ public class RandomPasswordAttacks {
 	 *
 	 * 5000回失敗
 	 */
-	private static final int FORCE_TERMINATION_RESTRICTION_COUNT =
-			15;
+	private static final int FORCE_TERMINATION_RESTRICTION_COUNT = 5;
 
 	private final PasswordEncoder passwordEncoder;
 
-	private final SecureRandom secureRandom =
-			new SecureRandom();
+	private final SecureRandom secureRandom = new SecureRandom();
 
 	public RandomPasswordAttacks(
-			PasswordEncoder passwordEncoder) {
+			PasswordEncoder passwordEncoder, FactorAuthenticationAttack factorAuthenticationAttack) {
 
-		this.passwordEncoder =
-				passwordEncoder;
+		this.passwordEncoder = passwordEncoder;
+
+		this.factorAuthenticationAttack = factorAuthenticationAttack;
 	}
 
 	// =========================================================
@@ -77,179 +78,163 @@ public class RandomPasswordAttacks {
 
 	public AttackResult execute(
 			String[] passwordHash,
-			int[] maxAttemptsPasswords,int maxpassword) {
-		
+			int[] maxAttemptsPasswords, int maxpassword) {
+
 		//maxpassword が１以上３未満じゃないかの確認
 		if (maxpassword < 1 || maxpassword > 3
-		        || passwordHash == null
-		        || maxAttemptsPasswords == null
-		        || passwordHash.length < maxpassword
-		        || maxAttemptsPasswords.length < maxpassword) {
+				|| passwordHash == null
+				|| maxAttemptsPasswords == null
+				|| passwordHash.length < maxpassword
+				|| maxAttemptsPasswords.length < maxpassword) {
 
-		    throw new IllegalArgumentException(
-		            "認証段階数または配列が不正です。");
+			throw new IllegalArgumentException(
+					"認証段階数または配列が不正です。");
 		}
-		for(int i=0;i<maxpassword;i++){
-			maxAttemptsPasswords[i] =
-					clampAttempts(
-							maxAttemptsPasswords[i]);
-		}	
+		for (int i = 0; i < maxpassword; i++) {
+			maxAttemptsPasswords[i] = clampAttempts(
+					maxAttemptsPasswords[i]);
+		}
 
 		String[] password = new String[maxpassword];
 		int[] passwordAttemptCount = new int[maxpassword];
 		long[] passwordVirtualWaitTime = new long[maxpassword];
-		int[] passwordRestrictionCount= new int[maxpassword];
+		int[] passwordRestrictionCount = new int[maxpassword];
 		// =====================================================
 		// Stage 1
 		// Password
 		// =====================================================
-for(int i=0;i<maxpassword;i++){
-		List<String> passwordCandidates =
-				createRandomCandidates();
-		passwordAttemptCount[i] = 0;
-		passwordVirtualWaitTime[i] = 0L;
-		passwordRestrictionCount[i] = 0;
-		
+		for (int i = 0; i < maxpassword; i++) {
+			List<String> passwordCandidates = createRandomCandidates();
+			passwordAttemptCount[i] = 0;
+			passwordVirtualWaitTime[i] = 0L;
+			passwordRestrictionCount[i] = 0;
 
+			boolean passwordForceTerminated = false;
 
+			for (String candidate : passwordCandidates) {
 
-		boolean passwordForceTerminated =
-				false;
+				if (passwordAttemptCount[i] >= maxAttemptsPasswords[i]) {
 
-		for (String candidate :
-			passwordCandidates) {
-		
-			if (passwordAttemptCount[i]
-					>= maxAttemptsPasswords[i]) {
+					break;
+				}
 
-				break;
-			}
-
-			passwordAttemptCount[i]++;
-
-			// -------------------------------------------------
-			// Password候補は1件ずつ表示
-			// -------------------------------------------------
-			System.out.println(
-
-					"ランダムPassword 試行 "
-
-							+ passwordAttemptCount[i]
-
-							+ " / "
-
-							+ maxAttemptsPasswords[i]
-
-							+ " : "
-
-							+ candidate);
-
-			// -------------------------------------------------
-			// BCrypt照合
-			//
-			// 成功した場合は、
-			// その回の制限処理を行わない。
-			// -------------------------------------------------
-
-			if (passwordEncoder.matches(
-					candidate,
-					passwordHash[i])) {
-
-				password[i] = candidate;
-
-				break;
-			}
-
-			// -------------------------------------------------
-			// 1000回失敗するごとの制限
-			// -------------------------------------------------
-
-			if (passwordAttemptCount[i]
-					% WAIT_INTERVAL == 0) {
-
-				passwordRestrictionCount[i]++;
+				passwordAttemptCount[i]++;
 
 				// -------------------------------------------------
-				// 5回目の制限
+				// Password候補は1件ずつ表示
+				// -------------------------------------------------
+				System.out.println(
+
+						"ランダムPassword 試行 "
+
+								+ passwordAttemptCount[i]
+
+								+ " / "
+
+								+ maxAttemptsPasswords[i]
+
+								+ " : "
+
+								+ candidate);
+
+				// -------------------------------------------------
+				// BCrypt照合
 				//
-				// 5000回失敗
-				// → 攻撃処理を強制終了
-				//
-				// 待機時間は追加しない。
+				// 成功した場合は、
+				// その回の制限処理を行わない。
 				// -------------------------------------------------
 
-				if (passwordRestrictionCount[i]
-						>= FORCE_TERMINATION_RESTRICTION_COUNT) {
+				if (passwordEncoder.matches(
+						candidate,
+						passwordHash[i])) {
 
-					passwordForceTerminated =
-							true;
-
-					System.out.println(
-					        "ランダムPassword" + (i + 1)
-					                + " "
-					                + passwordAttemptCount[i]
-					                + "回失敗");
+					password[i] = candidate;
 
 					break;
 				}
 
 				// -------------------------------------------------
-				// 1～4回目の制限
+				// 1000回失敗するごとの制限
 				// -------------------------------------------------
 
-				long waitTime =
-						WAIT_TIMES[
-						           passwordRestrictionCount[i] - 1];
+				if (passwordAttemptCount[i]
+						% WAIT_INTERVAL == 0) {
 
-				passwordVirtualWaitTime[i] +=
-						waitTime;
+					passwordRestrictionCount[i]++;
 
-				System.out.println(
-						"ランダムPassword "+(i + 1)+""
-								+ passwordAttemptCount[i]
-								+ "回失敗"
-								+ " → 仮想待機時間 "
-								+ waitTime
-								+ " ms を加算");
+					// -------------------------------------------------
+					// 5回目の制限
+					//
+					// 5000回失敗
+					// → 攻撃処理を強制終了
+					//
+					// 待機時間は追加しない。
+					// -------------------------------------------------
 
-				System.out.println(
-						"Password 累積仮想待機時間 = "
-								+ passwordVirtualWaitTime[i]
-								+ " ms");
+					if (passwordRestrictionCount[i] >= FORCE_TERMINATION_RESTRICTION_COUNT) {
+
+						passwordForceTerminated = true;
+
+						System.out.println("===========================================");
+						System.out.println(passwordAttemptCount[i] + "回失敗");
+						System.out.println("===========================================");
+
+						break;
+					}
+
+					// -------------------------------------------------
+					// 1～4回目の制限
+					// -------------------------------------------------
+
+					long waitTime = WAIT_TIMES[passwordRestrictionCount[i] - 1];
+
+					passwordVirtualWaitTime[i] += waitTime;
+
+					System.out.println("===========================================");
+					System.out.println(passwordAttemptCount[i]
+							+ "回失敗"
+							+ " → 仮想待機時間 "
+							+ waitTime
+							+ " ms を加算");
+
+					System.out.println(
+							"Password 累積仮想待機時間 = "
+									+ passwordVirtualWaitTime[i] + " ms");
+					System.out.println("===========================================");
+
+				}
 			}
-		}
 
-		// =====================================================
-		// Password強制終了
-		// =====================================================
-		if (passwordForceTerminated) {
+			// =====================================================
+			// Password強制終了
+			// =====================================================
+			if (passwordForceTerminated) {
 
-		    return createResult(
-		            false,
-		            password,
-		            passwordAttemptCount,
-		            passwordVirtualWaitTime,
-		            true);
-		}
+				return createResult(
+						false,
+						password,
+						passwordAttemptCount,
+						passwordVirtualWaitTime,
+						true);
+			}
 
-		// =====================================================
-		// Password失敗
-		// =====================================================
-
-		if (password[i] == null) {
+			// =====================================================
+			// Password失敗
+			// =====================================================
 
 			if (password[i] == null) {
 
-			    return createResult(
-			            false,
-			            password,
-			            passwordAttemptCount,
-			            passwordVirtualWaitTime,
-			            false);
+				if (password[i] == null) {
+
+					return createResult(
+							false,
+							password,
+							passwordAttemptCount,
+							passwordVirtualWaitTime,
+							false);
+				}
 			}
 		}
-}
-
 
 		// =====================================================
 		// 最終結果
@@ -258,64 +243,62 @@ for(int i=0;i<maxpassword;i++){
 		boolean success = true;
 		int totalAttemptCount = 0;
 		long virtualWaitTimeMillis = 0L;
-	/*			password[] != null
-				&& password2 != null
-				&& password3 != null;*/
+		/*			password[] != null
+					&& password2 != null
+					&& password3 != null;*/
 
-		for(int i=0;i<maxpassword;i++){
-			if(password[i] == null){
+		for (int i = 0; i < maxpassword; i++) {
+			if (password[i] == null) {
 				success = false;
 			}
 			totalAttemptCount += passwordAttemptCount[i];
 			virtualWaitTimeMillis += passwordVirtualWaitTime[i];
 		}
-		
-
 
 		System.out.println(
 				"三段階認証 累積仮想待機時間 = "
 						+ virtualWaitTimeMillis
 						+ " ms");
-		switch(maxpassword){
-			case 1:
-				return new AttackResult(
-						success,
-						password[0],
-						null,
-						null,
-						passwordAttemptCount[0],
-						0,
-						0,
-						totalAttemptCount,
-						virtualWaitTimeMillis,
-						false);
+		switch (maxpassword) {
+		case 1:
+			return new AttackResult(
+					success,
+					password[0],
+					null,
+					null,
+					passwordAttemptCount[0],
+					0,
+					0,
+					totalAttemptCount,
+					virtualWaitTimeMillis,
+					false);
 		case 2:
-				return new AttackResult(
-						success,
-						password[0],
-						password[1],
-						null,
-						passwordAttemptCount[0],
-						passwordAttemptCount[1],
-						0,
-						totalAttemptCount,
-						virtualWaitTimeMillis,
-						false);
+			return new AttackResult(
+					success,
+					password[0],
+					password[1],
+					null,
+					passwordAttemptCount[0],
+					passwordAttemptCount[1],
+					0,
+					totalAttemptCount,
+					virtualWaitTimeMillis,
+					false);
 		case 3:
-				return new AttackResult(
-						success,
-						password[0],
-						password[1],
-						password[2],
-						passwordAttemptCount[0],
-						passwordAttemptCount[1],
-						passwordAttemptCount[2],
-						totalAttemptCount,
-						virtualWaitTimeMillis,
-						false);
+			return new AttackResult(
+					success,
+					password[0],
+					password[1],
+					password[2],
+					passwordAttemptCount[0],
+					passwordAttemptCount[1],
+					passwordAttemptCount[2],
+					totalAttemptCount,
+					virtualWaitTimeMillis,
+					false);
 		default:
-		    throw new IllegalArgumentException(
-		            "対応していない認証段階数です。");
+			throw new IllegalArgumentException(
+					"対応していない認証段階数です。");
 		}
 
 	}
@@ -326,12 +309,9 @@ for(int i=0;i<maxpassword;i++){
 
 	private List<String> createRandomCandidates() {
 
-		List<String> candidates =
-				new ArrayList<>(10000);
+		List<String> candidates = new ArrayList<>(10000);
 
-		for (int i = MIN_PASSWORD;
-				i <= MAX_PASSWORD;
-				i++) {
+		for (int i = MIN_PASSWORD; i <= MAX_PASSWORD; i++) {
 
 			candidates.add(
 					String.format(
@@ -412,35 +392,25 @@ for(int i=0;i<maxpassword;i++){
 				long virtualWaitTimeMillis,
 				boolean forceTerminated) {
 
-			this.success =
-					success;
+			this.success = success;
 
-			this.password =
-					password;
+			this.password = password;
 
-			this.password2 =
-					password2;
+			this.password2 = password2;
 
-			this.password3 =
-					password3;
+			this.password3 = password3;
 
-			this.passwordAttemptCount =
-					passwordAttemptCount;
+			this.passwordAttemptCount = passwordAttemptCount;
 
-			this.password2AttemptCount =
-					password2AttemptCount;
+			this.password2AttemptCount = password2AttemptCount;
 
-			this.password3AttemptCount =
-					password3AttemptCount;
+			this.password3AttemptCount = password3AttemptCount;
 
-			this.attemptCount =
-					attemptCount;
+			this.attemptCount = attemptCount;
 
-			this.virtualWaitTimeMillis =
-					virtualWaitTimeMillis;
+			this.virtualWaitTimeMillis = virtualWaitTimeMillis;
 
-			this.forceTerminated =
-					forceTerminated;
+			this.forceTerminated = forceTerminated;
 		}
 
 		public boolean isSuccess() {
@@ -517,35 +487,38 @@ for(int i=0;i<maxpassword;i++){
 			return forceTerminated;
 		}
 	}
-	
+
 	private AttackResult createResult(
-	        boolean success,
-	        String[] password,
-	        int[] passwordAttemptCount,
-	        long[] passwordVirtualWaitTime,
-	        boolean forceTerminated) {
+			boolean success,
+			String[] password,
+			int[] passwordAttemptCount,
+			long[] passwordVirtualWaitTime,
+			boolean forceTerminated) {
 
-	    int totalAttemptCount = 0;
-	    long totalVirtualWaitTime = 0L;
+		int totalAttemptCount = 0;
+		long totalVirtualWaitTime = 0L;
 
-	    for (int i = 0; i < password.length; i++) {
-	        totalAttemptCount += passwordAttemptCount[i];
-	        totalVirtualWaitTime += passwordVirtualWaitTime[i];
-	    }
+		for (int i = 0; i < password.length; i++) {
+			totalAttemptCount += passwordAttemptCount[i];
+			totalVirtualWaitTime += passwordVirtualWaitTime[i];
+		}
 
-	    return new AttackResult(
-	            success,
-	            password.length > 0 ? password[0] : null,
-	            password.length > 1 ? password[1] : null,
-	            password.length > 2 ? password[2] : null,
-	            passwordAttemptCount.length > 0
-	                    ? passwordAttemptCount[0] : 0,
-	            passwordAttemptCount.length > 1
-	                    ? passwordAttemptCount[1] : 0,
-	            passwordAttemptCount.length > 2
-	                    ? passwordAttemptCount[2] : 0,
-	            totalAttemptCount,
-	            totalVirtualWaitTime,
-	            forceTerminated);
+		return new AttackResult(
+				success,
+				password.length > 0 ? password[0] : null,
+				password.length > 1 ? password[1] : null,
+				password.length > 2 ? password[2] : null,
+				passwordAttemptCount.length > 0
+						? passwordAttemptCount[0]
+						: 0,
+				passwordAttemptCount.length > 1
+						? passwordAttemptCount[1]
+						: 0,
+				passwordAttemptCount.length > 2
+						? passwordAttemptCount[2]
+						: 0,
+				totalAttemptCount,
+				totalVirtualWaitTime,
+				forceTerminated);
 	}
 }
