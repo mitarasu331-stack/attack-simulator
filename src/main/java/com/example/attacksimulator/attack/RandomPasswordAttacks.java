@@ -16,10 +16,6 @@ public class RandomPasswordAttacks {
 
 	private static final int MAX_PASSWORD = 9999;
 
-	// =========================================================
-	// 仮想待機時間
-	// =========================================================
-
 	/**
 	 * 1000回失敗ごとの制限回数
 	 */
@@ -33,17 +29,11 @@ public class RandomPasswordAttacks {
 	 * 3回目   → 10分
 	 * 4回目   → 20分
 	 */
-	private static final long[] WAIT_TIMES = { //要素が５こ以上あるのはなぎのせい
+	private static final long[] WAIT_TIMES = {
 			60_000L,
 			300_000L,
 			600_000L,
 			1_200_000L,
-			0L,
-			0L,
-			0L,
-			0L,
-			0L,
-			0L
 	};
 
 	/**
@@ -100,8 +90,7 @@ public class RandomPasswordAttacks {
 		long[] passwordVirtualWaitTime = new long[maxpassword];
 		int[] passwordRestrictionCount = new int[maxpassword];
 		// =====================================================
-		// Stage 1
-		// Password
+		// 一段階認証
 		// =====================================================
 		for (int i = 0; i < maxpassword; i++) {
 			List<String> passwordCandidates = createRandomCandidates();
@@ -139,9 +128,6 @@ public class RandomPasswordAttacks {
 
 				// -------------------------------------------------
 				// BCrypt照合
-				//
-				// 成功した場合は、
-				// その回の制限処理を行わない。
 				// -------------------------------------------------
 
 				if (passwordEncoder.matches(
@@ -243,9 +229,6 @@ public class RandomPasswordAttacks {
 		boolean success = true;
 		int totalAttemptCount = 0;
 		long virtualWaitTimeMillis = 0L;
-		/*			password[] != null
-					&& password2 != null
-					&& password3 != null;*/
 
 		for (int i = 0; i < maxpassword; i++) {
 			if (password[i] == null) {
@@ -255,10 +238,6 @@ public class RandomPasswordAttacks {
 			virtualWaitTimeMillis += passwordVirtualWaitTime[i];
 		}
 
-		System.out.println(
-				"三段階認証 累積仮想待機時間 = "
-						+ virtualWaitTimeMillis
-						+ " ms");
 		switch (maxpassword) {
 		case 1:
 			return new AttackResult(
@@ -368,16 +347,8 @@ public class RandomPasswordAttacks {
 
 		private final int attemptCount;
 
-		/**
-		 * 実際には待機していないが、
-		 * 攻撃時間として加算する仮想待機時間
-		 */
 		private final long virtualWaitTimeMillis;
 
-		/**
-		 * 試行制限によって攻撃処理を
-		 * 強制終了したか
-		 */
 		private final boolean forceTerminated;
 
 		public AttackResult(
@@ -453,35 +424,11 @@ public class RandomPasswordAttacks {
 			return attemptCount;
 		}
 
-		/**
-		 * 実際には待っていないが、
-		 * 攻撃時間として加算する仮想待機時間
-		 *
-		 * 1段階あたりの最大累積時間：
-		 *
-		 * 1 + 5 + 10 + 20
-		 * = 36分
-		 *
-		 * 三段階すべてで最大まで制限された場合：
-		 *
-		 * 36 + 36 + 36
-		 * = 108分
-		 */
 		public long getVirtualWaitTimeMillis() {
 
 			return virtualWaitTimeMillis;
 		}
 
-		/**
-		 * 試行制限によって
-		 * 攻撃処理を強制終了したか
-		 *
-		 * true：
-		 * 5000回失敗して強制終了
-		 *
-		 * false：
-		 * 強制終了していない
-		 */
 		public boolean isForceTerminated() {
 
 			return forceTerminated;

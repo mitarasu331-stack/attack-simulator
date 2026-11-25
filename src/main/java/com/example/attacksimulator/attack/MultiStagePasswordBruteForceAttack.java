@@ -497,18 +497,10 @@ public class MultiStagePasswordBruteForceAttack {
 			return attemptCount;
 		}
 
-		/**
-		 * 実際には待機していないが、
-		 * 攻撃時間として加算する仮想待機時間
-		 */
 		public long getVirtualWaitTimeMillis() {
 			return virtualWaitTimeMillis;
 		}
 
-		/**
-		 * 試行制限によって
-		 * 攻撃処理が強制終了されたかどうか
-		 */
 		public boolean isForceTerminated() {
 			return forceTerminated;
 		}
@@ -588,22 +580,10 @@ public class MultiStagePasswordBruteForceAttack {
 			return stageCount;
 		}
 
-		/**
-		 * 試行制限によって
-		 * 攻撃処理が強制終了されたかどうか
-		 *
-		 * 実際のアカウントロックではない。
-		 */
 		public long getVirtualWaitTimeMillis() {
 			return virtualWaitTimeMillis;
 		}
 
-		/**
-		 * 試行制限によって
-		 * 攻撃処理が強制終了されたかどうか
-		 *
-		 * 実際のアカウントロックではない。
-		 */
 		public boolean isForceTerminated() {
 			return forceTerminated;
 		}

@@ -10,11 +10,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class RandomPasswordAttack {
-
-	// =========================================================
-	// 定数
-	// =========================================================
-
 	/**
 	 * 4桁Passwordの総組み合わせ数
 	 *
@@ -77,14 +72,13 @@ public class RandomPasswordAttack {
 	private static final int FORCE_TERMINATION_RESTRICTION_COUNT =
 			5;
 
-	// =========================================================
-	// PasswordEncoder
-	// =========================================================
-
+	/**
+	 *  PasswordEncoder
+	 */
 	private final PasswordEncoder passwordEncoder;
 
 	/**
-	 * 乱数生成器
+	 * 乱数生成
 	 */
 	private final SecureRandom secureRandom;
 
@@ -424,14 +418,8 @@ public class RandomPasswordAttack {
 
 		private final int attemptCount;
 
-		/**
-		 * 累積仮想待機時間
-		 */
 		private final long virtualWaitTimeMillis;
 
-		/**
-		 * 試行制限による強制終了
-		 */
 		private final boolean forceTerminated;
 
 		// =====================================================
@@ -518,11 +506,6 @@ public class RandomPasswordAttack {
 		 * 2回目の制限 = 5分
 		 * 3回目の制限 = 10分
 		 * 4回目の制限 = 20分
-		 *
-		 * 最大累積時間：
-		 *
-		 * 1 + 5 + 10 + 20
-		 * = 36分
 		 */
 		public long getVirtualWaitTimeMillis() {
 
