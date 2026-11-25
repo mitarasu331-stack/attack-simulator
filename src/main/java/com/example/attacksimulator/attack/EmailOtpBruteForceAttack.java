@@ -425,20 +425,7 @@ public class EmailOtpBruteForceAttack {
             this.timeOut=timeOut;
         }
 
-        /**
-         * 旧形式との互換用
-         */
-		/*        public AttackResult(
-		        boolean success,
-		        String otp,
-		        int attemptCount) {
-		
-		    this(
-		            success,
-		            otp,
-		            attemptCount,
-		            null);
-		}*/
+
 
         public boolean isSuccess() {
             return success;

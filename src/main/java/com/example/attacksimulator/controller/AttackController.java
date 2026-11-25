@@ -36,7 +36,7 @@ public class AttackController {
 	private final NewAuthLabLoginClient newAuthLabLoginClient;
 
 	public boolean otpTime_out = false;//有効期限が切れたことをフラグする
-	//このフラグがtrueになっているとタイムアウトしました　falseなら認証に失敗しました。
+	//このフラグがtrueになっているとタイムアウトしました　falseなら認証に失敗
 
 	private final AttackState attackState;
 
@@ -111,7 +111,7 @@ public class AttackController {
 			// =================================================
 			// 攻撃開始ログ
 			// =================================================
-			otpTime_out = false;//有効期限が切れてないようにする＿なぎ
+			otpTime_out = false;
 			String attackStartTitle;
 
 			if ("one-stage".equals(authMethod)) {
@@ -418,10 +418,6 @@ public class AttackController {
 					"password3",
 					result.getPassword3());
 
-			/*			redirectAttributes.addFlashAttribute(
-								"otp",
-								null);*/
-
 			redirectAttributes.addFlashAttribute(
 					"maxAttemptCount",
 					maxAttemptCount);
@@ -500,7 +496,7 @@ public class AttackController {
 			// =================================================
 			// 攻撃開始ログ
 			// =================================================
-			otpTime_out = false;//有効期限が切れてないようにする＿なぎ
+			otpTime_out = false;
 			System.out.println(
 					"===== 一段階認証 ランダム攻撃開始 =====");
 
@@ -523,13 +519,6 @@ public class AttackController {
 
 			System.out.println(
 					"========================================");
-
-			/*AttackService.RandomOneStageLoginResult　コメントアウトした犯人はなぎ
-			randomResult =
-					attackService
-							.executeRandomOneStageWithLogin(
-									username,
-									maxAttemptsPassword);*/
 
 			AttackService.RandomPasswordAttacksResult randomResult = attackService.executePasswordsWithLogin(
 					username,
@@ -575,15 +564,6 @@ public class AttackController {
 
 			boolean attackSuccess = randomResult.isSuccess();
 
-			/*			boolean realLoginSuccess =
-								randomResult.isLoginSuccess();
-			 */
-
-			/**
-			 * 試行制限による強制終了
-			 *
-			 * 5000回失敗した場合 true
-			 */
 			boolean forceTerminated = randomResult.isForceTerminated();
 
 			String password = randomResult.getPassword();
@@ -616,10 +596,6 @@ public class AttackController {
 			System.out.println(
 					"ランダム攻撃成功 = "
 							+ attackSuccess);
-
-			/*			System.out.println(
-								"実ログイン成功 = "
-										+ realLoginSuccess);*/
 
 			System.out.println(
 					"攻撃処理強制終了 = "
@@ -673,8 +649,7 @@ public class AttackController {
 			// この条件には入らない。
 			// =================================================
 
-			if (attackSuccess/*
-								&& realLoginSuccess*/) {
+			if (attackSuccess) {
 
 				model.addAttribute(
 						"username",
@@ -707,24 +682,6 @@ public class AttackController {
 					"password",
 					password);
 
-			/*
-			redirectAttributes.addFlashAttribute(
-					"password2",
-					null);
-
-			redirectAttributes.addFlashAttribute(
-					"password3",
-					null);
-
-			redirectAttributes.addFlashAttribute(
-					"otp",
-					null);
-
-						redirectAttributes.addFlashAttribute(
-								"realLoginSuccess",
-								realLoginSuccess);*/
-
-			// 試行制限による強制終了かどうか
 			redirectAttributes.addFlashAttribute(
 					"forceTerminated",
 					forceTerminated);
@@ -749,11 +706,11 @@ public class AttackController {
 
 			} else if (attackSuccess) {
 
-				message = "攻撃突破に成功しました。";
+				message = "認証突破に成功しました。";
 
 			} else {
 
-				message = "攻撃突破に失敗しました。";
+				message = "認証突破に失敗しました。";
 			}
 
 			redirectAttributes.addFlashAttribute(
@@ -808,7 +765,7 @@ public class AttackController {
 			// =================================================
 			// 攻撃開始ログ
 			// =================================================
-			otpTime_out = false;//有効期限が切れてないようにする＿なぎ
+			otpTime_out = false;
 			System.out.println(
 					"===== 二段階認証 ランダム攻撃開始 =====");
 
@@ -822,14 +779,6 @@ public class AttackController {
 
 			System.out.println(
 					"========================================");
-
-			/*	AttackService.RandomTwoStageLoginResult コメントアウトした犯人はなぎ
-				randomResult =
-						attackService
-						.executeRandomTwoStageWithLogin(
-								username,
-								maxAttemptsPassword,
-								maxAttemptsPassword2);*/
 
 			AttackService.RandomPasswordAttacksResult randomResult = attackService.executePasswordsWithLogin(
 					username,
@@ -868,9 +817,6 @@ public class AttackController {
 			// =================================================
 
 			boolean attackSuccess = randomResult.isSuccess();
-
-			/*			boolean realLoginSuccess =
-								randomResult.isLoginSuccess();*/
 
 			// =================================================
 			// 強制終了状態
@@ -943,10 +889,6 @@ public class AttackController {
 					"ランダム攻撃成功 = "
 							+ attackSuccess);
 
-			/*			System.out.println(
-								"実ログイン成功 = "
-										+ realLoginSuccess);*/
-
 			System.out.println(
 					"強制終了 = "
 							+ forceTerminated);
@@ -971,13 +913,9 @@ public class AttackController {
 
 			// =================================================
 			// 攻撃成功 ＆ 実ログイン成功
-			//
-			// 強制終了の場合は success=false なので
-			// ここには入らない。
 			// =================================================
 
-			if (attackSuccess/*
-								&& realLoginSuccess*/) {
+			if (attackSuccess) {
 
 				model.addAttribute(
 						"username",
@@ -1018,19 +956,6 @@ public class AttackController {
 					"password2",
 					password2);
 
-			/*
-			redirectAttributes.addFlashAttribute(
-					"password3",
-					null);
-
-			redirectAttributes.addFlashAttribute(
-					"otp",
-					null);
-
-						redirectAttributes.addFlashAttribute(
-								"realLoginSuccess",
-								realLoginSuccess);*/
-
 			redirectAttributes.addFlashAttribute(
 					"maxAttemptCount",
 					maxAttemptCount);
@@ -1067,11 +992,11 @@ public class AttackController {
 
 			} else if (attackSuccess) {
 
-				message = "攻撃突破に成功しました。";
+				message = "認証突破に成功しました。";
 
 			} else {
 
-				message = "攻撃突破に失敗しました。";
+				message = "認証突破に失敗しました。";
 			}
 
 			redirectAttributes.addFlashAttribute(
@@ -1137,7 +1062,7 @@ public class AttackController {
 			// =================================================
 			// 攻撃開始ログ
 			// =================================================
-			otpTime_out = false;//有効期限が切れてないようにする＿なぎ
+			otpTime_out = false;
 			System.out.println(
 					"===== 三段階認証 ランダム攻撃開始 =====");
 
@@ -1152,14 +1077,6 @@ public class AttackController {
 			System.out.println(
 					"========================================");
 
-			/*		AttackService.RandomThreeStageLoginResult コメントアウトした犯人はなぎ
-					randomResult =
-							attackService
-							.executeRandomThreeStageWithLogin(
-									username,
-									maxAttemptsPassword,
-									maxAttemptsPassword2,
-									maxAttemptsPassword3);*/
 			AttackService.RandomPasswordAttacksResult randomResult = attackService.executePasswordsWithLogin(
 					username,
 					maxAttemptsPassword,
@@ -1210,9 +1127,6 @@ public class AttackController {
 
 			boolean attackSuccess = randomResult.isSuccess();
 
-			/*			boolean realLoginSuccess =
-								randomResult.isLoginSuccess();*/
-
 			// =================================================
 			// 試行制限による強制終了
 			// =================================================
@@ -1243,10 +1157,6 @@ public class AttackController {
 
 			// =================================================
 			// 実験結果保存
-			//
-			// 保存する攻撃時間は
-			//
-			// 実処理時間 + 仮想待機時間
 			// =================================================
 
 			experimentResultService.addResult(
@@ -1298,10 +1208,6 @@ public class AttackController {
 					"ランダム攻撃成功 = "
 							+ attackSuccess);
 
-			/*			System.out.println(
-								"実ログイン成功 = "
-										+ realLoginSuccess);*/
-
 			System.out.println(
 					"強制終了 = "
 							+ forceTerminated);
@@ -1326,13 +1232,9 @@ public class AttackController {
 
 			// =================================================
 			// 攻撃成功
-			//
-			// 強制終了の場合は success=false なので
-			// ここには入らない。
 			// =================================================
 
-			if (attackSuccess/*
-								&& realLoginSuccess*/) {
+			if (attackSuccess) {
 
 				model.addAttribute(
 						"username",
@@ -1380,15 +1282,7 @@ public class AttackController {
 			redirectAttributes.addFlashAttribute(
 					"password3",
 					password3);
-			/*
-			redirectAttributes.addFlashAttribute(
-					"otp",
-					null);
 
-						redirectAttributes.addFlashAttribute(
-								"realLoginSuccess",
-								realLoginSuccess);
-			 */
 			redirectAttributes.addFlashAttribute(
 					"maxAttemptCount",
 					maxAttemptCount);
@@ -1433,11 +1327,11 @@ public class AttackController {
 
 			} else if (attackSuccess) {
 
-				message = "攻撃突破に成功しました。";
+				message = "認証突破に成功しました。";
 
 			} else {
 
-				message = "攻撃突破に失敗しました。";
+				message = "認証突破に失敗しました。";
 			}
 
 			redirectAttributes.addFlashAttribute(
@@ -1491,7 +1385,7 @@ public class AttackController {
 				// =================================================
 				// 攻撃開始ログ
 				// =================================================
-				otpTime_out = false;//有効期限が切れてないようにする＿なぎ
+				otpTime_out = false;
 				System.out.println(
 						"===== 一要素 Password 総当たり攻撃開始 =====");
 
@@ -1528,23 +1422,6 @@ public class AttackController {
 				boolean attackSuccess = result.isSuccess();
 
 				String finalUrl = null;
-
-				/*				// =================================================
-								// 実際のNewAuthLabログイン
-								// =================================================
-								if (attackSuccess) {
-
-									NewAuthLabLoginClient.LoginResult loginResult =
-											newAuthLabLoginClient.loginOneStage(
-													username,
-													result.getPassword());
-
-									realLoginSuccess =
-											loginResult.isSuccess();
-
-									finalUrl =
-											loginResult.getFinalUrl();
-								}*/
 
 				// =================================================
 				// 実験結果保存
@@ -1654,7 +1531,6 @@ public class AttackController {
 						"attackTimeMs",
 						attackTimeMs);
 
-				// 試行制限による強制終了かどうか
 				redirectAttributes.addFlashAttribute(
 						"forceTerminated",
 						forceTerminated);
@@ -1694,7 +1570,7 @@ public class AttackController {
 				// =================================================
 				// 攻撃開始ログ
 				// =================================================
-				otpTime_out = false;//有効期限が切れてないようにする＿なぎ
+				otpTime_out = false;
 				System.out.println(
 						"===== 一要素 Password ランダム攻撃開始 =====");
 
@@ -1752,7 +1628,7 @@ public class AttackController {
 						username,
 						randomPasswordResult.getAuthMethod(),
 						randomPasswordResult
-						.getAuthenticationConfiguration(),
+								.getAuthenticationConfiguration(),
 						maxAttemptCount,
 						randomPasswordResult.getAttemptCount(),
 						attackSuccess,
@@ -1814,7 +1690,7 @@ public class AttackController {
 					model.addAttribute(
 							"password",
 							randomPasswordResult
-							.getPassword());
+									.getPassword());
 
 					return "login-redirect";
 				}
@@ -1829,7 +1705,7 @@ public class AttackController {
 				redirectAttributes.addFlashAttribute(
 						"attemptCount",
 						randomPasswordResult
-						.getAttemptCount());
+								.getAttemptCount());
 
 				redirectAttributes.addFlashAttribute(
 						"success",
@@ -1838,7 +1714,7 @@ public class AttackController {
 				redirectAttributes.addFlashAttribute(
 						"password",
 						randomPasswordResult
-						.getPassword());
+								.getPassword());
 
 				redirectAttributes.addFlashAttribute(
 						"otp",
@@ -1872,11 +1748,11 @@ public class AttackController {
 
 				} else if (attackSuccess) {
 
-					message = "攻撃突破に成功しました。";
+					message = "認証突破に成功しました。";
 
 				} else {
 
-					message = "攻撃突破に失敗しました。";
+					message = "認証突破に失敗しました。";
 				}
 
 				redirectAttributes.addFlashAttribute(
@@ -1901,7 +1777,7 @@ public class AttackController {
 				// =================================================
 				// 攻撃開始ログ
 				// =================================================
-				otpTime_out = false;//有効期限が切れてないようにする＿なぎ
+				otpTime_out = false;
 				System.out.println(
 						"===== 一要素 Email OTP 総当たり攻撃開始 =====");
 
@@ -1942,7 +1818,7 @@ public class AttackController {
 						username,
 						emailOtpResult.getAuthMethod(),
 						emailOtpResult
-						.getAuthenticationConfiguration(),
+								.getAuthenticationConfiguration(),
 						maxAttemptCount,
 						emailOtpResult.getAttemptCount(),
 						attackSuccess,
@@ -2053,11 +1929,11 @@ public class AttackController {
 
 				} else if (attackSuccess) {
 
-					message = "攻撃突破に成功しました。";
+					message = "認証突破に成功しました。";
 
 				} else {
 
-					message = "攻撃突破に失敗しました。";
+					message = "認証突破に失敗しました。";
 				}
 
 				redirectAttributes.addFlashAttribute(
@@ -2084,14 +1960,11 @@ public class AttackController {
 				System.out.println("最大試行回数 = " + maxAttempts);
 				System.out.println("========================================");
 
-				// ランダム攻撃実行
-				FactorAuthenticationAttack.FactorAttackResult result =
-						attackService.executeRandomOneFactorEmailOtp(
-								username,
-								maxAttempts);
+				FactorAuthenticationAttack.FactorAttackResult result = attackService.executeRandomOneFactorEmailOtp(
+						username,
+						maxAttempts);
 
-				long attackTimeMs =
-						(System.nanoTime() - startTime) / 1_000_000;
+				long attackTimeMs = (System.nanoTime() - startTime) / 1_000_000;
 
 				String maxAttemptCount = String.valueOf(maxAttempts);
 				String credential = result.getOtp();
@@ -2164,11 +2037,11 @@ public class AttackController {
 
 				} else if (attackSuccess) {
 
-					message = "攻撃突破に成功しました。";
+					message = "認証突破に成功しました。";
 
 				} else {
 
-					message = "攻撃突破に失敗しました。";
+					message = "認証突破に失敗しました。";
 				}
 
 				redirectAttributes.addFlashAttribute(
@@ -2195,7 +2068,7 @@ public class AttackController {
 				// =================================================
 				// 攻撃開始ログ
 				// =================================================
-				otpTime_out = false;//有効期限が切れてないようにする＿なぎ
+				otpTime_out = false;
 				System.out.println(
 						"===== 二要素認証 総当たり攻撃開始 =====");
 
@@ -2209,6 +2082,7 @@ public class AttackController {
 
 				System.out.println(
 						"========================================");
+
 				// =================================================
 				// 二要素認証攻撃実行
 				// =================================================
@@ -2255,7 +2129,7 @@ public class AttackController {
 										redirectUri.getPath())
 								&& redirectUri.getQuery() != null
 								&& redirectUri.getQuery()
-								.startsWith("ticket=");
+										.startsWith("ticket=");
 
 					} catch (IllegalArgumentException e) {
 						validRedirectUrl = false;
@@ -2269,7 +2143,7 @@ public class AttackController {
 						username,
 						twoFactorResult.getAuthMethod(),
 						twoFactorResult
-						.getAuthenticationConfiguration(),
+								.getAuthenticationConfiguration(),
 						maxAttemptCount,
 						twoFactorResult.getAttemptCount(),
 						attackSuccess,
@@ -2363,7 +2237,7 @@ public class AttackController {
 				redirectAttributes.addFlashAttribute(
 						"attackTimeMs",
 						attackTimeMs);
-				// 試行制限による強制終了かどうか
+
 				redirectAttributes.addFlashAttribute(
 						"forceTerminated",
 						forceTerminated);
@@ -2380,11 +2254,11 @@ public class AttackController {
 
 				} else if (attackSuccess) {
 
-					message = "攻撃突破に成功しました。";
+					message = "認証突破に成功しました。";
 
 				} else {
 
-					message = "攻撃突破に失敗しました。";
+					message = "認証突破に失敗しました。";
 				}
 
 				redirectAttributes.addFlashAttribute(
@@ -2419,18 +2293,15 @@ public class AttackController {
 								+ maxAttempts);
 				System.out.println("========================================");
 
-				// ランダム攻撃実行
-				FactorAuthenticationAttack.FactorAttackResult result =
-						attackService.executeRandomTwoFactorPasswordEmailOtp(
+				FactorAuthenticationAttack.FactorAttackResult result = attackService
+						.executeRandomTwoFactorPasswordEmailOtp(
 								username,
 								maxAttemptsPassword,
 								maxAttempts);
 
-				long attackTimeMs =
-						(System.nanoTime() - startTime) / 1_000_000;
+				long attackTimeMs = (System.nanoTime() - startTime) / 1_000_000;
 
-				String maxAttemptCount =
-						maxAttemptsPassword + " → " + maxAttempts;
+				String maxAttemptCount = maxAttemptsPassword + " → " + maxAttempts;
 
 				String credential = createFactorCredential(result);
 
@@ -2448,8 +2319,7 @@ public class AttackController {
 					try {
 						URI redirectUri = URI.create(finalUrl);
 
-						validRedirectUrl =
-								"http".equals(redirectUri.getScheme())
+						validRedirectUrl = "http".equals(redirectUri.getScheme())
 								&& "localhost".equals(redirectUri.getHost())
 								&& redirectUri.getPort() == 8080
 								&& "/attack-login".equals(redirectUri.getPath())
@@ -2531,11 +2401,11 @@ public class AttackController {
 
 				} else if (attackSuccess) {
 
-					message = "攻撃突破に成功しました。";
+					message = "認証突破に成功しました。";
 
 				} else {
 
-					message = "攻撃突破に失敗しました。";
+					message = "認証突破に失敗しました。";
 				}
 
 				redirectAttributes.addFlashAttribute(
@@ -2864,15 +2734,15 @@ public class AttackController {
 
 			if (forceTerminated) {
 
-				message = "タイムアウトしました。";
+				message = "アカウントロックしました。";
 
 			} else if (attackSuccess) {
 
-				message = "辞書攻撃による認証突破に成功しました。";
+				message = "認証突破に成功しました。";
 
 			} else {
 
-				message = "タイムアウトしました。";
+				message = "認証突破に失敗しました。";
 			}
 
 			redirectAttributes.addFlashAttribute(
@@ -2892,17 +2762,6 @@ public class AttackController {
 
 			return "redirect:/result";
 		}
-	}
-
-	// =========================================================
-	// 辞書攻撃方式判定
-	// =========================================================
-
-	private boolean isDictionaryAuthMethod(
-			String authMethod) {
-
-		return "one-stage-dictionary"
-				.equals(authMethod);
 	}
 
 	// =========================================================
@@ -3015,7 +2874,7 @@ public class AttackController {
 			if ("one-factor-email-otp"
 					.equals(authMethod)
 					|| "one-factor-email-otp-random"
-					.equals(authMethod)) {
+							.equals(authMethod)) {
 
 				model.addAttribute(
 						"otp",
@@ -3100,8 +2959,8 @@ public class AttackController {
 						Collectors.toMap(
 								ExperimentResult::getId,
 								result -> experimentResultService
-								.formatDuration(
-										result.getAttackTimeMs()),
+										.formatDuration(
+												result.getAttackTimeMs()),
 								(oldValue, newValue) -> newValue,
 								LinkedHashMap::new));
 
@@ -3116,17 +2975,17 @@ public class AttackController {
 		model.addAttribute(
 				"totalExperimentCount",
 				experimentResultService
-				.getTotalExperimentCount());
+						.getTotalExperimentCount());
 
 		model.addAttribute(
 				"totalAttemptCount",
 				experimentResultService
-				.getTotalAttemptCount());
+						.getTotalAttemptCount());
 
 		model.addAttribute(
 				"totalAverageAttemptCount",
 				experimentResultService
-				.getAverageAttemptCount());
+						.getAverageAttemptCount());
 
 		// =====================================================
 		// 一段階認証
@@ -3135,50 +2994,50 @@ public class AttackController {
 		model.addAttribute(
 				"oneStageExperimentCount",
 				experimentResultService
-				.getExperimentCountByAuthMethod(
-						"one-stage"));
+						.getExperimentCountByAuthMethod(
+								"one-stage"));
 
 		model.addAttribute(
 				"oneStageSuccessCount",
 				experimentResultService
-				.getSuccessCountByAuthMethod(
-						"one-stage"));
+						.getSuccessCountByAuthMethod(
+								"one-stage"));
 
 		model.addAttribute(
 				"oneStageSuccessRate",
 				experimentResultService
-				.getSuccessRateByAuthMethod(
-						"one-stage"));
+						.getSuccessRateByAuthMethod(
+								"one-stage"));
 
 		model.addAttribute(
 				"oneStageAverageAttemptCount",
 				experimentResultService
-				.getAverageAttemptCountByAuthMethod(
-						"one-stage"));
+						.getAverageAttemptCountByAuthMethod(
+								"one-stage"));
 
 		model.addAttribute(
 				"oneStageSuccessAttackTimeTotal",
 				experimentResultService
-				.getSuccessAttackTimeTotalByAuthMethod(
-						"one-stage"));
+						.getSuccessAttackTimeTotalByAuthMethod(
+								"one-stage"));
 
 		model.addAttribute(
 				"oneStageSuccessAttackTimeTotalFormatted",
 				experimentResultService
-				.getSuccessAttackTimeTotalFormattedByAuthMethod(
-						"one-stage"));
+						.getSuccessAttackTimeTotalFormattedByAuthMethod(
+								"one-stage"));
 
 		model.addAttribute(
 				"oneStageAverageSuccessAttackTime",
 				experimentResultService
-				.getAverageSuccessAttackTimeByAuthMethod(
-						"one-stage"));
+						.getAverageSuccessAttackTimeByAuthMethod(
+								"one-stage"));
 
 		model.addAttribute(
 				"oneStageAverageSuccessAttackTimeFormatted",
 				experimentResultService
-				.getAverageSuccessAttackTimeFormattedByAuthMethod(
-						"one-stage"));
+						.getAverageSuccessAttackTimeFormattedByAuthMethod(
+								"one-stage"));
 
 		// =====================================================
 		// 二段階認証
@@ -3187,50 +3046,50 @@ public class AttackController {
 		model.addAttribute(
 				"twoStageExperimentCount",
 				experimentResultService
-				.getExperimentCountByAuthMethod(
-						"two-stage"));
+						.getExperimentCountByAuthMethod(
+								"two-stage"));
 
 		model.addAttribute(
 				"twoStageSuccessCount",
 				experimentResultService
-				.getSuccessCountByAuthMethod(
-						"two-stage"));
+						.getSuccessCountByAuthMethod(
+								"two-stage"));
 
 		model.addAttribute(
 				"twoStageSuccessRate",
 				experimentResultService
-				.getSuccessRateByAuthMethod(
-						"two-stage"));
+						.getSuccessRateByAuthMethod(
+								"two-stage"));
 
 		model.addAttribute(
 				"twoStageAverageAttemptCount",
 				experimentResultService
-				.getAverageAttemptCountByAuthMethod(
-						"two-stage"));
+						.getAverageAttemptCountByAuthMethod(
+								"two-stage"));
 
 		model.addAttribute(
 				"twoStageSuccessAttackTimeTotal",
 				experimentResultService
-				.getSuccessAttackTimeTotalByAuthMethod(
-						"two-stage"));
+						.getSuccessAttackTimeTotalByAuthMethod(
+								"two-stage"));
 
 		model.addAttribute(
 				"twoStageSuccessAttackTimeTotalFormatted",
 				experimentResultService
-				.getSuccessAttackTimeTotalFormattedByAuthMethod(
-						"two-stage"));
+						.getSuccessAttackTimeTotalFormattedByAuthMethod(
+								"two-stage"));
 
 		model.addAttribute(
 				"twoStageAverageSuccessAttackTime",
 				experimentResultService
-				.getAverageSuccessAttackTimeByAuthMethod(
-						"two-stage"));
+						.getAverageSuccessAttackTimeByAuthMethod(
+								"two-stage"));
 
 		model.addAttribute(
 				"twoStageAverageSuccessAttackTimeFormatted",
 				experimentResultService
-				.getAverageSuccessAttackTimeFormattedByAuthMethod(
-						"two-stage"));
+						.getAverageSuccessAttackTimeFormattedByAuthMethod(
+								"two-stage"));
 
 		// =====================================================
 		// 三段階認証
@@ -3239,50 +3098,50 @@ public class AttackController {
 		model.addAttribute(
 				"threeStageExperimentCount",
 				experimentResultService
-				.getExperimentCountByAuthMethod(
-						"three-stage"));
+						.getExperimentCountByAuthMethod(
+								"three-stage"));
 
 		model.addAttribute(
 				"threeStageSuccessCount",
 				experimentResultService
-				.getSuccessCountByAuthMethod(
-						"three-stage"));
+						.getSuccessCountByAuthMethod(
+								"three-stage"));
 
 		model.addAttribute(
 				"threeStageSuccessRate",
 				experimentResultService
-				.getSuccessRateByAuthMethod(
-						"three-stage"));
+						.getSuccessRateByAuthMethod(
+								"three-stage"));
 
 		model.addAttribute(
 				"threeStageAverageAttemptCount",
 				experimentResultService
-				.getAverageAttemptCountByAuthMethod(
-						"three-stage"));
+						.getAverageAttemptCountByAuthMethod(
+								"three-stage"));
 
 		model.addAttribute(
 				"threeStageSuccessAttackTimeTotal",
 				experimentResultService
-				.getSuccessAttackTimeTotalByAuthMethod(
-						"three-stage"));
+						.getSuccessAttackTimeTotalByAuthMethod(
+								"three-stage"));
 
 		model.addAttribute(
 				"threeStageSuccessAttackTimeTotalFormatted",
 				experimentResultService
-				.getSuccessAttackTimeTotalFormattedByAuthMethod(
-						"three-stage"));
+						.getSuccessAttackTimeTotalFormattedByAuthMethod(
+								"three-stage"));
 
 		model.addAttribute(
 				"threeStageAverageSuccessAttackTime",
 				experimentResultService
-				.getAverageSuccessAttackTimeByAuthMethod(
-						"three-stage"));
+						.getAverageSuccessAttackTimeByAuthMethod(
+								"three-stage"));
 
 		model.addAttribute(
 				"threeStageAverageSuccessAttackTimeFormatted",
 				experimentResultService
-				.getAverageSuccessAttackTimeFormattedByAuthMethod(
-						"three-stage"));
+						.getAverageSuccessAttackTimeFormattedByAuthMethod(
+								"three-stage"));
 
 		// =====================================================
 		// 一要素認証 Password
@@ -3291,50 +3150,50 @@ public class AttackController {
 		model.addAttribute(
 				"oneFactorPasswordExperimentCount",
 				experimentResultService
-				.getExperimentCountByAuthMethod(
-						"one-factor-password"));
+						.getExperimentCountByAuthMethod(
+								"one-factor-password"));
 
 		model.addAttribute(
 				"oneFactorPasswordSuccessCount",
 				experimentResultService
-				.getSuccessCountByAuthMethod(
-						"one-factor-password"));
+						.getSuccessCountByAuthMethod(
+								"one-factor-password"));
 
 		model.addAttribute(
 				"oneFactorPasswordSuccessRate",
 				experimentResultService
-				.getSuccessRateByAuthMethod(
-						"one-factor-password"));
+						.getSuccessRateByAuthMethod(
+								"one-factor-password"));
 
 		model.addAttribute(
 				"oneFactorPasswordAverageAttemptCount",
 				experimentResultService
-				.getAverageAttemptCountByAuthMethod(
-						"one-factor-password"));
+						.getAverageAttemptCountByAuthMethod(
+								"one-factor-password"));
 
 		model.addAttribute(
 				"oneFactorPasswordSuccessAttackTimeTotal",
 				experimentResultService
-				.getSuccessAttackTimeTotalByAuthMethod(
-						"one-factor-password"));
+						.getSuccessAttackTimeTotalByAuthMethod(
+								"one-factor-password"));
 
 		model.addAttribute(
 				"oneFactorPasswordSuccessAttackTimeTotalFormatted",
 				experimentResultService
-				.getSuccessAttackTimeTotalFormattedByAuthMethod(
-						"one-factor-password"));
+						.getSuccessAttackTimeTotalFormattedByAuthMethod(
+								"one-factor-password"));
 
 		model.addAttribute(
 				"oneFactorPasswordAverageSuccessAttackTime",
 				experimentResultService
-				.getAverageSuccessAttackTimeByAuthMethod(
-						"one-factor-password"));
+						.getAverageSuccessAttackTimeByAuthMethod(
+								"one-factor-password"));
 
 		model.addAttribute(
 				"oneFactorPasswordAverageSuccessAttackTimeFormatted",
 				experimentResultService
-				.getAverageSuccessAttackTimeFormattedByAuthMethod(
-						"one-factor-password"));
+						.getAverageSuccessAttackTimeFormattedByAuthMethod(
+								"one-factor-password"));
 
 		// =====================================================
 		// 一要素認証 Password ランダム
@@ -3342,50 +3201,50 @@ public class AttackController {
 		model.addAttribute(
 				"oneFactorPasswordRandomExperimentCount",
 				experimentResultService
-				.getExperimentCountByAuthMethod(
-						"one-factor-password-random"));
+						.getExperimentCountByAuthMethod(
+								"one-factor-password-random"));
 
 		model.addAttribute(
 				"oneFactorPasswordRandomSuccessCount",
 				experimentResultService
-				.getSuccessCountByAuthMethod(
-						"one-factor-password-random"));
+						.getSuccessCountByAuthMethod(
+								"one-factor-password-random"));
 
 		model.addAttribute(
 				"oneFactorPasswordRandomSuccessRate",
 				experimentResultService
-				.getSuccessRateByAuthMethod(
-						"one-factor-password-random"));
+						.getSuccessRateByAuthMethod(
+								"one-factor-password-random"));
 
 		model.addAttribute(
 				"oneFactorPasswordRandomAverageAttemptCount",
 				experimentResultService
-				.getAverageAttemptCountByAuthMethod(
-						"one-factor-password-random"));
+						.getAverageAttemptCountByAuthMethod(
+								"one-factor-password-random"));
 
 		model.addAttribute(
 				"oneFactorPasswordRandomSuccessAttackTimeTotal",
 				experimentResultService
-				.getSuccessAttackTimeTotalByAuthMethod(
-						"one-factor-password-random"));
+						.getSuccessAttackTimeTotalByAuthMethod(
+								"one-factor-password-random"));
 
 		model.addAttribute(
 				"oneFactorPasswordRandomSuccessAttackTimeTotalFormatted",
 				experimentResultService
-				.getSuccessAttackTimeTotalFormattedByAuthMethod(
-						"one-factor-password-random"));
+						.getSuccessAttackTimeTotalFormattedByAuthMethod(
+								"one-factor-password-random"));
 
 		model.addAttribute(
 				"oneFactorPasswordRandomAverageSuccessAttackTime",
 				experimentResultService
-				.getAverageSuccessAttackTimeByAuthMethod(
-						"one-factor-password-random"));
+						.getAverageSuccessAttackTimeByAuthMethod(
+								"one-factor-password-random"));
 
 		model.addAttribute(
 				"oneFactorPasswordRandomAverageSuccessAttackTimeFormatted",
 				experimentResultService
-				.getAverageSuccessAttackTimeFormattedByAuthMethod(
-						"one-factor-password-random"));
+						.getAverageSuccessAttackTimeFormattedByAuthMethod(
+								"one-factor-password-random"));
 
 		// =====================================================
 		// 一要素認証 Email OTP
@@ -3394,50 +3253,50 @@ public class AttackController {
 		model.addAttribute(
 				"oneFactorEmailOtpExperimentCount",
 				experimentResultService
-				.getExperimentCountByAuthMethod(
-						"one-factor-email-otp"));
+						.getExperimentCountByAuthMethod(
+								"one-factor-email-otp"));
 
 		model.addAttribute(
 				"oneFactorEmailOtpSuccessCount",
 				experimentResultService
-				.getSuccessCountByAuthMethod(
-						"one-factor-email-otp"));
+						.getSuccessCountByAuthMethod(
+								"one-factor-email-otp"));
 
 		model.addAttribute(
 				"oneFactorEmailOtpSuccessRate",
 				experimentResultService
-				.getSuccessRateByAuthMethod(
-						"one-factor-email-otp"));
+						.getSuccessRateByAuthMethod(
+								"one-factor-email-otp"));
 
 		model.addAttribute(
 				"oneFactorEmailOtpAverageAttemptCount",
 				experimentResultService
-				.getAverageAttemptCountByAuthMethod(
-						"one-factor-email-otp"));
+						.getAverageAttemptCountByAuthMethod(
+								"one-factor-email-otp"));
 
 		model.addAttribute(
 				"oneFactorEmailOtpSuccessAttackTimeTotal",
 				experimentResultService
-				.getSuccessAttackTimeTotalByAuthMethod(
-						"one-factor-email-otp"));
+						.getSuccessAttackTimeTotalByAuthMethod(
+								"one-factor-email-otp"));
 
 		model.addAttribute(
 				"oneFactorEmailOtpSuccessAttackTimeTotalFormatted",
 				experimentResultService
-				.getSuccessAttackTimeTotalFormattedByAuthMethod(
-						"one-factor-email-otp"));
+						.getSuccessAttackTimeTotalFormattedByAuthMethod(
+								"one-factor-email-otp"));
 
 		model.addAttribute(
 				"oneFactorEmailOtpAverageSuccessAttackTime",
 				experimentResultService
-				.getAverageSuccessAttackTimeByAuthMethod(
-						"one-factor-email-otp"));
+						.getAverageSuccessAttackTimeByAuthMethod(
+								"one-factor-email-otp"));
 
 		model.addAttribute(
 				"oneFactorEmailOtpAverageSuccessAttackTimeFormatted",
 				experimentResultService
-				.getAverageSuccessAttackTimeFormattedByAuthMethod(
-						"one-factor-email-otp"));
+						.getAverageSuccessAttackTimeFormattedByAuthMethod(
+								"one-factor-email-otp"));
 
 		// =====================================================
 		// 一要素認証 Email OTP ランダム
@@ -3446,50 +3305,50 @@ public class AttackController {
 		model.addAttribute(
 				"oneFactorEmailOtpRandomExperimentCount",
 				experimentResultService
-				.getExperimentCountByAuthMethod(
-						"one-factor-email-otp-random"));
+						.getExperimentCountByAuthMethod(
+								"one-factor-email-otp-random"));
 
 		model.addAttribute(
 				"oneFactorEmailOtpRandomSuccessCount",
 				experimentResultService
-				.getSuccessCountByAuthMethod(
-						"one-factor-email-otp-random"));
+						.getSuccessCountByAuthMethod(
+								"one-factor-email-otp-random"));
 
 		model.addAttribute(
 				"oneFactorEmailOtpRandomSuccessRate",
 				experimentResultService
-				.getSuccessRateByAuthMethod(
-						"one-factor-email-otp-random"));
+						.getSuccessRateByAuthMethod(
+								"one-factor-email-otp-random"));
 
 		model.addAttribute(
 				"oneFactorEmailOtpRandomAverageAttemptCount",
 				experimentResultService
-				.getAverageAttemptCountByAuthMethod(
-						"one-factor-email-otp-random"));
+						.getAverageAttemptCountByAuthMethod(
+								"one-factor-email-otp-random"));
 
 		model.addAttribute(
 				"oneFactorEmailOtpRandomSuccessAttackTimeTotal",
 				experimentResultService
-				.getSuccessAttackTimeTotalByAuthMethod(
-						"one-factor-email-otp-random"));
+						.getSuccessAttackTimeTotalByAuthMethod(
+								"one-factor-email-otp-random"));
 
 		model.addAttribute(
 				"oneFactorEmailOtpRandomSuccessAttackTimeTotalFormatted",
 				experimentResultService
-				.getSuccessAttackTimeTotalFormattedByAuthMethod(
-						"one-factor-email-otp-random"));
+						.getSuccessAttackTimeTotalFormattedByAuthMethod(
+								"one-factor-email-otp-random"));
 
 		model.addAttribute(
 				"oneFactorEmailOtpRandomAverageSuccessAttackTime",
 				experimentResultService
-				.getAverageSuccessAttackTimeByAuthMethod(
-						"one-factor-email-otp-random"));
+						.getAverageSuccessAttackTimeByAuthMethod(
+								"one-factor-email-otp-random"));
 
 		model.addAttribute(
 				"oneFactorEmailOtpRandomAverageSuccessAttackTimeFormatted",
 				experimentResultService
-				.getAverageSuccessAttackTimeFormattedByAuthMethod(
-						"one-factor-email-otp-random"));
+						.getAverageSuccessAttackTimeFormattedByAuthMethod(
+								"one-factor-email-otp-random"));
 
 		// =====================================================
 		// 二要素認証 Password + Email OTP
@@ -3498,50 +3357,50 @@ public class AttackController {
 		model.addAttribute(
 				"twoFactorPasswordEmailOtpExperimentCount",
 				experimentResultService
-				.getExperimentCountByAuthMethod(
-						"two-factor-password-email-otp"));
+						.getExperimentCountByAuthMethod(
+								"two-factor-password-email-otp"));
 
 		model.addAttribute(
 				"twoFactorPasswordEmailOtpSuccessCount",
 				experimentResultService
-				.getSuccessCountByAuthMethod(
-						"two-factor-password-email-otp"));
+						.getSuccessCountByAuthMethod(
+								"two-factor-password-email-otp"));
 
 		model.addAttribute(
 				"twoFactorPasswordEmailOtpSuccessRate",
 				experimentResultService
-				.getSuccessRateByAuthMethod(
-						"two-factor-password-email-otp"));
+						.getSuccessRateByAuthMethod(
+								"two-factor-password-email-otp"));
 
 		model.addAttribute(
 				"twoFactorPasswordEmailOtpAverageAttemptCount",
 				experimentResultService
-				.getAverageAttemptCountByAuthMethod(
-						"two-factor-password-email-otp"));
+						.getAverageAttemptCountByAuthMethod(
+								"two-factor-password-email-otp"));
 
 		model.addAttribute(
 				"twoFactorPasswordEmailOtpSuccessAttackTimeTotal",
 				experimentResultService
-				.getSuccessAttackTimeTotalByAuthMethod(
-						"two-factor-password-email-otp"));
+						.getSuccessAttackTimeTotalByAuthMethod(
+								"two-factor-password-email-otp"));
 
 		model.addAttribute(
 				"twoFactorPasswordEmailOtpSuccessAttackTimeTotalFormatted",
 				experimentResultService
-				.getSuccessAttackTimeTotalFormattedByAuthMethod(
-						"two-factor-password-email-otp"));
+						.getSuccessAttackTimeTotalFormattedByAuthMethod(
+								"two-factor-password-email-otp"));
 
 		model.addAttribute(
 				"twoFactorPasswordEmailOtpAverageSuccessAttackTime",
 				experimentResultService
-				.getAverageSuccessAttackTimeByAuthMethod(
-						"two-factor-password-email-otp"));
+						.getAverageSuccessAttackTimeByAuthMethod(
+								"two-factor-password-email-otp"));
 
 		model.addAttribute(
 				"twoFactorPasswordEmailOtpAverageSuccessAttackTimeFormatted",
 				experimentResultService
-				.getAverageSuccessAttackTimeFormattedByAuthMethod(
-						"two-factor-password-email-otp"));
+						.getAverageSuccessAttackTimeFormattedByAuthMethod(
+								"two-factor-password-email-otp"));
 
 		// =====================================================
 		// 一段階認証 ランダム
@@ -3550,50 +3409,50 @@ public class AttackController {
 		model.addAttribute(
 				"oneStageRandomExperimentCount",
 				experimentResultService
-				.getExperimentCountByAuthMethod(
-						"one-stage-random"));
+						.getExperimentCountByAuthMethod(
+								"one-stage-random"));
 
 		model.addAttribute(
 				"oneStageRandomSuccessCount",
 				experimentResultService
-				.getSuccessCountByAuthMethod(
-						"one-stage-random"));
+						.getSuccessCountByAuthMethod(
+								"one-stage-random"));
 
 		model.addAttribute(
 				"oneStageRandomSuccessRate",
 				experimentResultService
-				.getSuccessRateByAuthMethod(
-						"one-stage-random"));
+						.getSuccessRateByAuthMethod(
+								"one-stage-random"));
 
 		model.addAttribute(
 				"oneStageRandomAverageAttemptCount",
 				experimentResultService
-				.getAverageAttemptCountByAuthMethod(
-						"one-stage-random"));
+						.getAverageAttemptCountByAuthMethod(
+								"one-stage-random"));
 
 		model.addAttribute(
 				"oneStageRandomSuccessAttackTimeTotal",
 				experimentResultService
-				.getSuccessAttackTimeTotalByAuthMethod(
-						"one-stage-random"));
+						.getSuccessAttackTimeTotalByAuthMethod(
+								"one-stage-random"));
 
 		model.addAttribute(
 				"oneStageRandomSuccessAttackTimeTotalFormatted",
 				experimentResultService
-				.getSuccessAttackTimeTotalFormattedByAuthMethod(
-						"one-stage-random"));
+						.getSuccessAttackTimeTotalFormattedByAuthMethod(
+								"one-stage-random"));
 
 		model.addAttribute(
 				"oneStageRandomAverageSuccessAttackTime",
 				experimentResultService
-				.getAverageSuccessAttackTimeByAuthMethod(
-						"one-stage-random"));
+						.getAverageSuccessAttackTimeByAuthMethod(
+								"one-stage-random"));
 
 		model.addAttribute(
 				"oneStageRandomAverageSuccessAttackTimeFormatted",
 				experimentResultService
-				.getAverageSuccessAttackTimeFormattedByAuthMethod(
-						"one-stage-random"));
+						.getAverageSuccessAttackTimeFormattedByAuthMethod(
+								"one-stage-random"));
 
 		// =====================================================
 		// 二段階認証 ランダム
@@ -3602,50 +3461,50 @@ public class AttackController {
 		model.addAttribute(
 				"twoStageRandomExperimentCount",
 				experimentResultService
-				.getExperimentCountByAuthMethod(
-						"two-stage-random"));
+						.getExperimentCountByAuthMethod(
+								"two-stage-random"));
 
 		model.addAttribute(
 				"twoStageRandomSuccessCount",
 				experimentResultService
-				.getSuccessCountByAuthMethod(
-						"two-stage-random"));
+						.getSuccessCountByAuthMethod(
+								"two-stage-random"));
 
 		model.addAttribute(
 				"twoStageRandomSuccessRate",
 				experimentResultService
-				.getSuccessRateByAuthMethod(
-						"two-stage-random"));
+						.getSuccessRateByAuthMethod(
+								"two-stage-random"));
 
 		model.addAttribute(
 				"twoStageRandomAverageAttemptCount",
 				experimentResultService
-				.getAverageAttemptCountByAuthMethod(
-						"two-stage-random"));
+						.getAverageAttemptCountByAuthMethod(
+								"two-stage-random"));
 
 		model.addAttribute(
 				"twoStageRandomSuccessAttackTimeTotal",
 				experimentResultService
-				.getSuccessAttackTimeTotalByAuthMethod(
-						"two-stage-random"));
+						.getSuccessAttackTimeTotalByAuthMethod(
+								"two-stage-random"));
 
 		model.addAttribute(
 				"twoStageRandomSuccessAttackTimeTotalFormatted",
 				experimentResultService
-				.getSuccessAttackTimeTotalFormattedByAuthMethod(
-						"two-stage-random"));
+						.getSuccessAttackTimeTotalFormattedByAuthMethod(
+								"two-stage-random"));
 
 		model.addAttribute(
 				"twoStageRandomAverageSuccessAttackTime",
 				experimentResultService
-				.getAverageSuccessAttackTimeByAuthMethod(
-						"two-stage-random"));
+						.getAverageSuccessAttackTimeByAuthMethod(
+								"two-stage-random"));
 
 		model.addAttribute(
 				"twoStageRandomAverageSuccessAttackTimeFormatted",
 				experimentResultService
-				.getAverageSuccessAttackTimeFormattedByAuthMethod(
-						"two-stage-random"));
+						.getAverageSuccessAttackTimeFormattedByAuthMethod(
+								"two-stage-random"));
 
 		// =====================================================
 		// 三段階認証 ランダム
@@ -3654,50 +3513,50 @@ public class AttackController {
 		model.addAttribute(
 				"threeStageRandomExperimentCount",
 				experimentResultService
-				.getExperimentCountByAuthMethod(
-						"three-stage-random"));
+						.getExperimentCountByAuthMethod(
+								"three-stage-random"));
 
 		model.addAttribute(
 				"threeStageRandomSuccessCount",
 				experimentResultService
-				.getSuccessCountByAuthMethod(
-						"three-stage-random"));
+						.getSuccessCountByAuthMethod(
+								"three-stage-random"));
 
 		model.addAttribute(
 				"threeStageRandomSuccessRate",
 				experimentResultService
-				.getSuccessRateByAuthMethod(
-						"three-stage-random"));
+						.getSuccessRateByAuthMethod(
+								"three-stage-random"));
 
 		model.addAttribute(
 				"threeStageRandomAverageAttemptCount",
 				experimentResultService
-				.getAverageAttemptCountByAuthMethod(
-						"three-stage-random"));
+						.getAverageAttemptCountByAuthMethod(
+								"three-stage-random"));
 
 		model.addAttribute(
 				"threeStageRandomSuccessAttackTimeTotal",
 				experimentResultService
-				.getSuccessAttackTimeTotalByAuthMethod(
-						"three-stage-random"));
+						.getSuccessAttackTimeTotalByAuthMethod(
+								"three-stage-random"));
 
 		model.addAttribute(
 				"threeStageRandomSuccessAttackTimeTotalFormatted",
 				experimentResultService
-				.getSuccessAttackTimeTotalFormattedByAuthMethod(
-						"three-stage-random"));
+						.getSuccessAttackTimeTotalFormattedByAuthMethod(
+								"three-stage-random"));
 
 		model.addAttribute(
 				"threeStageRandomAverageSuccessAttackTime",
 				experimentResultService
-				.getAverageSuccessAttackTimeByAuthMethod(
-						"three-stage-random"));
+						.getAverageSuccessAttackTimeByAuthMethod(
+								"three-stage-random"));
 
 		model.addAttribute(
 				"threeStageRandomAverageSuccessAttackTimeFormatted",
 				experimentResultService
-				.getAverageSuccessAttackTimeFormattedByAuthMethod(
-						"three-stage-random"));
+						.getAverageSuccessAttackTimeFormattedByAuthMethod(
+								"three-stage-random"));
 
 		// =====================================================
 		// 一段階認証 辞書攻撃
@@ -3706,50 +3565,50 @@ public class AttackController {
 		model.addAttribute(
 				"oneStageDictionaryExperimentCount",
 				experimentResultService
-				.getExperimentCountByAuthMethod(
-						"one-stage-dictionary"));
+						.getExperimentCountByAuthMethod(
+								"one-stage-dictionary"));
 
 		model.addAttribute(
 				"oneStageDictionarySuccessCount",
 				experimentResultService
-				.getSuccessCountByAuthMethod(
-						"one-stage-dictionary"));
+						.getSuccessCountByAuthMethod(
+								"one-stage-dictionary"));
 
 		model.addAttribute(
 				"oneStageDictionarySuccessRate",
 				experimentResultService
-				.getSuccessRateByAuthMethod(
-						"one-stage-dictionary"));
+						.getSuccessRateByAuthMethod(
+								"one-stage-dictionary"));
 
 		model.addAttribute(
 				"oneStageDictionaryAverageAttemptCount",
 				experimentResultService
-				.getAverageAttemptCountByAuthMethod(
-						"one-stage-dictionary"));
+						.getAverageAttemptCountByAuthMethod(
+								"one-stage-dictionary"));
 
 		model.addAttribute(
 				"oneStageDictionarySuccessAttackTimeTotal",
 				experimentResultService
-				.getSuccessAttackTimeTotalByAuthMethod(
-						"one-stage-dictionary"));
+						.getSuccessAttackTimeTotalByAuthMethod(
+								"one-stage-dictionary"));
 
 		model.addAttribute(
 				"oneStageDictionarySuccessAttackTimeTotalFormatted",
 				experimentResultService
-				.getSuccessAttackTimeTotalFormattedByAuthMethod(
-						"one-stage-dictionary"));
+						.getSuccessAttackTimeTotalFormattedByAuthMethod(
+								"one-stage-dictionary"));
 
 		model.addAttribute(
 				"oneStageDictionaryAverageSuccessAttackTime",
 				experimentResultService
-				.getAverageSuccessAttackTimeByAuthMethod(
-						"one-stage-dictionary"));
+						.getAverageSuccessAttackTimeByAuthMethod(
+								"one-stage-dictionary"));
 
 		model.addAttribute(
 				"oneStageDictionaryAverageSuccessAttackTimeFormatted",
 				experimentResultService
-				.getAverageSuccessAttackTimeFormattedByAuthMethod(
-						"one-stage-dictionary"));
+						.getAverageSuccessAttackTimeFormattedByAuthMethod(
+								"one-stage-dictionary"));
 
 		// =====================================================
 		// 二要素認証 Password + Email OTP ランダム
@@ -3758,50 +3617,50 @@ public class AttackController {
 		model.addAttribute(
 				"twoFactorPasswordEmailOtpRandomExperimentCount",
 				experimentResultService
-				.getExperimentCountByAuthMethod(
-						"two-factor-password-email-otp-random"));
+						.getExperimentCountByAuthMethod(
+								"two-factor-password-email-otp-random"));
 
 		model.addAttribute(
 				"twoFactorPasswordEmailOtpRandomSuccessCount",
 				experimentResultService
-				.getSuccessCountByAuthMethod(
-						"two-factor-password-email-otp-random"));
+						.getSuccessCountByAuthMethod(
+								"two-factor-password-email-otp-random"));
 
 		model.addAttribute(
 				"twoFactorPasswordEmailOtpRandomSuccessRate",
 				experimentResultService
-				.getSuccessRateByAuthMethod(
-						"two-factor-password-email-otp-random"));
+						.getSuccessRateByAuthMethod(
+								"two-factor-password-email-otp-random"));
 
 		model.addAttribute(
 				"twoFactorPasswordEmailOtpRandomAverageAttemptCount",
 				experimentResultService
-				.getAverageAttemptCountByAuthMethod(
-						"two-factor-password-email-otp-random"));
+						.getAverageAttemptCountByAuthMethod(
+								"two-factor-password-email-otp-random"));
 
 		model.addAttribute(
 				"twoFactorPasswordEmailOtpRandomSuccessAttackTimeTotal",
 				experimentResultService
-				.getSuccessAttackTimeTotalByAuthMethod(
-						"two-factor-password-email-otp-random"));
+						.getSuccessAttackTimeTotalByAuthMethod(
+								"two-factor-password-email-otp-random"));
 
 		model.addAttribute(
 				"twoFactorPasswordEmailOtpRandomSuccessAttackTimeTotalFormatted",
 				experimentResultService
-				.getSuccessAttackTimeTotalFormattedByAuthMethod(
-						"two-factor-password-email-otp-random"));
+						.getSuccessAttackTimeTotalFormattedByAuthMethod(
+								"two-factor-password-email-otp-random"));
 
 		model.addAttribute(
 				"twoFactorPasswordEmailOtpRandomAverageSuccessAttackTime",
 				experimentResultService
-				.getAverageSuccessAttackTimeByAuthMethod(
-						"two-factor-password-email-otp-random"));
+						.getAverageSuccessAttackTimeByAuthMethod(
+								"two-factor-password-email-otp-random"));
 
 		model.addAttribute(
 				"twoFactorPasswordEmailOtpRandomAverageSuccessAttackTimeFormatted",
 				experimentResultService
-				.getAverageSuccessAttackTimeFormattedByAuthMethod(
-						"two-factor-password-email-otp-random"));
+						.getAverageSuccessAttackTimeFormattedByAuthMethod(
+								"two-factor-password-email-otp-random"));
 
 		return "results";
 	}
@@ -3818,7 +3677,7 @@ public class AttackController {
 				&& !ids.isEmpty()) {
 
 			experimentResultService
-			.deleteResults(ids);
+					.deleteResults(ids);
 		}
 
 		return "redirect:/results";
@@ -3832,7 +3691,7 @@ public class AttackController {
 	public String clearResults() {
 
 		experimentResultService
-		.clearResults();
+				.clearResults();
 
 		return "redirect:/results";
 	}
@@ -4045,7 +3904,7 @@ public class AttackController {
 	}
 
 	// =========================================================
-	// OTPで有効期限が切れたことをおーすコントローラーから受け取る＿なぎ
+	// OTPで有効期限が切れたことをAuthControllerから受け取る
 	// =========================================================
 	@PostMapping("/attack/otp-timeout")
 	@ResponseBody
