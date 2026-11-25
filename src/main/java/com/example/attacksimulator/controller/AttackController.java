@@ -2156,11 +2156,24 @@ public class AttackController {
 						"maxAttemptCount", maxAttemptCount);
 				redirectAttributes.addFlashAttribute(
 						"attackTimeMs", attackTimeMs);
+				String message;
+
+				if (otpTime_out) {
+
+					message = "タイムアウトしました。";
+
+				} else if (attackSuccess) {
+
+					message = "攻撃突破に成功しました。";
+
+				} else {
+
+					message = "攻撃突破に失敗しました。";
+				}
+
 				redirectAttributes.addFlashAttribute(
 						"message",
-						attackSuccess
-						? "一要素Email OTP（ランダム）の認証突破に成功しました。"
-								: "一要素Email OTP（ランダム）の認証突破に失敗しました。");
+						message);
 
 				return "redirect:/result";
 			}
@@ -2506,11 +2519,28 @@ public class AttackController {
 						"attackTimeMs", attackTimeMs);
 				redirectAttributes.addFlashAttribute(
 						"forceTerminated", forceTerminated);
+				String message;
+
+				if (forceTerminated) {
+
+					message = "アカウントロックしました。";
+
+				} else if (otpTime_out) {
+
+					message = "タイムアウトしました。";
+
+				} else if (attackSuccess) {
+
+					message = "攻撃突破に成功しました。";
+
+				} else {
+
+					message = "攻撃突破に失敗しました。";
+				}
+
 				redirectAttributes.addFlashAttribute(
 						"message",
-						attackSuccess
-						? "二要素認証（ランダム）の突破に成功しました。"
-								: "二要素認証（ランダム）の突破に失敗しました。");
+						message);
 
 				return "redirect:/result";
 			}
