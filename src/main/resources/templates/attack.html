@@ -1607,6 +1607,9 @@
 
 		randomTwoFactorOption
 				.classList.remove("active");
+		
+		randomOneFactorPasswordOption
+				.classList.remove("active");
 
 
 		// =====================================================
@@ -1880,7 +1883,7 @@
 					) {
 
 						randomAttackForm.action =
-								"/attack/random-email-otp";
+								"/attack/factor";
 
 						return;
 					}
@@ -1896,7 +1899,7 @@
 					) {
 
 						randomAttackForm.action =
-								"/attack/random-two-factor";
+								"/attack/factor";
 
 						return;
 					}
