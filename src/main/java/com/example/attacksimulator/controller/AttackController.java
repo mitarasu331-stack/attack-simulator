@@ -35,8 +35,7 @@ public class AttackController {
 
 	private final NewAuthLabLoginClient newAuthLabLoginClient;
 
-	public boolean otpTime_out = false;//有効期限が切れたことをフラグする
-	//このフラグがtrueになっているとタイムアウトしました　falseなら認証に失敗
+
 
 	private final AttackState attackState;
 
@@ -1771,7 +1770,6 @@ public class AttackController {
 				// =================================================
 				// 攻撃開始ログ
 				// =================================================
-				otpTime_out = false;
 				System.out.println(
 						"===== 一要素 Email OTP 総当たり攻撃開始 =====");
 
@@ -1917,7 +1915,7 @@ public class AttackController {
 
 				String message;
 
-				if (otpTime_out) {
+				if (attackState.isOtpTimedOut()) {
 
 					message = "タイムアウトしました。";
 
@@ -1946,7 +1944,7 @@ public class AttackController {
 
 				maxAttempts = clampOtpAttempts(maxAttempts);
 
-				otpTime_out = false;
+
 
 				System.out.println(
 						"===== 一要素 Email OTP ランダム攻撃開始 =====");
@@ -2025,7 +2023,7 @@ public class AttackController {
 						"attackTimeMs", attackTimeMs);
 				String message;
 
-				if (otpTime_out) {
+				if (attackState.isOtpTimedOut()) {
 
 					message = "タイムアウトしました。";
 
@@ -2062,7 +2060,7 @@ public class AttackController {
 				// =================================================
 				// 攻撃開始ログ
 				// =================================================
-				otpTime_out = false;
+
 				System.out.println(
 						"===== 二要素認証 総当たり攻撃開始 =====");
 
@@ -2242,7 +2240,7 @@ public class AttackController {
 
 					message = "アカウントロックしました。";
 
-				} else if (otpTime_out) {
+				} else if (attackState.isOtpTimedOut()) {
 
 					message = "タイムアウトしました。";
 
@@ -2275,7 +2273,7 @@ public class AttackController {
 
 				maxAttempts = clampOtpAttempts(maxAttempts);
 
-				otpTime_out = false;
+
 
 				System.out.println(
 						"===== 二要素認証 ランダム攻撃開始 =====");
@@ -2389,7 +2387,7 @@ public class AttackController {
 
 					message = "アカウントロックしました。";
 
-				} else if (otpTime_out) {
+				} else if (attackState.isOtpTimedOut()) {
 
 					message = "タイムアウトしました。";
 
