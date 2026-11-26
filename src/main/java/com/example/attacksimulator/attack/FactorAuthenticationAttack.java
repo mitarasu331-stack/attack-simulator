@@ -348,18 +348,6 @@ public class FactorAuthenticationAttack {
 		int totalAttemptCount = passResult.getAttemptCount()
 				+ otpResult.getAttemptCount();
 
-		System.out.println(
-				"Password試行回数 = "
-						+ passResult.getAttemptCount());
-
-		System.out.println(
-				"OTP試行回数 = "
-						+ otpResult.getAttemptCount());
-
-		System.out.println(
-				"総試行回数 = "
-						+ totalAttemptCount);
-
 		// =====================================================
 		// 結果
 		// =====================================================

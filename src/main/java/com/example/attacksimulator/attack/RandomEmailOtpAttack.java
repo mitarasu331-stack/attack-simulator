@@ -60,8 +60,6 @@ public class RandomEmailOtpAttack {
 		// 攻撃開始時にタイムアウト状態をリセット
 		attackState.setOtpTimedOut(false);
 
-		System.out.println("===== ランダムOTP攻撃開始 =====");
-
 		// 最初に有効期限を確認
 		if (newAuthLabLoginClient.checkOtpExpiration()) {
 
@@ -146,14 +144,6 @@ public class RandomEmailOtpAttack {
 		}
 
 		boolean timeOut = attackState.isOtpTimedOut();
-
-		System.out.println("===== ランダムOTP攻撃終了 =====");
-
-		System.out.println("試行回数 = " + attemptCount);
-
-		System.out.println("成功 = " + success);
-
-		System.out.println("タイムアウト = " + timeOut);
 
 		return new AttackResult(
 				success,

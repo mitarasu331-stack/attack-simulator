@@ -61,14 +61,6 @@ public class EmailOtpBruteForceAttack {
                 
         boolean timeOut=attackState.isOtpTimedOut();
 
-
-        System.out.println("========================================");
-        System.out.println("Email OTP総当たり攻撃開始");
-        System.out.println("username = " + username);
-        System.out.println("email = " + email);
-        System.out.println("最大試行回数 = " + actualMaxAttempts);
-        System.out.println("========================================");
-
         // =====================================================
         // OTP発行
         // =====================================================
@@ -80,10 +72,6 @@ public class EmailOtpBruteForceAttack {
 
         if (!sendOtpResult.isRequestSuccess()) {
 
-            System.out.println("OTP発行に失敗しました。");
-            System.out.println(
-                    "HTTP Status = " + sendOtpResult.getStatusCode());
-
             return new AttackResult(
                     false,
                     null,
@@ -91,8 +79,6 @@ public class EmailOtpBruteForceAttack {
                     null,
                     false);
         }
-
-        System.out.println("newauthlabからOTPが発行されました。");
 
         // =====================================================
         // OTP総当たり
@@ -109,7 +95,6 @@ public class EmailOtpBruteForceAttack {
 
             // 停止ボタンなどによる割り込み確認
             if (Thread.currentThread().isInterrupted()) {
-                System.out.println("総当たり攻撃を中断しました。");
                 break;
             }
 
@@ -133,7 +118,6 @@ public class EmailOtpBruteForceAttack {
 
                 // 通信中断の確認
                 if (Thread.currentThread().isInterrupted()) {
-                    System.out.println("OTP期限確認が中断されました。");
                     break;
                 }
 
@@ -141,10 +125,6 @@ public class EmailOtpBruteForceAttack {
                 if (expired) {
 
                     attackState.setOtpTimedOut(true);
-
-                    System.out.println("!!! TIME UP !!!");
-                    System.out.println(
-                            "OTPの有効期限切れにより攻撃を停止しました。");
 
                     break;
                 }
@@ -176,8 +156,6 @@ public class EmailOtpBruteForceAttack {
 
             // 通信中断の確認
             if (Thread.currentThread().isInterrupted()) {
-                System.out.println(
-                        "OTP確認通信が中断されたため攻撃を停止します。");
                 break;
             }
 
@@ -201,12 +179,6 @@ public class EmailOtpBruteForceAttack {
                         timeOut);
             }
         }
-
-        System.out.println("========================================");
-        System.out.println("Email OTP総当たり攻撃終了");
-        System.out.println("試行回数 = " + attemptCount);
-        System.out.println( "タイムアウト = " + attackState.isOtpTimedOut());
-        System.out.println("========================================");
 
         return new AttackResult(
                 false,
@@ -244,12 +216,6 @@ public class EmailOtpBruteForceAttack {
         int actualMaxAttempts =
                 Math.min(maxAttempts, 1_000_000);
 
-        System.out.println("========================================");
-        System.out.println("二要素認証 Email OTP総当たり攻撃開始");
-        System.out.println("username = " + username);
-        System.out.println("OTP最大試行回数 = " + actualMaxAttempts);
-        System.out.println("========================================");
-
         // =====================================================
         // Password認証・OTP発行
         // =====================================================
@@ -270,9 +236,6 @@ public class EmailOtpBruteForceAttack {
                     passwordResult,
                     false);
         }
-
-        System.out.println("Password認証成功。");
-        System.out.println("OTP発行を確認しました。");
 
         // =====================================================
         // OTP総当たり
@@ -313,18 +276,11 @@ public class EmailOtpBruteForceAttack {
                         newAuthLabLoginClient.checkOtpExpiration();
 
                 if (Thread.currentThread().isInterrupted()) {
-                    System.out.println("OTP期限確認が中断されました。");
                     break;
                 }
 
                 if (expired) {
-
                     attackState.setOtpTimedOut(true);
-
-                    System.out.println("!!! TIME UP !!!");
-                    System.out.println(
-                            "OTPの有効期限切れにより攻撃を停止しました。");
-
                     break;
                 }
             }
@@ -338,14 +294,6 @@ public class EmailOtpBruteForceAttack {
 
             attemptCount++;
 
-            System.out.println(
-                    "二要素Email OTP総当たり 試行 "
-                            + attemptCount
-                            + " / "
-                            + actualMaxAttempts
-                            + " : "
-                            + candidate);
-
             // =================================================
             // OTP検証
             // =================================================
@@ -355,8 +303,6 @@ public class EmailOtpBruteForceAttack {
                             candidate);
 
             if (Thread.currentThread().isInterrupted()) {
-                System.out.println(
-                        "OTP確認通信が中断されたため攻撃を停止します。");
                 break;
             }
 
@@ -381,11 +327,6 @@ public class EmailOtpBruteForceAttack {
                         timeOut);
             }
         }
-
-        System.out.println("二要素OTP総当たり攻撃終了");
-        System.out.println("試行回数 = " + attemptCount);
-        System.out.println(
-                "タイムアウト = " +timeOut );
 
         return new AttackResult(
                 false,
