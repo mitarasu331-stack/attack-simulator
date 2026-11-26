@@ -108,19 +108,6 @@ public class DictionaryPasswordAttack {
 
 				int restrictionCount = attemptCount / WAIT_INTERVAL;
 
-				System.out.println(
-						"----------------------------------------");
-
-				System.out.println(
-						"辞書攻撃が"
-								+ attemptCount
-								+ "回失敗しました。");
-
-				System.out.println(
-						"今回の制限回数 = "
-								+ restrictionCount
-								+ "回目");
-
 				// =================================================
 				// 5回目 → 攻撃処理を強制終了
 				// =================================================
@@ -128,30 +115,6 @@ public class DictionaryPasswordAttack {
 				if (restrictionCount >= FORCE_TERMINATION_RESTRICTION_COUNT) {
 
 					forceTerminated = true;
-
-					System.out.println(
-							"辞書攻撃が"
-									+ attemptCount
-									+ "回失敗しました。");
-
-					System.out.println(
-							"5回目の制限に到達したため、"
-									+ "攻撃処理を強制終了します。");
-
-					System.out.println(
-							"実際のアカウントロックは行いません。");
-
-					System.out.println(
-							"疑似的なロックとして"
-									+ "攻撃処理のみ終了します。");
-
-					System.out.println(
-							"累積仮想待機時間 = "
-									+ virtualWaitTimeMillis
-									+ " ms");
-
-					System.out.println(
-							"----------------------------------------");
 
 					return new AttackResult(
 							1,
@@ -175,28 +138,6 @@ public class DictionaryPasswordAttack {
 
 				virtualWaitTimeMillis += waitTimeMillis;
 
-				System.out.println(
-						"辞書攻撃が"
-								+ attemptCount
-								+ "回失敗したため"
-								+ "仮想待機時間を加算します。");
-
-				System.out.println(
-						"現在の試行回数 = "
-								+ attemptCount);
-
-				System.out.println(
-						"今回の仮想待機時間 = "
-								+ waitTimeMillis
-								+ " ms");
-
-				System.out.println(
-						"累積仮想待機時間 = "
-								+ virtualWaitTimeMillis
-								+ " ms");
-
-				System.out.println(
-						"----------------------------------------");
 			}
 		}
 
