@@ -163,27 +163,7 @@ public class NewAuthLabLoginClient {
 							finalUrl,
 							"/login/one-stage");
 
-			System.out.println(
-					"===== 一段階認証結果 =====");
 
-			System.out.println(
-					"username = "
-							+ username);
-
-			System.out.println(
-					"HTTP Status = "
-							+ response.statusCode());
-
-			System.out.println(
-					"Final URL = "
-							+ finalUrl);
-
-			System.out.println(
-					"ログイン成功 = "
-							+ success);
-
-			System.out.println(
-					"==========================");
 
 			return new LoginResult(
 					success,
@@ -277,29 +257,6 @@ public class NewAuthLabLoginClient {
 							.ofString(
 									StandardCharsets.UTF_8));
 
-			System.out.println(
-					"===== 二段階認証 1段階目 =====");
-
-			System.out.println(
-					"username = "
-							+ username);
-
-			System.out.println(
-					"Password = "
-							+ password);
-
-			System.out.println(
-					"HTTP Status = "
-							+ firstResponse.statusCode());
-
-			System.out.println(
-					"Location = "
-							+ firstResponse.headers()
-							.firstValue("Location")
-							.orElse("なし"));
-
-			System.out.println(
-					"==============================");
 
 			// =====================================================
 			// 1段階目で失敗した場合
@@ -355,31 +312,7 @@ public class NewAuthLabLoginClient {
 							finalUrl,
 							"/login/two-stage/password2");
 
-			System.out.println(
-					"===== 二段階認証 2段階目 =====");
-			
-			System.out.println(
-					"username = "
-							+ username);
 
-			System.out.println(
-					"Password2 = "
-							+ password2);
-
-			System.out.println(
-					"HTTP Status = "
-							+ secondResponse.statusCode());
-
-			System.out.println(
-					"Final URL = "
-							+ finalUrl);
-
-			System.out.println(
-					"ログイン成功 = "
-							+ success);
-
-			System.out.println(
-					"==============================");
 
 			return new LoginResult(
 					success,
@@ -474,29 +407,6 @@ public class NewAuthLabLoginClient {
 							.ofString(
 									StandardCharsets.UTF_8));
 
-			System.out.println(
-					"===== 三段階認証 1段階目 =====");
-
-			System.out.println(
-					"username = "
-							+ username);
-
-			System.out.println(
-					"Password = "
-							+ password);
-
-			System.out.println(
-					"HTTP Status = "
-							+ firstResponse.statusCode());
-
-			System.out.println(
-					"Location = "
-							+ firstResponse.headers()
-							.firstValue("Location")
-							.orElse("なし"));
-
-			System.out.println(
-					"==============================");
 
 			// =====================================================
 			// 1段階目失敗
@@ -545,29 +455,6 @@ public class NewAuthLabLoginClient {
 							.ofString(
 									StandardCharsets.UTF_8));
 
-			System.out.println(
-					"===== 三段階認証 2段階目 =====");
-			
-			System.out.println(
-					"username = "
-							+ username);
-
-			System.out.println(
-					"Password2 = "
-							+ password2);
-
-			System.out.println(
-					"HTTP Status = "
-							+ secondResponse.statusCode());
-
-			System.out.println(
-					"Location = "
-							+ secondResponse.headers()
-							.firstValue("Location")
-							.orElse("なし"));
-
-			System.out.println(
-					"==============================");
 
 			// =====================================================
 			// 2段階目失敗
@@ -624,31 +511,7 @@ public class NewAuthLabLoginClient {
 							finalUrl,
 							"/login/three-stage/password3");
 
-			System.out.println(
-					"===== 三段階認証 3段階目 =====");
-			
-			System.out.println(
-					"username = "
-							+ username);
 
-			System.out.println(
-					"Password3 = "
-							+ password3);
-
-			System.out.println(
-					"HTTP Status = "
-							+ thirdResponse.statusCode());
-
-			System.out.println(
-					"Final URL = "
-							+ finalUrl);
-
-			System.out.println(
-					"ログイン成功 = "
-							+ success);
-
-			System.out.println(
-					"==============================");
 
 			return new LoginResult(
 					success,
@@ -768,29 +631,6 @@ public class NewAuthLabLoginClient {
 
 		clearCookies();
 
-		System.out.println();
-		System.out.println(
-				"========================================");
-		System.out.println(
-				"【DEBUG】/send-otp 開始");
-		System.out.println(
-				"========================================");
-
-		System.out.println(
-				"送信対象username = "
-						+ username);
-
-		System.out.println(
-				"送信先Email = "
-						+ email);
-
-		System.out.println(
-				"送信前Session Cookie = "
-						+ getSessionCookie());
-
-		System.out.println(
-				"========================================");
-
 		/*
 		 * username + email + fromAttackSimulator
 		 *
@@ -838,41 +678,7 @@ public class NewAuthLabLoginClient {
 			// OTP送信後のCookie確認
 			// -------------------------------------------------
 
-			System.out.println();
-			System.out.println(
-					"========================================");
-			System.out.println(
-					"【DEBUG】/send-otp 完了");
-			System.out.println(
-					"========================================");
-
-			System.out.println(
-					"送信対象username = "
-							+ username);
-
-			System.out.println(
-					"送信先Email = "
-							+ email);
-
-			System.out.println(
-					"HTTP Status = "
-							+ response.statusCode());
-
-			System.out.println(
-					"Location = "
-							+ location);
-
-			System.out.println(
-					"送信後Session Cookie = "
-							+ getSessionCookie());
-
-			System.out.println(
-					"Response Body = "
-							+ response.body());
-
-			System.out.println(
-					"========================================");
-
+			
 			return new LoginResult(
 					response.statusCode() >= 200
 					&& response.statusCode() < 400,
@@ -949,25 +755,7 @@ public class NewAuthLabLoginClient {
 		// 検証前のCookie確認
 		// -----------------------------------------------------
 
-		System.out.println();
-		System.out.println(
-				"========================================");
-		System.out.println(
-				"【DEBUG】/verify-otp 送信前");
-		System.out.println(
-				"========================================");
-
-		System.out.println(
-				"送信OTP = "
-						+ otp);
-
-		System.out.println(
-				"検証前Session Cookie = "
-						+ getSessionCookie());
-
-		System.out.println(
-				"========================================");
-
+		
 		String body =
 				"otp=" + encode(otp);
 
@@ -1016,40 +804,7 @@ public class NewAuthLabLoginClient {
 					? ""
 					: response.body();
 
-			// =====================================================
-			// デバッグ表示
-			// =====================================================
 
-			System.out.println();
-			System.out.println(
-					"========================================");
-			System.out.println(
-					"【DEBUG】AttackSimulator /verify-otp");
-			System.out.println(
-					"========================================");
-
-			System.out.println(
-					"送信OTP = "
-							+ otp);
-
-			System.out.println(
-					"HTTP Status = "
-							+ statusCode);
-
-			System.out.println(
-					"Location = "
-							+ location);
-
-			System.out.println(
-					"Response Body = "
-							+ responseBody);
-
-			System.out.println(
-					"Session Cookie = "
-							+ getSessionCookie());
-
-			System.out.println(
-					"========================================");
 
 			// =====================================================
 			// 成功判定
@@ -1070,60 +825,8 @@ public class NewAuthLabLoginClient {
 			
 
 
-			
-			System.out.println(
-					"【DEBUG】redirectStatus = "
-							+ redirectStatus);
 
-			System.out.println(
-					"【DEBUG】attackLoginRedirect = "
-							+ attackLoginRedirect);
 
-			System.out.println(
-					"【DEBUG】verifyEmailOtp success = "
-							+ success);
-
-			// =====================================================
-			// 成功した場合
-			// =====================================================
-
-			if (success) {
-
-				System.out.println();
-				System.out.println(
-						"****************************************");
-				System.out.println(
-						"★★★ Email OTP認証成功を検出 ★★★");
-				System.out.println(
-						"OTP = "
-								+ otp);
-				System.out.println(
-						"HTTP Status = "
-								+ statusCode);
-				System.out.println(
-						"Location = "
-								+ location);
-				System.out.println(
-						"****************************************");
-				System.out.println();
-
-			} else {
-
-				System.out.println(
-						"OTP認証失敗");
-
-				System.out.println(
-						"OTP = "
-								+ otp);
-
-				System.out.println(
-						"HTTP Status = "
-								+ statusCode);
-
-				System.out.println(
-						"Location = "
-								+ location);
-			}
 
 			return new LoginResult(
 			        success,
@@ -1201,15 +904,6 @@ public class NewAuthLabLoginClient {
 
 		clearCookies();
 
-		System.out.println(
-				"===== 二要素Password確認 =====");
-
-		System.out.println(
-				"username = "
-						+ username);
-
-		System.out.println(
-				"==============================");
 
 		String passwordBody =
 				"username=" + encode(username)
@@ -1245,19 +939,7 @@ public class NewAuthLabLoginClient {
 					? ""
 					: passwordResponse.body().trim();
 
-			System.out.println(
-					"===== 二要素Passwordレスポンス =====");
 
-			System.out.println(
-					"HTTP Status = "
-							+ passwordResponse.statusCode());
-
-			System.out.println(
-					"Body = "
-							+ responseBody);
-
-			System.out.println(
-					"====================================");
 
 			if (passwordResponse.statusCode() < 200
 					|| passwordResponse.statusCode() >= 300) {
@@ -1272,18 +954,11 @@ public class NewAuthLabLoginClient {
 						getSessionCookie());
 			}
 			
-			System.out.println("===== セッションCookie確認 =====");
-			System.out.println("Cookie = " + getSessionCookie());
-			System.out.println("Cookie一覧 = " + cookieManager.getCookieStore().getCookies());
-			System.out.println("================================");
+
 
 			if ("OTP_SENT".equals(responseBody)) {
 
-				System.out.println(
-						"Password認証成功");
 
-				System.out.println(
-						"OTP_SENTを確認しました。");
 
 				return new LoginResult(
 						true,
@@ -1351,154 +1026,7 @@ public class NewAuthLabLoginClient {
 		}
 	}
 
-	// =========================================================
-	// 二要素認証
-	// Email OTP確認
-	// =========================================================
 
-	/**
-	 * 二要素認証のOTPを1回だけ検証する。
-	 *
-	 * OTPの000000～999999の総当たり処理は
-	 * EmailOtpBruteForceAttack側で行う。
-	 */
-//	public LoginResult verifyTwoFactorOtp(
-//	        String otp) {
-//
-//	    String body =
-//	            "otp=" + encode(otp);
-//
-//	    HttpRequest request =
-//	            HttpRequest.newBuilder()
-//	            .uri(
-//	                    URI.create(
-//	                            TWO_FACTOR_ATTACK_VERIFY_OTP_URL))
-//	            .timeout(
-//	                    Duration.ofSeconds(60))
-//	            .header(
-//	                    "Content-Type",
-//	                    "application/x-www-form-urlencoded")
-//	            .POST(
-//	                    HttpRequest.BodyPublishers
-//	                    .ofString(body))
-//	            .build();
-//
-//	    try {
-//
-//	        HttpResponse<String> response =
-//	                noRedirectHttpClient.send(
-//	                        request,
-//	                        HttpResponse.BodyHandlers
-//	                        .ofString(
-//	                                StandardCharsets.UTF_8));
-//
-//	        int statusCode =
-//	                response.statusCode();
-//
-//	        String location =
-//	                response.headers()
-//	                .firstValue("Location")
-//	                .orElse(
-//	                        response.uri().toString());
-//
-//	        String responseBody =
-//	                response.body() == null
-//	                ? ""
-//	                : response.body().trim();
-//
-//	        // =====================================================
-//	        // 成功判定
-//	        // =====================================================
-//
-//	        boolean success =
-//	                "LOGIN_SUCCESS".equals(responseBody);
-//
-//	        // =====================================================
-//	        // 成功時ログ
-//	        // =====================================================
-//
-//	        if (success) {
-//
-//	            System.out.println(
-//	                    "二要素OTP認証成功");
-//
-//	            System.out.println(
-//	                    "正解OTP = "
-//	                            + otp);
-//
-//	            System.out.println(
-//	                    "HTTP Status = "
-//	                            + statusCode);
-//
-//	            System.out.println(
-//	                    "Response Body = "
-//	                            + responseBody);
-//
-//	            System.out.println(
-//	                    "========================================");
-//	        }
-//
-//	        return new LoginResult(
-//	                success,
-//	                statusCode,
-//	                location,
-//	                responseBody,
-//	                otp,
-//	                0,
-//	                getSessionCookie());
-//
-//	    } catch (IOException e) {
-//
-//	        System.out.println(
-//	                "OTP確認通信エラー");
-//
-//	        System.out.println(
-//	                "OTP = "
-//	                        + otp);
-//
-//	        System.out.println(
-//	                "エラー = "
-//	                        + e.getClass().getName());
-//
-//	        System.out.println(
-//	                "内容 = "
-//	                        + e.getMessage());
-//
-//	        return new LoginResult(
-//	                false,
-//	                500,
-//	                TWO_FACTOR_ATTACK_VERIFY_OTP_URL,
-//	                e.getMessage(),
-//	                null,
-//	                0,
-//	                getSessionCookie());
-//
-//	    } catch (InterruptedException e) {
-//
-//	        Thread.currentThread().interrupt();
-//
-//	        System.out.println(
-//	                "二要素OTP確認通信が中断されました。");
-//
-//	        System.out.println(
-//	                "OTP = "
-//	                        + otp);
-//
-//	        System.out.println(
-//	                "内容 = "
-//	                        + e.getMessage());
-//
-//	        return new LoginResult(
-//	                false,
-//	                500,
-//	                TWO_FACTOR_ATTACK_VERIFY_OTP_URL,
-//	                e.getMessage(),
-//	                null,
-//	                0,
-//	                getSessionCookie());
-//	    }
-//	}
-	
 
 
 	// =========================================================
@@ -1543,11 +1071,6 @@ public class NewAuthLabLoginClient {
 	                        ? ""
 	                        : response.body().trim();
 
-	        System.out.println("===== OTP検証結果 =====");
-	        System.out.println("HTTP Status = " + statusCode);
-	        System.out.println(
-	                "Location取得 = " + !location.isBlank());
-	        System.out.println("=======================");
 
 
 	        // =====================================================
@@ -1568,8 +1091,7 @@ public class NewAuthLabLoginClient {
 	                    getSessionCookie());
 	        }
 
-	        System.out.println("OTP認証成功。");
-	        System.out.println("ブラウザへのログイン引き継ぎを準備します。");
+
 
 
 	        // =====================================================
@@ -1610,11 +1132,7 @@ public class NewAuthLabLoginClient {
 	        String browserRedirectUrl =
 	                attackLoginUri.toString();
 
-	        System.out.println("===== ブラウザログイン引き継ぎ =====");
-	        System.out.println("OTP検証 = 成功");
-	        System.out.println("チケットURL生成 = 成功");
-	        System.out.println("ブラウザ側でのアクセス待ち");
-	        System.out.println("===================================");
+
 
 
 	        // =====================================================
@@ -1876,22 +1394,11 @@ public class NewAuthLabLoginClient {
 	                ? ""
 	                : response.body().trim();
 
-	        System.out.println();
-	        System.out.println("===== OTP期限確認結果 =====");
-	        System.out.println("HTTP Status = " + response.statusCode());
-	        System.out.println("Response URL = " + response.uri());
-	        System.out.println("Response Body = " + body);
-	        System.out.println("Session Cookieあり = "
-	                + (getSessionCookie() != null));
-	        System.out.println("===========================");
-
 	        boolean expired =
 	                response.statusCode() != 200
 	                || !"ACTIVE".equals(body);
 
-	        System.out.println(
-	                "AttackSimulator側の期限判定 = "
-	                + (expired ? "EXPIRED" : "ACTIVE"));
+
 
 	        return expired;
 
